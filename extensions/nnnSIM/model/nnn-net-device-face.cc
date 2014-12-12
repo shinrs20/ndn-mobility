@@ -79,14 +79,14 @@ NetDeviceFace::GetNetDevice () const
 }
 
 void
-NetDeviceFace::RegisterProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
+NetDeviceFace::RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
 		const DOHandler &DOHandler, const ENHandler &ENHandler,
 		const AENHandler &AENHandler, const RENHandler &RENHandler,
 		const DENHandler &DENHandler, const INFHandler &INFHandler)
 {
 	NS_LOG_FUNCTION (this);
 
-	Face::RegisterProtocolHandlers (NULLpHandler, SOHandler, DOHandler,
+	Face::RegisterNNNProtocolHandlers (NULLpHandler, SOHandler, DOHandler,
 			ENHandler, AENHandler, RENHandler, DENHandler, INFHandler);
 
 	m_node->RegisterProtocolHandler (MakeCallback (&NetDeviceFace::ReceiveFromNetDevice, this),
@@ -94,10 +94,10 @@ NetDeviceFace::RegisterProtocolHandlers (const NULLpHandler &NULLpHandler, const
 }
 
 void
-NetDeviceFace:: UnRegisterProtocolHandlers ()
+NetDeviceFace:: UnRegisterNNNProtocolHandlers ()
 {
 	m_node->UnregisterProtocolHandler (MakeCallback (&NetDeviceFace::ReceiveFromNetDevice, this));
-	Face::UnRegisterProtocolHandlers ();
+	Face::UnRegisterNNNProtocolHandlers ();
 }
 
 bool

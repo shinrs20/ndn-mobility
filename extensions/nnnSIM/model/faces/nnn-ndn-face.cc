@@ -16,6 +16,7 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-ndn-face.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/uinteger.h>
 
@@ -161,8 +162,6 @@ namespace ns3
     {
 
     }
-
-
 
     bool
     NDNFace::SendData(Ptr<const ndn::Data> data)

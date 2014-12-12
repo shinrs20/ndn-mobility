@@ -56,7 +56,7 @@ class INF;
  *
  * This class defines basic functionality of NNN face. Face is core
  * component responsible for actual delivery of all NNN packets to and
- * from NDN stack
+ * from NNN stack
  *
  */
 class Face :
@@ -101,7 +101,7 @@ public:
 	 * This method should call protocol-dependent registration function
 	 */
 	virtual void
-	RegisterProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
+	RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
 			const DOHandler &DOHandler, const ENHandler &ENHandler,
 			const AENHandler &AENHandler, const RENHandler &RENHandler,
 			const DENHandler &DENHandler, const INFHandler &INFHandler);
@@ -112,7 +112,7 @@ public:
 	 * This method should call protocol-dependent registration function
 	 */
 	virtual void
-	UnRegisterProtocolHandlers ();
+	UnRegisterNNNProtocolHandlers ();
 
 	/**
 	 * @brief Send out NULL packet through the Face

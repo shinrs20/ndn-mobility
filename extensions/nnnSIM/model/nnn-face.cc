@@ -103,7 +103,7 @@ Face::GetNode () const
 }
 
 void
-Face::RegisterProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
+Face::RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
 		const DOHandler &DOHandler, const ENHandler &ENHandler,
 		const AENHandler &AENHandler, const RENHandler &RENHandler,
 		const DENHandler &DENHandler, const INFHandler &INFHandler)
@@ -121,7 +121,7 @@ Face::RegisterProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandle
 }
 
 void
-Face::UnRegisterProtocolHandlers ()
+Face::UnRegisterNNNProtocolHandlers ()
 {
 	NS_LOG_FUNCTION_NOARGS ();
 

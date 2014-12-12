@@ -125,7 +125,7 @@ L3Protocol::AddFace (const Ptr<Face> &face)
 	face->SetId (m_faceCounter); // sets a unique ID of the face. This ID serves only informational purposes
 
 	// ask face to register in lower-layer stack
-	face->RegisterProtocolHandlers (
+	face->RegisterNNNProtocolHandlers (
 			MakeCallback (&ForwardingStrategy::OnNULLp, m_forwardingStrategy),
 			MakeCallback (&ForwardingStrategy::OnSO, m_forwardingStrategy),
 			MakeCallback (&ForwardingStrategy::OnDO, m_forwardingStrategy),

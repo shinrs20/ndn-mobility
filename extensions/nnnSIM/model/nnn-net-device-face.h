@@ -61,13 +61,13 @@ public:
 	////////////////////////////////////////////////////////////////////
 	// methods overloaded from NnnFace
 	virtual void
-	RegisterProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
+	RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
 			const DOHandler &DOHandler, const ENHandler &ENHandler,
 			const AENHandler &AENHandler, const RENHandler &RENHandler,
 			const DENHandler &DENHandler, const INFHandler &INFHandler);
 
 	virtual void
-	UnRegisterProtocolHandlers ();
+	UnRegisterNNNProtocolHandlers ();
 
 protected:
 	virtual bool
