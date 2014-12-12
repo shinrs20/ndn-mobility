@@ -38,92 +38,92 @@ using boost::multi_index_container;
 using namespace ::boost::multi_index;
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-struct address {};
-struct lease {};
+    struct address {};
+    struct lease {};
 
-typedef multi_index_container<
+    typedef multi_index_container<
 	NamesContainerEntry,
 	indexed_by<
-		// sort by NamesContainer::operator<
-		ordered_unique<
-			tag<lease>,
-			identity<NamesContainerEntry>
-		>,
+	    // sort by NamesContainer::operator<
+	    ordered_unique<
+	        tag<lease>,
+		identity<NamesContainerEntry>
+            >,
 
-		// sort by less<string> on NNNAddress
-		ordered_unique<
-			tag<address>,
-			member<NamesContainerEntry,NNNAddress,&NamesContainerEntry::m_name>
-		>
-	>
-> names_set;
+            // sort by less<string> on NNNAddress
+	    ordered_unique<
+	        tag<address>,
+		member<NamesContainerEntry,NNNAddress,&NamesContainerEntry::m_name>
+            >
+        >
+    > names_set;
 
-typedef names_set::index<address>::type names_set_by_name;
-typedef names_set::index<lease>::type names_set_by_lease;
+    typedef names_set::index<address>::type names_set_by_name;
+    typedef names_set::index<lease>::type names_set_by_lease;
 
-class NamesContainer : public SimpleRefCount<NamesContainer>
-{
+    class NamesContainer : public SimpleRefCount<NamesContainer>
+    {
 
-public:
-	NamesContainer();
+    public:
+      NamesContainer();
 
-	virtual
-	~NamesContainer();
+      virtual
+      ~NamesContainer();
 
-	void
-	addEntry (NamesContainerEntry nameEntry);
+      void
+      addEntry (NamesContainerEntry nameEntry);
 
-	void
-	addEntry (NNNAddress name, Time lease_expire);
+      void
+      addEntry (NNNAddress name, Time lease_expire);
 
-	void
-	addEntry (NNNAddress name, Time lease_expire, Time renew);
+      void
+      addEntry (NNNAddress name, Time lease_expire, Time renew);
 
-	void
-	deleteEntry (NamesContainerEntry nameEntry);
+      void
+      deleteEntry (NamesContainerEntry nameEntry);
 
-	void
-	deleteEntry (NNNAddress name);
+      void
+      deleteEntry (NNNAddress name);
 
-	bool
-	foundName (NNNAddress name);
+      bool
+      foundName (NNNAddress name);
 
-	NamesContainerEntry
-	findEntry (NNNAddress name);
+      NamesContainerEntry
+      findEntry (NNNAddress name);
 
-	NNNAddress
-	findNewestName ();
+      NNNAddress
+      findNewestName ();
 
-	void
-	updateLeaseTime (NNNAddress name, Time lease_expire);
+      void
+      updateLeaseTime (NNNAddress name, Time lease_expire);
 
-	void
-	updateLeaseTime (NNNAddress name, Time lease_expire, Time renew);
+      void
+      updateLeaseTime (NNNAddress name, Time lease_expire, Time renew);
 
-	uint32_t
-	size ();
+      uint32_t
+      size ();
 
-	bool
-	isEmpty ();
+      bool
+      isEmpty ();
 
-	Time
-	findNameExpireTime (NNNAddress name);
+      Time
+      findNameExpireTime (NNNAddress name);
 
-	void
-	cleanExpired ();
+      void
+      cleanExpired ();
 
-	void
-	printByAddress ();
+      void
+      printByAddress ();
 
-	void
-	printByLease ();
+      void
+      printByLease ();
 
-	names_set container;
-};
+      names_set container;
+    };
 
-} /* namespace nnn */
+  } /* namespace nnn */
 } /* namespace ns3 */
 
 #endif /* NNN_NAMES_CONTAINER_H_ */
