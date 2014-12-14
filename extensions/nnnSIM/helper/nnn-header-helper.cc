@@ -34,7 +34,7 @@ namespace ns3 {
 namespace nnn {
 
 HeaderHelper::Type
-HeaderHelper::GetNnnHeaderType (Ptr<const Packet> packet)
+HeaderHelper::GetNNNHeaderType (Ptr<const Packet> packet)
 {
 	// Our header ID is of 32 bits
 	uint8_t type[4];
@@ -78,5 +78,5 @@ HeaderHelper::GetNnnHeaderType (Ptr<const Packet> packet)
 	throw UnknownHeaderException();
 }
 
-} // namespace ndn
+} // namespace nnn
 } // namespace ns3

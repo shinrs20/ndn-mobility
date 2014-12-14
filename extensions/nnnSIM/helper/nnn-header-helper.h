@@ -56,7 +56,7 @@ public:
 		EN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN};
 
 	static Type
-	GetNnnHeaderType (Ptr<const Packet> packet);
+	GetNNNHeaderType (Ptr<const Packet> packet);
 };
 
 /**

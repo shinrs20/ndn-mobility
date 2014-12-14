@@ -72,7 +72,7 @@ Wire::ToNULLp (Ptr<Packet> packet, int8_t wireFormat)
 	{
 		try
 		{
-			HeaderHelper::Type type = HeaderHelper::GetNnnHeaderType (packet);
+			HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
 			switch (type)
 			{
 			case HeaderHelper::NULL_NNN:
@@ -126,7 +126,7 @@ Wire::ToSO (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
 	{
 		try
 		{
-			HeaderHelper::Type type = HeaderHelper::GetNnnHeaderType (packet);
+			HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
 			switch (type)
 			{
 			case HeaderHelper::SO_NNN:
@@ -180,7 +180,7 @@ Wire::ToDO (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
 	{
 		try
 		{
-			HeaderHelper::Type type = HeaderHelper::GetNnnHeaderType (packet);
+			HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
 			switch (type)
 			{
 			case HeaderHelper::DO_NNN:
@@ -234,7 +234,7 @@ Wire::ToEN (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
 	{
 		try
 		{
-			HeaderHelper::Type type = HeaderHelper::GetNnnHeaderType (packet);
+			HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
 			switch (type)
 			{
 			case HeaderHelper::EN_NNN:
@@ -288,7 +288,7 @@ Wire::ToAEN (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
 	{
 		try
 		{
-			HeaderHelper::Type type = HeaderHelper::GetNnnHeaderType (packet);
+			HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
 			switch (type)
 			{
 			case HeaderHelper::AEN_NNN:
@@ -342,7 +342,7 @@ Wire::ToREN (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
 	{
 		try
 		{
-			HeaderHelper::Type type = HeaderHelper::GetNnnHeaderType (packet);
+			HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
 			switch (type)
 			{
 			case HeaderHelper::REN_NNN:
@@ -396,7 +396,7 @@ Wire::ToDEN (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
 	{
 		try
 		{
-			HeaderHelper::Type type = HeaderHelper::GetNnnHeaderType (packet);
+			HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
 			switch (type)
 			{
 			case HeaderHelper::DEN_NNN:
@@ -450,7 +450,7 @@ Wire::ToINF (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
 	{
 		try
 		{
-			HeaderHelper::Type type = HeaderHelper::GetNnnHeaderType (packet);
+			HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
 			switch (type)
 			{
 			case HeaderHelper::INF_NNN:
