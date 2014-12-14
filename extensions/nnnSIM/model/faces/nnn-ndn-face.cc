@@ -20,6 +20,13 @@
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/uinteger.h>
 
+
+#include <ns3-dev/ns3/ndn-header-helper.h>
+#include <ns3-dev/ns3/ndn-wire.h>
+
+#include "../../helper/nnn-header-helper.h"
+#include "../nnn-nnnsim-wire.h"
+
 #include "nnn-ndn-face.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.ndnFace");
@@ -34,9 +41,9 @@ namespace ns3
     NDNFace::GetTypeId ()
     {
       static TypeId tid = TypeId ("ns3::nnn::ndnFace")
-        	.SetParent<nnn::Face> ()
-        	.SetGroupName ("Nnn")
-        	;
+        	    .SetParent<nnn::Face> ()
+        	    .SetGroupName ("Nnn")
+        	    ;
       return tid;
     }
 
@@ -48,7 +55,7 @@ namespace ns3
 
       NS_ASSERT_MSG (node != 0, "node cannot be NULL. Check the code");
 
-      this->nnn::Face::SetFlags(nnn::Face::NDN);
+      nnn::Face::SetFlags(nnn::Face::NDN);
     }
 
     NDNFace::~NDNFace ()
@@ -56,43 +63,7 @@ namespace ns3
     }
 
     bool
-    NDNFace::ReceiveNULLp (Ptr<NULLp> n_i)
-    {
-
-    }
-
-    bool
-    NDNFace::ReceiveSO (Ptr<SO> so_i)
-    {
-
-    }
-
-    bool
-    NDNFace::ReceiveDO (Ptr<DO>  do_i)
-    {
-
-    }
-
-    bool
-    NDNFace::ReceiveEN (Ptr<EN> en_i)
-    {
-
-    }
-
-    bool
-    NDNFace::ReceiveAEN (Ptr<AEN> aen_i)
-    {
-
-    }
-
-    bool
-    NDNFace::ReceiveREN (Ptr<REN> ren_i)
-    {
-
-    }
-
-    bool
-    NDNFace::ReceiveDEN (Ptr<DEN> den_i)
+    NDNFace::ReceiveInterest (Ptr<ndn::Interest> interest)
     {
 
     }
@@ -104,87 +75,111 @@ namespace ns3
     }
 
     bool
-    NDNFace::ReceiveInterest (Ptr<ndn::Interest> interest)
+    NDNFace::SendInterest (Ptr<const ndn::Interest> interest)
     {
 
     }
 
+
     bool
-    NDNFace::SendNULLp (Ptr<const NULLp> n_o)
+    NDNFace::SendData (Ptr<const ndn::Data> data)
     {
 
     }
 
-    bool
-    NDNFace::SendSO (Ptr<const SO> so_o)
+    void
+    NDNFace::insertSO(Ptr<ndn::Name> name, Ptr<NNNAddress> addr)
     {
-
+      ndn_nnn_so_map.insert(std::pair<Ptr<ndn::Name>, Ptr<NNNAddress> > (name, addr) );
     }
 
-    bool
-    NDNFace::SendDO (Ptr<const DO> do_o)
+    void
+    NDNFace::insertDO(Ptr<ndn::Name> name, Ptr<NNNAddress> addr)
     {
-
-    }
-
-    bool
-    NDNFace::SendEN (Ptr<const EN> en_o)
-    {
-
-    }
-
-    bool
-    NDNFace::SendAEN (Ptr<const AEN> aen_o)
-    {
-
-    }
-
-    bool
-    NDNFace::SendREN (Ptr<const REN> ren_o)
-    {
-
-    }
-
-    bool
-    NDNFace::SendDEN (Ptr<const DEN> den_o)
-    {
-
-    }
-
-    bool
-    NDNFace::SendINF (Ptr<const INF> inf_o)
-    {
-
-    }
-
-    bool
-    NDNFace::ReceiveINF (Ptr<INF> inf_i)
-    {
-
-    }
-
-    bool
-    NDNFace::SendData(Ptr<const ndn::Data> data)
-    {
-
-    }
-
-    bool
-    NDNFace::SendInterest(Ptr<const ndn::Interest> interest)
-    {
-
+      ndn_nnn_so_map.insert(std::pair<Ptr<ndn::Name>, Ptr<NNNAddress> > (name, addr) );
     }
 
     bool
     NDNFace::Receive(Ptr<Packet> packet)
     {
+      NS_LOG_FUNCTION (this);
 
+      // Since this is a NNN-NDN Face, we have to find out what type of header
+      // we have just seen. Once found, we pass the packet to the corresponding
+      // forwarding strategy
+
+      if (!nnn::Face::IsUp ())
+	{
+	  // no tracing here. If we were off while receiving, we shouldn't even
+	  // know that something was there
+	  return false;
+	}
+
+      // Give the next layer a read-write copy of the packet
+      Ptr<Packet> cpacket = packet->Copy ();
+
+      // First attempt to match to NNN packets
+      try
+      {
+	  nnn::HeaderHelper::Type type = nnn::HeaderHelper::GetNNNHeaderType (cpacket);
+	  switch (type)
+	  {
+	    case HeaderHelper::NULL_NNN:
+	      return ReceiveNULLp (Wire::ToNULLp (cpacket, Wire::WIRE_FORMAT_NNNSIM));
+	    case HeaderHelper::SO_NNN:
+	      return ReceiveSO (Wire::ToSO (cpacket, Wire::WIRE_FORMAT_NNNSIM));
+	    case HeaderHelper::DO_NNN:
+	      return ReceiveDO (Wire::ToDO (cpacket, Wire::WIRE_FORMAT_NNNSIM));
+	    case HeaderHelper::EN_NNN:
+	      return ReceiveEN (Wire::ToEN (cpacket, Wire::WIRE_FORMAT_NNNSIM));
+	    case HeaderHelper::AEN_NNN:
+	      return ReceiveAEN (Wire::ToAEN (cpacket, Wire::WIRE_FORMAT_NNNSIM));
+	    case HeaderHelper::REN_NNN:
+	      return ReceiveREN (Wire::ToREN (cpacket, Wire::WIRE_FORMAT_NNNSIM));
+	    case HeaderHelper::DEN_NNN:
+	      return ReceiveDEN (Wire::ToDEN (cpacket, Wire::WIRE_FORMAT_NNNSIM));
+	    case HeaderHelper::INF_NNN:
+	      return ReceiveINF (Wire::ToINF (cpacket, Wire::WIRE_FORMAT_NNNSIM));
+	  }
+	  // exception will be thrown if packet is not recognized
+      }
+      catch (nnn::UnknownHeaderException)
+      {
+	  // Means this isn't a NNN packet, switch to attempt NDN matching
+      }
+
+      try
+      {
+	  ndn::HeaderHelper::Type type = ndn::HeaderHelper::GetNdnHeaderType (cpacket);
+	  switch (type)
+	  {
+	    case ndn::HeaderHelper::INTEREST_NDNSIM:
+	      return ReceiveInterest (ndn::Wire::ToInterest (cpacket, ndn::Wire::WIRE_FORMAT_NDNSIM));
+	    case ndn::HeaderHelper::INTEREST_CCNB:
+	      return ReceiveInterest (ndn::Wire::ToInterest (cpacket, ndn::Wire::WIRE_FORMAT_CCNB));
+	    case ndn::HeaderHelper::CONTENT_OBJECT_NDNSIM:
+	      return ReceiveData (ndn::Wire::ToData (cpacket, ndn::Wire::WIRE_FORMAT_NDNSIM));
+	    case ndn::HeaderHelper::CONTENT_OBJECT_CCNB:
+	      return ReceiveData (ndn::Wire::ToData (cpacket, ndn::Wire::WIRE_FORMAT_CCNB));
+	    default:
+	      NS_FATAL_ERROR ("Not supported NDN or NNN header!");
+	      return false;
+	  }
+	  // exception will be thrown if packet is not recognized
+      }
+      catch (ndn::UnknownHeaderException)
+      {
+	  NS_FATAL_ERROR ("Unknown NDN or NNN header. Should not happen");
+	  return false;
+      }
+
+      return false;
     }
 
     bool
     NDNFace::Send(Ptr<Packet> packet)
     {
-
+      return true;
     }
 
   } /* namespace nnn */

@@ -348,6 +348,7 @@ namespace ns3 {
       uint16_t m_metric; ///< \brief metric of the Face
       uint32_t m_flags; ///< @brief NN_Faces flags (e.g., APPLICATION, NDN)
     };
+
     std::ostream&
     operator<< (std::ostream& os, const Face &face);
 

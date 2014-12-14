@@ -27,6 +27,7 @@
 #include <ns3-dev/ns3/traced-callback.h>
 #include <ns3-dev/ns3/type-id.h>
 
+#include <ns3-dev/ns3/name.h>
 #include <ns3-dev/ns3/ndn-face.h>
 #include <ns3-dev/ns3/ndn-interest.h>
 #include <ns3-dev/ns3/ndn-data.h>
@@ -50,64 +51,22 @@ namespace ns3
       ~NDNFace ();
 
       bool
-      ReceiveNULLp (Ptr<NULLp> n_i);
-
-      bool
-      ReceiveSO (Ptr<SO> so_i);
-
-      bool
-      ReceiveDO (Ptr<DO>  do_i);
-
-      bool
-      ReceiveEN (Ptr<EN> en_i);
-
-      bool
-      ReceiveAEN (Ptr<AEN> aen_i);
-
-      bool
-      ReceiveREN (Ptr<REN> ren_i);
-
-      bool
-      ReceiveDEN (Ptr<DEN> den_i);
+      ReceiveInterest (Ptr<ndn::Interest> interest);
 
       bool
       ReceiveData (Ptr<ndn::Data> data);
 
       bool
-      ReceiveInterest (Ptr<ndn::Interest> interest);
-
-      bool
-      SendNULLp (Ptr<const NULLp> n_o);
-
-      bool
-      SendSO (Ptr<const SO> so_o);
-
-      bool
-      SendDO (Ptr<const DO> do_o);
-
-      bool
-      SendEN (Ptr<const EN> en_o);
-
-      bool
-      SendAEN (Ptr<const AEN> aen_o);
-
-      bool
-      SendREN (Ptr<const REN> ren_o);
-
-      bool
-      SendDEN (Ptr<const DEN> den_o);
-
-      bool
-      SendINF (Ptr<const INF> inf_o);
-
-      bool
-      ReceiveINF (Ptr<INF> inf_i);
+      SendInterest (Ptr<const ndn::Interest> interest);
 
       bool
       SendData (Ptr<const ndn::Data> data);
 
-      bool
-      SendInterest (Ptr<const ndn::Interest> interest);
+      void
+      insertSO(Ptr<ndn::Name> name, Ptr<NNNAddress> addr);
+
+      void
+      insertDO(Ptr<ndn::Name> name, Ptr<NNNAddress> addr);
 
     protected:
       bool
@@ -115,6 +74,14 @@ namespace ns3
 
       bool
       Send (Ptr<Packet> packet);
+
+      void
+      SetFlags (uint32_t flags);
+
+    private:
+
+      std::multimap<Ptr<ndn::Name>, Ptr<NNNAddress> > ndn_nnn_so_map;
+      std::multimap<Ptr<ndn::Name>, Ptr<NNNAddress> > ndn_nnn_do_map;
 
     };
 
