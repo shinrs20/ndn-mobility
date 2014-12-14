@@ -3,8 +3,8 @@
  * Copyright 2014 Waseda University, Sato Laboratory
  *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
  *
- *   Original template made for University of California, Los Angeles by
- *   Alexander Afanasyev and Saran Tarnoi
+ *   Original template made for ndnSIM for University of California,
+ *   Los Angeles by Alexander Afanasyev and Saran Tarnoi
  *
  *  nnn-link-control-helper.h is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero Public License as published by
