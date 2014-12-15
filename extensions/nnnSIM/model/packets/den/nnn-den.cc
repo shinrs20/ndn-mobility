@@ -46,7 +46,7 @@ namespace ns3 {
     }
 
     DEN::DEN (const DEN &den_p)
-    : NNNPacket (DEN_NNN, den_p.GetLifetime())
+    : NNNPacket (DEN_NNN, den_p.GetLifetime ())
     , m_name     (Create<NNNAddress> (den_p.GetName()))
     {
       NS_LOG_FUNCTION("DEN correct copy constructor");

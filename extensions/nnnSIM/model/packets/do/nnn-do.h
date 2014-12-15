@@ -26,183 +26,143 @@
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/ptr.h>
 
+#include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
 
-class Packet;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-/**
- * @ingroup nnn
- * @brief NNN Null packet (wire formats are defined in wire)
- **/
-class DO : public SimpleRefCount<DO>
-{
-public:
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a NULL packet with no payload
-	 **/
-	DO ();
+    /**
+     * @ingroup nnn
+     * @brief NNN Null packet (wire formats are defined in wire)
+     **/
+    class DO : public NNNPacket, public SimpleRefCount<DO>
+    {
+    public:
+      /**
+       * \brief Constructor
+       *
+       * Creates a NULL packet with no payload
+       **/
+      DO ();
 
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a DO packet with payload
-	 *
-	 * @param name NNN Address Ptr
-	 * @param payload Packet Ptr
-	 **/
-	DO(Ptr<NNNAddress> name, Ptr<Packet> payload);
+      /**
+       * \brief Constructor
+       *
+       * Creates a DO packet with payload
+       *
+       * @param name NNN Address Ptr
+       * @param payload Packet Ptr
+       **/
+      DO(Ptr<NNNAddress> name, Ptr<Packet> payload);
 
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a DO packet with payload
-	 *
-	 * @param name NNN Address
-	 * @param payload Packet Ptr
-	 **/
-	DO(const NNNAddress &name, Ptr<Packet> payload);
+      /**
+       * \brief Constructor
+       *
+       * Creates a DO packet with payload
+       *
+       * @param name NNN Address
+       * @param payload Packet Ptr
+       **/
+      DO(const NNNAddress &name, Ptr<Packet> payload);
 
-	/**
-	 * @brief Copy constructor
-	 */
-	DO (const DO &do_p);
+      /**
+       * @brief Copy constructor
+       */
+      DO (const DO &do_p);
 
-	/**
-	 * @brief Return Id of the packet
-	 */
-	uint32_t
-	GetPacketId();
+      /**
+       * \brief Get interest name
+       *
+       * Gets name of the interest.
+       **/
+      const NNNAddress&
+      GetName () const;
 
-	/**
-	 * \brief Set interest name
-	 *
-	 * @param name smart pointer to Name
-	 *
-	 **/
-	void
-	SetName (Ptr<NNNAddress> name);
+      /**
+       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
+       */
+      Ptr<const NNNAddress>
+      GetNamePtr () const;
 
-	/**
-	 * \brief Another variant to set interest name
-	 *
-	 * @param name const reference to Name object
-	 *
-	 **/
-	void
-	SetName (const NNNAddress &name);
+      /**
+       * \brief Set interest name
+       *
+       * @param name smart pointer to Name
+       *
+       **/
+      void
+      SetName (Ptr<NNNAddress> name);
 
-	/**
-	 * \brief Get interest name
-	 *
-	 * Gets name of the interest.
-	 **/
-	const NNNAddress&
-	GetName () const;
+      /**
+       * \brief Another variant to set interest name
+       *
+       * @param name const reference to Name object
+       *
+       **/
+      void
+      SetName (const NNNAddress &name);
 
-	/**
-	 * @brief Get smart pointer to the interest name (to avoid extra memory usage)
-	 */
-	Ptr<const NNNAddress>
-	GetNamePtr () const;
+      /**
+       * @brief Gets the payload of the NULL packet
+       */
+      Ptr<const Packet>
+      GetPayload () const;
 
-	/**
-	 * @brief Sets the payload of the NULL packet
-	 */
-	void
-	SetPayload (Ptr<Packet> payload);
+      /**
+       * @brief Sets the payload of the NULL packet
+       */
+      void
+      SetPayload (Ptr<Packet> payload);
 
-	/**
-	 * @brief Gets the payload of the NULL packet
-	 */
-	Ptr<const Packet>
-	GetPayload () const;
+      /**
+       * @brief Get the PDU type in DO
+       */
+      uint16_t
+      GetPDUPayloadType () const;
 
-	/**
-	 * \brief Set time out for NULL packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 * @param[in] time interest lifetime
-	 */
-	void
-	SetLifetime (Time ttl);
+      /**
+       * @brief Set the PDU type held in DO
+       *
+       * @param pdu_type PDU type in DO
+       */
+      void
+      SetPDUPayloadType (uint16_t pdu_type);
 
-	/**
-	 * \brief Get time out value for NULL packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 */
-	Time
-	GetLifetime () const;
+      /**
+       * @brief Print DO in plain-text to the specified output stream
+       */
+      void
+      Print (std::ostream &os) const;
 
-	/**
-	 * @brief Get wire formatted packet
-	 *
-	 * If wire formatted packet has not been set before, 0 will be returned
-	 */
-	inline Ptr<const Packet>
-	GetWire () const;
+    private:
+      // NO_ASSIGN
+      DO &
+      operator = (const DO &other) { return *this; }
 
-	/**
-	 * @brief Set (cache) wire formatted packet
-	 */
-	inline void
-	SetWire (Ptr<const Packet> packet) const;
+    private:
+      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
+      uint16_t m_PDUdatatype;   ///< @brief Type of payload held in DO
+      Ptr<Packet> m_payload;    ///< @brief Payload
 
-	/**
-	 * @brief Print DO in plain-text to the specified output stream
-	 */
-	void
-	Print (std::ostream &os) const;
+    };
 
-private:
-	// NO_ASSIGN
-	DO &
-	operator = (const DO &other) { return *this; }
+    inline std::ostream &
+    operator << (std::ostream &os, const DO &i)
+    {
+      i.Print (os);
+      return os;
+    }
 
-private:
-	uint32_t m_packetid;      ///< @brief Packet Identifier (2 for DO)
-	Time m_ttl;               ///< @brief Packet life time (TTL)
-	Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
-	Ptr<Packet> m_payload;    ///< @brief Payload
+    /**
+     * @brief Class for Interest parsing exception
+     */
+    class DOException {};
 
-	mutable Ptr<const Packet> m_wire;
-};
-
-inline std::ostream &
-operator << (std::ostream &os, const DO &i)
-{
-	i.Print (os);
-	return os;
-}
-
-inline Ptr<const Packet>
-DO::GetWire () const
-{
-	return m_wire;
-}
-
-inline void
-DO::SetWire (Ptr<const Packet> packet) const
-{
-	m_wire = packet;
-}
-
-/**
- * @brief Class for Interest parsing exception
- */
-class DOException {};
-
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
 
 #endif // _NNN_DO_HEADER_H_
