@@ -42,49 +42,5 @@ namespace ns3
     NNNPacket::~NNNPacket ()
     {
     }
-
-    inline uint32_t
-    NNNPacket::GetPacketId()
-    {
-      return m_packetid;
-    }
-
-    inline uint16_t
-    NNNPacket::GetVersion()
-    {
-      return m_version;
-    }
-
-    inline void
-    NNNPacket::SetVersion(uint16_t version)
-    {
-      m_version = version;
-    }
-
-    inline Time
-    NNNPacket::GetLifetime () const
-    {
-      return m_ttl;
-    }
-
-    inline void
-    NNNPacket::SetLifetime (Time ttl)
-    {
-      m_ttl = ttl;
-      m_wire = 0;
-    }
-
-    inline Ptr<const Packet>
-    NNNPacket::GetWire () const
-    {
-      return m_wire;
-    }
-
-    inline void
-    NNNPacket::SetWire (Ptr<const Packet> packet) const
-    {
-      m_wire = packet;
-    }
-
   } /* namespace nnn */
 } /* namespace ns3 */

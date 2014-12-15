@@ -20,123 +20,92 @@
  */
 
 #include <ns3-dev/ns3/log.h>
-#include <ns3-dev/ns3/unused.h>
 #include <ns3-dev/ns3/packet.h>
+#include <ns3-dev/ns3/unused.h>
 
 #include "nnn-aen.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.AEN");
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-AEN::AEN ()
- : m_packetid (4)
- , m_ttl      (Seconds (0))
- , m_lease    ()
- , m_wire     (0)
-{
+    AEN::AEN () : NNNPacket (AEN_NNN, Seconds(0))
+    {
+    }
 
-}
+    AEN::AEN (Ptr<NNNAddress> name)
+    : NNNPacket (AEN_NNN, Seconds (300))
+    , m_name     (name)
+    {
+      SetWire (0);
+    }
 
-AEN::AEN (Ptr<NNNAddress> name)
- : m_packetid (4)
- , m_ttl      (Seconds (300))
- , m_name     (name)
- , m_wire     (0)
-{
+    AEN::AEN (const NNNAddress &name)
+    : NNNPacket (AEN_NNN, Seconds (300))
+    , m_name     (Create<NNNAddress> (name))
+    {
+      SetWire (0);
+    }
 
-}
+    AEN::AEN (const AEN &aen_p)
+    : NNNPacket (AEN_NNN, aen_p.GetLifetime())
+    , m_name     (Create<NNNAddress> (aen_p.GetName()))
+    {
+      NS_LOG_FUNCTION("AEN correct copy constructor");
 
-AEN::AEN (const NNNAddress &name)
- : m_packetid (4)
- , m_ttl      (Seconds (300))
- , m_name     (Create<NNNAddress> (name))
- , m_wire     (0)
-{
+      SetLeasetime (aen_p.GetLeasetime ());
+      SetWire (aen_p.GetWire ());
+    }
 
-}
+    const NNNAddress&
+    AEN::GetName () const
+    {
+      if (m_name == 0) throw AENException ();
+      return *m_name;
+    }
 
+    Ptr<const NNNAddress>
+    AEN::GetNamePtr () const
+    {
+      return m_name;
+    }
 
-AEN::AEN (const AEN &aen_p)
- : m_packetid (4)
- , m_ttl      (aen_p.m_ttl)
- , m_lease    (Seconds (300))
- , m_name     (Create<NNNAddress> (aen_p.GetName()))
- , m_wire     (0)
-{
-	NS_LOG_FUNCTION("AEN correct copy constructor");
-}
+    void
+    AEN::SetName (Ptr<NNNAddress> name)
+    {
+      m_name = name;
+      m_wire = 0;
+    }
 
-uint32_t
-AEN::GetPacketId ()
-{
-	return m_packetid;
-}
+    void
+    AEN::SetName (const NNNAddress &name)
+    {
+      m_name = Create<NNNAddress> (name);
+      m_wire = 0;
+    }
 
-void
-AEN::SetName (Ptr<NNNAddress> name)
-{
-	m_name = name;
-	m_wire = 0;
-}
+    Time
+    AEN::GetLeasetime () const
+    {
+      return m_lease;
+    }
 
-void
-AEN::SetName (const NNNAddress &name)
-{
-	m_name = Create<NNNAddress> (name);
-	m_wire = 0;
-}
+    void
+    AEN::SetLeasetime (Time lease)
+    {
+      m_lease = lease;
+    }
 
+    void
+    AEN::Print (std::ostream &os) const
+    {
+      os << "<AEN>\n";
+      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
+      os << "  <Name>" << GetName () << "</Name>\n";
+      os << "  <Lease>" << GetLeasetime () << "</Lease>\n";
+      os << "</AEN>";
+    }
 
-const NNNAddress&
-AEN::GetName () const
-{
-	if (m_name == 0) throw AENException ();
-	return *m_name;
-}
-
-
-Ptr<const NNNAddress>
-AEN::GetNamePtr () const
-{
-	return m_name;
-}
-
-void
-AEN::SetLifetime (Time ttl)
-{
-	m_ttl = ttl;
-	m_wire = 0;
-}
-
-Time
-AEN::GetLifetime () const
-{
-	return m_ttl;
-}
-
-void
-AEN::SetLeasetime (Time lease)
-{
-	m_lease = lease;
-}
-
-Time
-AEN::GetLeasetime () const
-{
-	return m_lease;
-}
-
-void
-AEN::Print (std::ostream &os) const
-{
-	os << "<AEN>\n";
-	os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-	os << "  <Name>" << GetName () << "</Name>\n";
-	os << "  <Lease>" << GetLeasetime () << "</Lease>\n";
-	os << "</AEN>";
-}
-
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
