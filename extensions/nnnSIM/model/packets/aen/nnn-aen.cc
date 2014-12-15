@@ -38,14 +38,12 @@ namespace ns3 {
     : NNNPacket (AEN_NNN, Seconds (300))
     , m_name     (name)
     {
-      SetWire (0);
     }
 
     AEN::AEN (const NNNAddress &name)
     : NNNPacket (AEN_NNN, Seconds (300))
     , m_name     (Create<NNNAddress> (name))
     {
-      SetWire (0);
     }
 
     AEN::AEN (const AEN &aen_p)
@@ -75,14 +73,14 @@ namespace ns3 {
     AEN::SetName (Ptr<NNNAddress> name)
     {
       m_name = name;
-      m_wire = 0;
+      SetWire (0);
     }
 
     void
     AEN::SetName (const NNNAddress &name)
     {
       m_name = Create<NNNAddress> (name);
-      m_wire = 0;
+      SetWire (0);
     }
 
     Time
