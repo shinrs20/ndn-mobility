@@ -26,149 +26,114 @@
 NS_LOG_COMPONENT_DEFINE ("nnn.INF");
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-INF::INF ()
- : m_packetid (7)
- , m_ttl      (Seconds (0))
- , m_wire     (0)
-{
+    INF::INF () : NNNPacket (INF_NNN, Seconds(0))
+    {
+    }
 
-}
+    INF::INF (Ptr<NNNAddress> oldname,  Ptr<NNNAddress> newname)
+    : NNNPacket (INF_NNN, Seconds(300))
+    , m_old_name (oldname)
+    , m_new_name (newname)
+    , m_re_lease (Seconds (300))
+    {
+    }
 
-INF::INF (Ptr<NNNAddress> oldname,  Ptr<NNNAddress> newname)
- : m_packetid (7)
- , m_ttl      (Seconds (1))
- , m_old_name (oldname)
- , m_new_name (newname)
- , m_re_lease (Seconds (300))
- , m_wire     (0)
-{
+    INF::INF (const NNNAddress &oldname, const NNNAddress &newname)
+    : NNNPacket (INF_NNN, Seconds(300))
+    , m_old_name (Create<NNNAddress> (oldname))
+    , m_new_name (Create<NNNAddress> (newname))
+    , m_re_lease (Seconds (300))
+    {
+    }
 
-}
+    INF::INF (const INF &inf_p)
+    : NNNPacket (INF_NNN, inf_p.GetLifetime ())
+    , m_old_name (Create<NNNAddress> (inf_p.GetOldName ()))
+    , m_new_name (Create<NNNAddress> (inf_p.GetNewName ()))
+    , m_re_lease (inf_p.GetRemainLease ())
+    {
+      NS_LOG_FUNCTION("INF correct copy constructor");
 
-INF::INF (const NNNAddress &oldname, const NNNAddress &newname)
- : m_packetid (7)
- , m_ttl      (Seconds (1))
- , m_old_name (Create<NNNAddress> (oldname))
- , m_new_name (Create<NNNAddress> (newname))
- , m_re_lease (Seconds (300))
- , m_wire     (0)
-{
+      SetWire (inf_p.GetWire ());
+    }
 
-}
+    const NNNAddress&
+    INF::GetOldName () const
+    {
+      if (m_old_name == 0) throw INFException ();
+      return *m_old_name;
+    }
 
+    Ptr<const NNNAddress>
+    INF::GetOldNamePtr () const
+    {
+      return m_old_name;
+    }
 
-INF::INF (const INF &inf_p)
- : m_packetid (7)
- , m_ttl      (inf_p.m_ttl)
- , m_old_name (Create<NNNAddress> (inf_p.GetOldName()))
- , m_new_name (Create<NNNAddress> (inf_p.GetNewName()))
- , m_re_lease (inf_p.m_re_lease)
- , m_wire     (0)
-{
-	NS_LOG_FUNCTION("INF correct copy constructor");
-}
+    void
+    INF::SetOldName (Ptr<NNNAddress> name)
+    {
+      m_old_name = name;
+      m_wire = 0;
+    }
 
-uint32_t
-INF::GetPacketId ()
-{
-	return m_packetid;
-}
+    void
+    INF::SetOldName (const NNNAddress &name)
+    {
+      m_old_name = Create<NNNAddress> (name);
+      m_wire = 0;
+    }
 
-void
-INF::SetOldName (Ptr<NNNAddress> name)
-{
-	m_old_name = name;
-	m_wire = 0;
-}
+    const NNNAddress&
+    INF::GetNewName () const
+    {
+      if (m_new_name == 0) throw INFException ();
+      return *m_new_name;
+    }
 
-void
-INF::SetOldName (const NNNAddress &name)
-{
-	m_old_name = Create<NNNAddress> (name);
-	m_wire = 0;
-}
+    Ptr<const NNNAddress>
+    INF::GetNewNamePtr () const
+    {
+      return m_new_name;
+    }
 
+    void
+    INF::SetNewName (Ptr<NNNAddress> name)
+    {
+      m_new_name = name;
+      m_wire = 0;
+    }
 
-const NNNAddress&
-INF::GetOldName () const
-{
-	if (m_old_name == 0) throw INFException ();
-	return *m_old_name;
-}
+    void
+    INF::SetNewName (const NNNAddress &name)
+    {
+      m_new_name = Create<NNNAddress> (name);
+      m_wire = 0;
+    }
 
+    Time
+    INF::GetRemainLease () const
+    {
+      return m_re_lease;
+    }
 
-Ptr<const NNNAddress>
-INF::GetOldNamePtr () const
-{
-	return m_old_name;
-}
+    void
+    INF::SetRemainLease (Time ex_lease)
+    {
+      m_re_lease = ex_lease;
+    }
 
-void
-INF::SetNewName (Ptr<NNNAddress> name)
-{
-	m_new_name = name;
-	m_wire = 0;
-}
-
-void
-INF::SetNewName (const NNNAddress &name)
-{
-	m_new_name = Create<NNNAddress> (name);
-	m_wire = 0;
-}
-
-
-const NNNAddress&
-INF::GetNewName () const
-{
-	if (m_new_name == 0) throw INFException ();
-	return *m_new_name;
-}
-
-
-Ptr<const NNNAddress>
-INF::GetNewNamePtr () const
-{
-	return m_new_name;
-}
-
-void
-INF::SetLifetime (Time ttl)
-{
-	m_ttl = ttl;
-	m_wire = 0;
-}
-
-Time
-INF::GetLifetime () const
-{
-	return m_ttl;
-}
-
-void
-INF::SetRemainLease (Time ex_lease)
-{
-	m_re_lease = ex_lease;
-}
-
-Time
-INF::GetRemainLease () const
-{
-	return m_re_lease;
-}
-
-void
-INF::Print (std::ostream &os) const
-{
-	os << "<INF>\n";
-	os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-	os << "  <OldName>" << GetOldName () << "</OldName>\n";
-	os << "  <NewName>" << GetNewName () << "</NewName>\n";
-	os << "  <RLease>" << GetRemainLease () << "</RLease>\n";
-	os << "</INF>";
-}
-
-} // namespace nnn
+    void
+    INF::Print (std::ostream &os) const
+    {
+      os << "<INF>\n";
+      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
+      os << "  <OldName>" << GetOldName () << "</OldName>\n";
+      os << "  <NewName>" << GetNewName () << "</NewName>\n";
+      os << "  <RLease>" << GetRemainLease () << "</RLease>\n";
+      os << "</INF>";
+    }
+  } // namespace nnn
 } // namespace ns3

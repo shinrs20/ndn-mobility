@@ -26,210 +26,155 @@
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/simple-ref-count.h>
 
+#include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
 
-class Packet;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-/**
- * @ingroup nnn
- * @brief NNN INF packet (wire formats are defined in wire)
- **/
-class INF : public SimpleRefCount<INF>
-{
-public:
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a INF packet
-	 **/
-	INF ();
+    /**
+     * @ingroup nnn
+     * @brief NNN INF packet (wire formats are defined in wire)
+     **/
+    class INF : public NNNPacket, public SimpleRefCount<INF>
+    {
+    public:
+      /**
+       * \brief Constructor
+       *
+       * Creates a INF packet
+       **/
+      INF ();
 
-	/**
-	 * \brief Constructor
-	 *
-	 *
-	 * @param oldname Old NNN Address
-	 * @param newname New NNN Address
-	 **/
-	INF(Ptr<NNNAddress> oldname, Ptr<NNNAddress> newname);
+      /**
+       * \brief Constructor
+       *
+       *
+       * @param oldname Old NNN Address
+       * @param newname New NNN Address
+       **/
+      INF(Ptr<NNNAddress> oldname, Ptr<NNNAddress> newname);
 
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a INF packet with payload
-	 *
-	 * @param name NNN Address
-	 * @param payload Packet Ptr
-	 **/
-	INF(const NNNAddress &oldname, const NNNAddress &newname);
+      /**
+       * \brief Constructor
+       *
+       * Creates a INF packet with payload
+       *
+       * @param name NNN Address
+       * @param payload Packet Ptr
+       **/
+      INF(const NNNAddress &oldname, const NNNAddress &newname);
 
-	/**
-	 * @brief Copy constructor
-	 */
-	INF (const INF &inf_p);
+      /**
+       * @brief Copy constructor
+       */
+      INF (const INF &inf_p);
 
-	/**
-	 * \brief Return Id of the packet
-	 *
-	 **/
-	uint32_t
-	GetPacketId ();
-	
-	/**
-	 * \brief Set Old NNN Address name
-	 *
-	 * @param name smart pointer to NNNAddress
-	 *
-	 **/
-	void
-	SetOldName (Ptr<NNNAddress> name);
+      /**
+       * \brief Get interest name
+       *
+       * Gets name of the interest.
+       **/
+      const NNNAddress&
+      GetOldName () const;
 
-	/**
-	 * \brief Another variant to set old NNN Address
-	 *
-	 * @param name const reference to NNNAddress object
-	 *
-	 **/
-	void
-	SetOldName (const NNNAddress &name);
+      /**
+       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
+       */
+      Ptr<const NNNAddress>
+      GetOldNamePtr () const;
 
-	/**
-	 * \brief Get interest name
-	 *
-	 * Gets name of the interest.
-	 **/
-	const NNNAddress&
-	GetOldName () const;
+      /**
+       * \brief Set Old NNN Address name
+       *
+       * @param name smart pointer to NNNAddress
+       *
+       **/
+      void
+      SetOldName (Ptr<NNNAddress> name);
 
-	/**
-	 * @brief Get smart pointer to the interest name (to avoid extra memory usage)
-	 */
-	Ptr<const NNNAddress>
-	GetOldNamePtr () const;
+      /**
+       * \brief Another variant to set old NNN Address
+       *
+       * @param name const reference to NNNAddress object
+       *
+       **/
+      void
+      SetOldName (const NNNAddress &name);
 
-	/**
-	 * \brief Set Old NNN Address name
-	 *
-	 * @param name smart pointer to NNNAddress
-	 *
-	 **/
-	void
-	SetNewName (Ptr<NNNAddress> name);
+      /**
+       * \brief Get interest name
+       *
+       * Gets name of the interest.
+       **/
+      const NNNAddress&
+      GetNewName () const;
 
-	/**
-	 * \brief Another variant to set old NNN Address
-	 *
-	 * @param name const reference to NNNAddress object
-	 *
-	 **/
-	void
-	SetNewName (const NNNAddress &name);
+      /**
+       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
+       */
+      Ptr<const NNNAddress>
+      GetNewNamePtr () const;
 
-	/**
-	 * \brief Get interest name
-	 *
-	 * Gets name of the interest.
-	 **/
-	const NNNAddress&
-	GetNewName () const;
+      /**
+       * \brief Set Old NNN Address name
+       *
+       * @param name smart pointer to NNNAddress
+       *
+       **/
+      void
+      SetNewName (Ptr<NNNAddress> name);
 
-	/**
-	 * @brief Get smart pointer to the interest name (to avoid extra memory usage)
-	 */
-	Ptr<const NNNAddress>
-	GetNewNamePtr () const;
+      /**
+       * \brief Another variant to set old NNN Address
+       *
+       * @param name const reference to NNNAddress object
+       *
+       **/
+      void
+      SetNewName (const NNNAddress &name);
 
-	/**
-	 * \brief Set time out for INF packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 * @param[in] time interest lifetime
-	 */
-	void
-	SetLifetime (Time ttl);
+      Time
+      GetRemainLease () const;
 
-	/**
-	 * \brief Get time out value for INF packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 */
-	Time
-	GetLifetime () const;
+      void
+      SetRemainLease (Time ex_lease);
 
-	void
-	SetRemainLease (Time ex_lease);
+      /**
+       * @brief Print INF in plain-text to the specified output stream
+       */
+      void
+      Print (std::ostream &os) const;
 
-	Time
-	GetRemainLease () const;
+    private:
+      // NO_ASSIGN
+      INF &
+      operator = (const INF &other) { return *this; }
 
-	/**
-	 * @brief Get wire formatted packet
-	 *
-	 * If wire formatted packet has not been set before, 0 will be returned
-	 */
-	inline Ptr<const Packet>
-	GetWire () const;
+    private:
+      Ptr<NNNAddress> m_old_name;  ///< @brief Old NNN Address used in the packet
+      Ptr<NNNAddress> m_new_name;  ///< @brief New NNN Address used in the packet
+      Time m_re_lease;             ///< @brief Packet Remaining lease time
 
-	/**
-	 * @brief Set (cache) wire formatted packet
-	 */
-	inline void
-	SetWire (Ptr<const Packet> packet) const;
+      mutable Ptr<const Packet> m_wire;
+    };
 
-	/**
-	 * @brief Print INF in plain-text to the specified output stream
-	 */
-	void
-	Print (std::ostream &os) const;
+    inline std::ostream &
+    operator << (std::ostream &os, const INF &i)
+    {
+      i.Print (os);
+      return os;
+    }
 
-private:
-	// NO_ASSIGN
-	INF &
-	operator = (const INF &other) { return *this; }
+    /**
+     * @brief Class for Interest parsing exception
+     */
+    class INFException {};
 
-private:
-	uint32_t m_packetid;         ///< @brief Packet Identifier (6 for INF)
-	Time m_ttl;                  ///< @brief Packet life time (TTL)
-	Ptr<NNNAddress> m_old_name;  ///< @brief Old NNN Address used in the packet
-	Ptr<NNNAddress> m_new_name;  ///< @brief New NNN Address used in the packet
-	Time m_re_lease;             ///< @brief Packet Remaining lease time
-
-	mutable Ptr<const Packet> m_wire;
-};
-
-inline std::ostream &
-operator << (std::ostream &os, const INF &i)
-{
-	i.Print (os);
-	return os;
-}
-
-inline Ptr<const Packet>
-INF::GetWire () const
-{
-	return m_wire;
-}
-
-inline void
-INF::SetWire (Ptr<const Packet> packet) const
-{
-	m_wire = packet;
-}
-
-/**
- * @brief Class for Interest parsing exception
- */
-class INFException {};
-
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
 
 #endif // _NNN_INF_HEADER_H_
