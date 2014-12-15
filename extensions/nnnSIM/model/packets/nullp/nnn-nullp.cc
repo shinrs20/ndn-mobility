@@ -27,86 +27,76 @@
 NS_LOG_COMPONENT_DEFINE ("nnn.NULLp");
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-NULLp::NULLp ()
- : m_packetid (0)
- , m_ttl      (Seconds (0))
- , m_payload  (Create<Packet> ())
- , m_wire     (0)
-{
+    NULLp::NULLp ()
+    : NNNPacket (NULL_NNN, Seconds (0))
+    , m_payload  (Create<Packet> ())
+    , m_PDUdatatype (NDN_NNN)
+    {
+    }
 
-}
-
-NULLp::NULLp (Ptr<Packet> payload)
- : m_packetid (0)
- , m_ttl      (Seconds (1))
- , m_wire     (0)
-{
-	if (m_payload == 0)
+    NULLp::NULLp (Ptr<Packet> payload)
+    : NNNPacket (NULL_NNN, Seconds (0))
+    , m_PDUdatatype (NDN_NNN)
+    {
+      if (m_payload == 0)
 	{
-		m_payload = Create<Packet> ();
+	  m_payload = Create<Packet> ();
 	} else
+	  {
+	    m_payload = payload;
+	  }
+    }
+
+    NULLp::NULLp (const NULLp &nullp)
+    : NNNPacket (NULL_NNN, nullp.GetLifetime ())
+    , m_payload  (nullp.GetPayload ()->Copy ())
+    , m_PDUdatatype (nullp.GetPDUPayloadType ())
+    {
+      NS_LOG_FUNCTION("NULLp correct copy constructor");
+
+      SetWire (nullp.GetWire ());
+    }
+
+    uint16_t
+    NULLp::GetPDUPayloadType() const
+    {
+      return m_PDUdatatype;
+    }
+
+    void
+    NULLp::SetPDUPayloadType (uint16_t pdu_type)
+    {
+      m_PDUdatatype = pdu_type;
+    }
+
+    void
+    NULLp::SetPayload (Ptr<Packet> payload)
+    {
+      m_payload = payload;
+      m_wire = 0;
+    }
+
+    Ptr<const Packet>
+    NULLp::GetPayload () const
+    {
+      return m_payload;
+    }
+
+    void
+    NULLp::Print (std::ostream &os) const
+    {
+      os << "<NULLp>\n";
+      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
+      if (m_payload != 0)
 	{
-		m_payload = payload;
-	}
-}
-
-NULLp::NULLp (const NULLp &nullp)
- : m_packetid (0)
- , m_ttl      (nullp.m_ttl)
- , m_payload  (nullp.GetPayload ()->Copy ())
- , m_wire     (0)
-{
-	NS_LOG_FUNCTION("NULLp correct copy constructor");
-}
-
-uint32_t
-NULLp::GetPacketId ()
-{
-	return m_packetid;
-}
-
-void
-NULLp::SetLifetime (Time ttl)
-{
-	m_ttl = ttl;
-	m_wire = 0;
-}
-
-Time
-NULLp::GetLifetime () const
-{
-	return m_ttl;
-}
-
-void
-NULLp::SetPayload (Ptr<Packet> payload)
-{
-	m_payload = payload;
-	m_wire = 0;
-}
-
-Ptr<const Packet>
-NULLp::GetPayload () const
-{
-	return m_payload;
-}
-
-void
-NULLp::Print (std::ostream &os) const
-{
-	os << "<NULLp>\n";
-	os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-	if (m_payload != 0)
-	{
-		os << "  <Payload>Yes</Payload>\n";
+	  os << "  <Payload>Yes</Payload>\n";
 	} else
-	{
-		os << "  <Payload>No</Payload>\n";
-	}
-	os << "</NULLp>";
-}
-
-} // namespace nnn
+	  {
+	    os << "  <Payload>No</Payload>\n";
+	  }
+      os << "</NULLp>";
+    }
+  } // namespace nnn
 } // namespace ns3

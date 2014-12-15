@@ -26,135 +26,96 @@
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/ptr.h>
 
+#include "../nnn-packet.h"
+
 namespace ns3 {
 
-class Packet;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-/**
- * @ingroup nnn
- * @brief NNN Null packet (wire formats are defined in wire)
- **/
-class NULLp : public SimpleRefCount<NULLp>
-{
-public:
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a NULL packet with no payload
-	 **/
-	NULLp ();
+    /**
+     * @ingroup nnn
+     * @brief NNN Null packet (wire formats are defined in wire)
+     **/
+    class NULLp : public NNNPacket, public SimpleRefCount<NULLp>
+    {
+    public:
+      /**
+       * \brief Constructor
+       *
+       * Creates a NULL packet with no payload
+       **/
+      NULLp ();
 
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a NULL packet with payload
-	 **/
-	NULLp(Ptr<Packet> payload);
+      /**
+       * \brief Constructor
+       *
+       * Creates a NULL packet with payload
+       **/
+      NULLp(Ptr<Packet> payload);
 
-	/**
-	 * @brief Copy constructor
-	 */
-	NULLp (const NULLp &nullp);
+      /**
+       * @brief Copy constructor
+       */
+      NULLp (const NULLp &nullp);
 
-	/**
-	 * @brief Return Id of the packet
-	 */
-	uint32_t
-	GetPacketId();
+      /**
+       * @brief Sets the payload of the NULL packet
+       */
+      void
+      SetPayload (Ptr<Packet> payload);
 
-	/**
-	 * @brief Sets the payload of the NULL packet
-	 */
-	void
-	SetPayload (Ptr<Packet> payload);
+      /**
+       * @brief Gets the payload of the NULL packet
+       */
+      Ptr<const Packet>
+      GetPayload () const;
 
-	/**
-	 * @brief Gets the payload of the NULL packet
-	 */
-	Ptr<const Packet>
-	GetPayload () const;
+      /**
+       * @brief Get the PDU type in DO
+       */
+      uint16_t
+      GetPDUPayloadType () const;
 
-	/**
-	 * \brief Set time out for NULL packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 * @param[in] time interest lifetime
-	 */
-	void
-	SetLifetime (Time ttl);
+      /**
+       * @brief Set the PDU type held in DO
+       *
+       * @param pdu_type PDU type in DO
+       */
+      void
+      SetPDUPayloadType (uint16_t pdu_type);
 
-	/**
-	 * \brief Get time out value for NULL packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 */
-	Time
-	GetLifetime () const;
+      /**
+       * @brief Print NULLp in plain-text to the specified output stream
+       */
+      void
+      Print (std::ostream &os) const;
 
-	/**
-	 * @brief Get wire formatted packet
-	 *
-	 * If wire formatted packet has not been set before, 0 will be returned
-	 */
-	inline Ptr<const Packet>
-	GetWire () const;
+    private:
+      // NO_ASSIGN
+      NULLp &
+      operator = (const NULLp &other) { return *this; }
 
-	/**
-	 * @brief Set (cache) wire formatted packet
-	 */
-	inline void
-	SetWire (Ptr<const Packet> packet) const;
+    private:
+      uint16_t m_PDUdatatype;   ///< @brief Type of payload held in NULLp
+      Ptr<Packet> m_payload;    ///< @brief Payload
 
-	/**
-	 * @brief Print NULLp in plain-text to the specified output stream
-	 */
-	void
-	Print (std::ostream &os) const;
+    };
 
-private:
-	// NO_ASSIGN
-	NULLp &
-	operator = (const NULLp &other) { return *this; }
+    inline std::ostream &
+    operator << (std::ostream &os, const NULLp &i)
+    {
+      i.Print (os);
+      return os;
+    }
 
-private:
-	uint32_t m_packetid;      ///< @brief Packet Identifier (0 for NULLp)
-	Time m_ttl;               ///< @brief Packet life time (TTL)
-	Ptr<Packet> m_payload;    ///< @brief Payload
+    /**
+     * @brief Class for Interest parsing exception
+     */
+    class NULLpException {};
 
-	mutable Ptr<const Packet> m_wire;
-};
-
-inline std::ostream &
-operator << (std::ostream &os, const NULLp &i)
-{
-	i.Print (os);
-	return os;
-}
-
-inline Ptr<const Packet>
-NULLp::GetWire () const
-{
-	return m_wire;
-}
-
-inline void
-NULLp::SetWire (Ptr<const Packet> packet) const
-{
-	m_wire = packet;
-}
-
-/**
- * @brief Class for Interest parsing exception
- */
-class NULLpException {};
-
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
 
 #endif // _NNN_NULLP_HEADER_H_
