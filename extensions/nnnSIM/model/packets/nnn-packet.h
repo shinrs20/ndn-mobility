@@ -17,6 +17,10 @@
  *  along with nnn-packet.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ns3-dev/ns3/nstime.h>
+#include <ns3-dev/ns3/packet.h>
+#include <ns3-dev/ns3/ptr.h>
+
 #ifndef NNN_PACKET_H_
 #define NNN_PACKET_H_
 
@@ -42,12 +46,74 @@ namespace ns3
     class NNNPacket
     {
     public:
-      NNNPacket ();
+
+      NNNPacket (uint32_t pkt_id, Time ttl);
+
+      NNNPacket (uint32_t pkt_id, Time ttl, uint16_t ver);
+
       virtual
       ~NNNPacket ();
 
-    protected:
+      /**
+       * \brief Return Id of the packet
+       *
+       */
+      inline uint32_t
+      GetPacketId();
 
+      /**
+       * \brief Get the version of the packet
+       */
+      inline uint16_t
+      GetVersion ();
+
+      /**
+       * \brief Set the version of the packet
+       * @param version Version number
+       */
+      inline void
+      SetVersion (uint16_t version);
+
+      /**
+       * \brief Get time out value for NNN packets
+       * Indicates the (approximate) time remaining before the packet times out.
+       * The timeout is relative to the arrival time of the interest at the current node.
+       * Based heavily on the NDN implementation for Interest Life time
+       * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
+       */
+      inline Time
+      GetLifetime () const;
+
+      /**
+       * \brief Set time out for NNN packets
+       * Indicates the (approximate) time remaining before the packet times out.
+       * The timeout is relative to the arrival time of the interest at the current node.
+       * Based heavily on the NDN implementation for Interest Life time
+       * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
+       * @param[in] time interest lifetime
+       */
+      inline void
+      SetLifetime (Time ttl);
+
+      /**
+       * @brief Get wire formatted packet
+       *
+       * If wire formatted packet has not been set before, 0 will be returned
+       */
+      inline Ptr<const Packet>
+      GetWire () const;
+
+      /**
+       * @brief Set (cache) wire formatted packet
+       */
+      inline void
+      SetWire (Ptr<const Packet> packet) const;
+
+    protected:
+      uint32_t m_packetid;                  ///< @brief Packet Identifier
+      Time m_ttl;                           ///< @brief Packet life time (TTL)
+      uint16_t m_version;                   ///< @brief NNN Packet version
+      mutable Ptr<const Packet> m_wire;
     };
 
   } /* namespace nnn */
