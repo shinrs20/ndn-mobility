@@ -18,12 +18,21 @@
  *  along with nnn-face.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *	\file
+ *	\author		Zhu Li, Jairo Eduardo Lopez
+ *	\copyright	Waseda University, Sato Laboratory
+ *	\date		2014
+ *	\brief		[brief description]
+ *	\details	[detailed description]
+ */
+
+
 #ifndef NNN_Face_H
 #define NNN_Face_H
 
 #include <ostream>
 #include <algorithm>
-
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/object.h>
 #include <ns3-dev/ns3/nstime.h>
@@ -46,12 +55,18 @@ class REN;
 class DEN;
 class INF;
 
-/**
+/*
  * \ingroup nnn
  * \defgroup nnn-face Faces
  */
+
 /**
- * \ingroup nnn-Face
+ * 	\defgroup nnn-face Faces
+ *	\ingroup nnn
+ */
+
+/**
+ * \ingroup nnn-face
  * \brief Virtual class defining NNN Face
  *
  * This class defines basic functionality of NNN face. Face is core
