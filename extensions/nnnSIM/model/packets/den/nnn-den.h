@@ -29,169 +29,112 @@
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/simple-ref-count.h>
 
+#include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
 
-class Packet;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-/**
- * @ingroup nnn
- * @brief NNN DEN packet (wire formats are defined in wire)
- **/
-class DEN : public SimpleRefCount<DEN>
-{
-public:
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a REN packet
-	 **/
-	DEN ();
+    /**
+     * @ingroup nnn
+     * @brief NNN DEN packet (wire formats are defined in wire)
+     **/
+    class DEN : public NNNPacket, public SimpleRefCount<DEN>
+    {
+    public:
+      /**
+       * \brief Constructor
+       *
+       * Creates a REN packet
+       **/
+      DEN ();
 
-	/**
-	 * \brief Constructor
-	 *
-	 *
-	 * @param name NNN Address Ptr
-	 **/
-	DEN(Ptr<NNNAddress> name);
+      /**
+       * \brief Constructor
+       *
+       *
+       * @param name NNN Address Ptr
+       **/
+      DEN(Ptr<NNNAddress> name);
 
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a DEN packet with payload
-	 *
-	 * @param name NNN Address
-	 * @param payload Packet Ptr
-	 **/
-	DEN(const NNNAddress &name);
+      /**
+       * \brief Constructor
+       *
+       * Creates a DEN packet with payload
+       *
+       * @param name NNN Address
+       * @param payload Packet Ptr
+       **/
+      DEN(const NNNAddress &name);
 
-	/**
-	 * @brief Copy constructor
-	 */
-	DEN (const DEN &den_p);
+      /**
+       * @brief Copy constructor
+       */
+      DEN (const DEN &den_p);
 
-	/**
-	 * \brief Return Id of the packet
-	 *
-	 **/
-	uint32_t
-	GetPacketId ();
+      /**
+       * \brief Get interest name
+       *
+       * Gets name of the interest.
+       **/
+      const NNNAddress&
+      GetName () const;
 
-	/**
-	 * \brief Set interest name
-	 *
-	 * @param name smart pointer to Name
-	 *
-	 **/
-	void
-	SetName (Ptr<NNNAddress> name);
+      /**
+       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
+       */
+      Ptr<const NNNAddress>
+      GetNamePtr () const;
 
-	/**
-	 * \brief Another variant to set interest name
-	 *
-	 * @param name const reference to Name object
-	 *
-	 **/
-	void
-	SetName (const NNNAddress &name);
+      /**
+       * \brief Set interest name
+       *
+       * @param name smart pointer to Name
+       *
+       **/
+      void
+      SetName (Ptr<NNNAddress> name);
 
-	/**
-	 * \brief Get interest name
-	 *
-	 * Gets name of the interest.
-	 **/
-	const NNNAddress&
-	GetName () const;
+      /**
+       * \brief Another variant to set interest name
+       *
+       * @param name const reference to Name object
+       *
+       **/
+      void
+      SetName (const NNNAddress &name);
 
-	/**
-	 * @brief Get smart pointer to the interest name (to avoid extra memory usage)
-	 */
-	Ptr<const NNNAddress>
-	GetNamePtr () const;
+      /**
+       * @brief Print DEN in plain-text to the specified output stream
+       */
+      void
+      Print (std::ostream &os) const;
 
-	/**
-	 * \brief Set time out for DEN packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 * @param[in] time interest lifetime
-	 */
-	void
-	SetLifetime (Time ttl);
+    private:
+      // NO_ASSIGN
+      DEN &
+      operator = (const DEN &other) { return *this; }
 
-	/**
-	 * \brief Get time out value for DEN packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 */
-	Time
-	GetLifetime () const;
+    private:
+      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
 
-	/**
-	 * @brief Get wire formatted packet
-	 *
-	 * If wire formatted packet has not been set before, 0 will be returned
-	 */
-	inline Ptr<const Packet>
-	GetWire () const;
+    };
 
-	/**
-	 * @brief Set (cache) wire formatted packet
-	 */
-	inline void
-	SetWire (Ptr<const Packet> packet) const;
+    inline std::ostream &
+    operator << (std::ostream &os, const DEN &i)
+    {
+      i.Print (os);
+      return os;
+    }
 
-	/**
-	 * @brief Print DEN in plain-text to the specified output stream
-	 */
-	void
-	Print (std::ostream &os) const;
-
-private:
-	// NO_ASSIGN
-	DEN &
-	operator = (const DEN &other) { return *this; }
-
-private:
-	uint32_t m_packetid;      ///< @brief Packet Identifier (5 for REN)
-	Time m_ttl;               ///< @brief Packet life time (TTL)
-	Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
-
-
-	mutable Ptr<const Packet> m_wire;
-};
-
-inline std::ostream &
-operator << (std::ostream &os, const DEN &i)
-{
-	i.Print (os);
-	return os;
-}
-
-inline Ptr<const Packet>
-DEN::GetWire () const
-{
-	return m_wire;
-}
-
-inline void
-DEN::SetWire (Ptr<const Packet> packet) const
-{
-	m_wire = packet;
-}
-
-/**
- * @brief Class for Interest parsing exception
- */
-class DENException {};
-} //namespace nnn
+    /**
+     * @brief Class for Interest parsing exception
+     */
+    class DENException {};
+  } //namespace nnn
 } //namespace ns3
 
 #endif // _NNN_DEN_HEADER_H_

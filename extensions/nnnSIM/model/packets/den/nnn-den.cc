@@ -27,97 +27,67 @@
 NS_LOG_COMPONENT_DEFINE ("nnn.DEN");
 
 namespace ns3 {
-namespace nnn{
+  namespace nnn{
 
-DEN::DEN ()
-: m_packetid (6)
-, m_ttl		(Seconds (0))
-, m_wire		(0)
-{
+    DEN::DEN () : NNNPacket (DEN_NNN, Seconds(0))
+    {
+    }
 
-}
+    DEN::DEN (Ptr<NNNAddress> name)
+    : NNNPacket (DEN_NNN, Seconds(300))
+    , m_name     (name)
+    {
+    }
 
-DEN::DEN (Ptr<NNNAddress> name)
- : m_packetid (6)
- , m_ttl      (Seconds (1))
- , m_name     (name)
- , m_wire     (0)
-{
+    DEN::DEN (const NNNAddress &name)
+    : NNNPacket (DEN_NNN, Seconds(300))
+    , m_name     (Create<NNNAddress> (name))
+    {
+    }
 
-}
+    DEN::DEN (const DEN &den_p)
+    : NNNPacket (DEN_NNN, den_p.GetLifetime())
+    , m_name     (Create<NNNAddress> (den_p.GetName()))
+    {
+      NS_LOG_FUNCTION("DEN correct copy constructor");
 
-DEN::DEN (const NNNAddress &name)
- : m_packetid (6)
- , m_ttl      (Seconds (1))
- , m_name     (Create<NNNAddress> (name))
- , m_wire     (0)
-{
+      SetWire (den_p.GetWire ());
+    }
 
-}
+    const NNNAddress&
+    DEN::GetName () const
+    {
+      if (m_name == 0) throw DENException ();
+      return *m_name;
+    }
 
-DEN::DEN (const DEN &den_p)
- : m_packetid (6)
- , m_ttl      (den_p.m_ttl)
- , m_name     (Create<NNNAddress> (den_p.GetName()))
- , m_wire     (0)
-{
-	NS_LOG_FUNCTION("DEN correct copy constructor");
-}
+    Ptr<const NNNAddress>
+    DEN::GetNamePtr () const
+    {
+      return m_name;
+    }
 
-uint32_t
-DEN::GetPacketId()
-{
-	return m_packetid;
-}
+    void
+    DEN::SetName(Ptr<NNNAddress> name)
+    {
+      m_name = name;
+      SetWire (0);
+    }
 
-void
-DEN::SetName(Ptr<NNNAddress> name)
-{
-	m_name = name;
-	m_wire = 0;
-}
+    void
+    DEN::SetName (const NNNAddress &name)
+    {
+      m_name = Create<NNNAddress> (name);
+      SetWire (0);
+    }
 
-void
-DEN::SetName (const NNNAddress &name)
-{
-	m_name = Create<NNNAddress> (name);
-	m_wire = 0;
-}
+    void
+    DEN::Print (std::ostream &os) const
+    {
+      os << "<DEN>\n";
+      os << " <TTL>" << GetLifetime () << "</TTL>\n";
+      os << " <Name>" << GetName () << "</Name>\n";
+    }
 
-const NNNAddress&
-DEN::GetName () const
-{
-	if (m_name == 0) throw DENException ();
-	return *m_name;
-}
-
-Ptr<const NNNAddress>
-DEN::GetNamePtr () const
-{
-	return m_name;
-}
-
-void
-DEN::SetLifetime (Time ttl)
-{
-	m_ttl = ttl;
-	m_wire = 0;
-}
-
-Time
-DEN::GetLifetime () const
-{
-	return m_ttl;
-}
-
-
-void
-DEN::Print (std::ostream &os) const
-{
-	os << "<DEN>\n";
-	os << " <TTL>" << GetLifetime () << "</TTL>\n";
-	os << " <Name>" << GetName () << "</Name>\n";
-}
-
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
