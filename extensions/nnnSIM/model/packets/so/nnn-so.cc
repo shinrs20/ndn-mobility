@@ -27,133 +27,121 @@
 NS_LOG_COMPONENT_DEFINE ("nnn.SO");
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-SO::SO ()
- : m_packetid (1)
- , m_ttl      (Seconds (0))
- , m_payload  (Create<Packet> ())
- , m_wire     (0)
-{
+    SO::SO ()
+    : NNNPacket (SO_NNN, Seconds (0))
+    , m_name     (Create<NNNAddress> ())
+    , m_payload  (Create<Packet> ())
+    , m_PDUdatatype (NDN_NNN)
+    {
+    }
 
-}
-
-SO::SO (Ptr<NNNAddress> name, Ptr<Packet> payload)
- : m_packetid (1)
- , m_ttl      (Seconds (1))
- , m_name     (name)
- , m_wire     (0)
-{
-	if (m_payload == 0)
+    SO::SO (Ptr<NNNAddress> name, Ptr<Packet> payload)
+    : NNNPacket (SO_NNN, Seconds (0))
+    , m_name (name)
+    , m_PDUdatatype (NDN_NNN)
+    {
+      if (m_payload == 0)
 	{
-		m_payload = Create<Packet> ();
+	  m_payload = Create<Packet> ();
 	} else
-	{
-		m_payload = payload;
-	}
-}
+	  {
+	    m_payload = payload;
+	  }
+    }
 
-SO::SO (const NNNAddress &name, Ptr<Packet> payload)
- : m_packetid (1)
- , m_ttl      (Seconds (1))
- , m_name     (Create<NNNAddress> (name))
- , m_wire     (0)
-{
-	if (m_payload == 0)
+    SO::SO (const NNNAddress &name, Ptr<Packet> payload)
+    : NNNPacket (SO_NNN, Seconds (0))
+    , m_name     (Create<NNNAddress> (name))
+    , m_PDUdatatype (NDN_NNN)
+    {
+      if (m_payload == 0)
 	{
-		m_payload = Create<Packet> ();
+	  m_payload = Create<Packet> ();
 	} else
+	  {
+	    m_payload = payload;
+	  }
+    }
+
+    SO::SO (const SO &so_p)
+    : NNNPacket (SO_NNN, so_p.GetLifetime ())
+    , m_name     (Create<NNNAddress> (so_p.GetName()))
+    , m_payload  (so_p.GetPayload ()->Copy ())
+    , m_PDUdatatype (so_p.GetPDUPayloadType ())
+    {
+      NS_LOG_FUNCTION("SO correct copy constructor");
+
+      SetWire (so_p.GetWire ());
+    }
+
+    const NNNAddress&
+    SO::GetName () const
+    {
+      if (m_name == 0) throw SOException ();
+      return *m_name;
+    }
+
+    Ptr<const NNNAddress>
+    SO::GetNamePtr () const
+    {
+      return m_name;
+    }
+
+    void
+    SO::SetName (Ptr<NNNAddress> name)
+    {
+      m_name = name;
+      m_wire = 0;
+    }
+
+    void
+    SO::SetName (const NNNAddress &name)
+    {
+      m_name = Create<NNNAddress> (name);
+      m_wire = 0;
+    }
+
+    Ptr<const Packet>
+    SO::GetPayload () const
+    {
+      return m_payload;
+    }
+
+    void
+    SO::SetPayload (Ptr<Packet> payload)
+    {
+      m_payload = payload;
+      m_wire = 0;
+    }
+
+    uint16_t
+    SO::GetPDUPayloadType() const
+    {
+      return m_PDUdatatype;
+    }
+
+    void
+    SO::SetPDUPayloadType (uint16_t pdu_type)
+    {
+      m_PDUdatatype = pdu_type;
+    }
+
+    void
+    SO::Print (std::ostream &os) const
+    {
+      os << "<SO>\n";
+      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
+      os << "  <Name>" << GetName () << "</Name>\n";
+      if (m_payload != 0)
 	{
-		m_payload = payload;
-	}
-}
-
-SO::SO (const SO &so_p)
- : m_packetid (1)
- , m_ttl      (so_p.m_ttl)
- , m_name     (Create<NNNAddress> (so_p.GetName()))
- , m_payload  (so_p.GetPayload ()->Copy ())
- , m_wire     (0)
-{
-	NS_LOG_FUNCTION("SO correct copy constructor");
-}
-
-uint32_t
-SO::GetPacketId ()
-{
-	return m_packetid;
-}
-
-void
-SO::SetName (Ptr<NNNAddress> name)
-{
-	m_name = name;
-	m_wire = 0;
-}
-
-void
-SO::SetName (const NNNAddress &name)
-{
-	m_name = Create<NNNAddress> (name);
-	m_wire = 0;
-}
-
-
-const NNNAddress&
-SO::GetName () const
-{
-	if (m_name == 0) throw SOException ();
-	return *m_name;
-}
-
-
-Ptr<const NNNAddress>
-SO::GetNamePtr () const
-{
-	return m_name;
-}
-
-void
-SO::SetLifetime (Time ttl)
-{
-	m_ttl = ttl;
-	m_wire = 0;
-}
-
-Time
-SO::GetLifetime () const
-{
-	return m_ttl;
-}
-
-void
-SO::SetPayload (Ptr<Packet> payload)
-{
-	m_payload = payload;
-	m_wire = 0;
-}
-
-Ptr<const Packet>
-SO::GetPayload () const
-{
-	return m_payload;
-}
-
-void
-SO::Print (std::ostream &os) const
-{
-	os << "<SO>\n";
-	os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-	os << "  <Name>" << GetName () << "</Name>\n";
-	if (m_payload != 0)
-	{
-		os << "  <Payload>Yes</Payload>\n";
+	  os << "  <Payload>Yes</Payload>\n";
 	} else
-	{
-		os << "  <Payload>No</Payload>\n";
-	}
-	os << "</SO>";
-}
-
-} // namespace nnn
+	  {
+	    os << "  <Payload>No</Payload>\n";
+	  }
+      os << "</SO>";
+    }
+  } // namespace nnn
 } // namespace ns3
