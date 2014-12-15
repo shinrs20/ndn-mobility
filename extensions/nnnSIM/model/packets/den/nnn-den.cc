@@ -30,24 +30,32 @@ namespace ns3 {
   namespace nnn{
 
     DEN::DEN () : NNNPacket (DEN_NNN, Seconds(0))
+    , m_poa_type (POA_MAC48)
+    , m_poas     (std::vector<Address> ())
     {
     }
 
     DEN::DEN (Ptr<NNNAddress> name)
     : NNNPacket (DEN_NNN, Seconds(300))
     , m_name     (name)
+    , m_poa_type (POA_MAC48)
+    , m_poas     (std::vector<Address> ())
     {
     }
 
     DEN::DEN (const NNNAddress &name)
     : NNNPacket (DEN_NNN, Seconds(300))
     , m_name     (Create<NNNAddress> (name))
+    , m_poa_type (POA_MAC48)
+    , m_poas     (std::vector<Address> ())
     {
     }
 
     DEN::DEN (const DEN &den_p)
     : NNNPacket (DEN_NNN, den_p.GetLifetime ())
     , m_name     (Create<NNNAddress> (den_p.GetName()))
+    , m_poa_type (den_p.GetPoaType())
+    , m_poas (den_p.GetPoas())
     {
       NS_LOG_FUNCTION("DEN correct copy constructor");
 
@@ -79,6 +87,51 @@ namespace ns3 {
     {
       m_name = Create<NNNAddress> (name);
       SetWire (0);
+    }
+
+    uint16_t
+    DEN::GetPoaType () const
+    {
+      return m_poa_type;
+    }
+
+    void
+    DEN::SetPoaType (uint16_t type)
+    {
+      m_poa_type = type;
+    }
+
+    void
+    DEN::AddPoa (Address signature)
+    {
+      m_poas.push_back(signature);
+    }
+
+    void
+    DEN::AddPoa (std::vector<Address> signatures)
+    {
+      m_poas.insert(m_poas.end (), signatures.begin (), signatures.end ());
+    }
+
+    uint32_t
+    DEN::GetNumPoa () const
+    {
+      return m_poas.size();
+    }
+
+    std::vector<Address>
+    DEN::GetPoas () const
+    {
+      return m_poas;
+    }
+
+    Address
+    DEN::GetOnePoa (uint32_t index) const
+    {
+      if (index < GetNumPoa ())
+	return m_poas[index];
+      else
+	return Address();
     }
 
     void

@@ -23,7 +23,6 @@
 
 #include <vector>
 
-#include <ns3-dev/ns3/mac48-address.h>
 #include <ns3-dev/ns3/nstime.h>
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/ptr.h>
@@ -107,6 +106,43 @@ namespace ns3 {
       void
       SetName (const NNNAddress &name);
 
+      uint16_t
+      GetPoaType () const;
+
+      void
+      SetPoaType (uint16_t type);
+
+      /**
+       * \brief Get number of MN's Signatures
+       *
+       * @param  const reference to Name object
+       *
+       **/
+      uint32_t
+      GetNumPoa () const;
+
+      /**
+       * \brief Get Signatures of MN
+       *
+       **/
+      std::vector<Address>
+      GetPoas () const;
+
+      Address
+      GetOnePoa (uint32_t index) const;
+
+      /**
+       * \brief Add Signature(MAC)
+       *
+       * @param signature MAC vectors
+       *
+       **/
+      void
+      AddPoa (Address signature);
+
+      void
+      AddPoa (std::vector<Address> signatures);
+
       /**
        * @brief Print DEN in plain-text to the specified output stream
        */
@@ -119,7 +155,9 @@ namespace ns3 {
       operator = (const DEN &other) { return *this; }
 
     private:
-      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
+      Ptr<NNNAddress> m_name;   ///< @brief NNN Address used in the packet
+      uint16_t m_poa_type;      ///< @brief Type of PoA in DEN packet
+      std::vector<Address> m_poas;  ///<@brief vector of Signatures
 
     };
 

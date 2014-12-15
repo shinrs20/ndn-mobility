@@ -31,7 +31,7 @@ namespace ns3
     /**
      * @brief enum for NNN PacketId for NNN Packets
      */
-    enum NNN_PDU_TYPE { NULL_NNN, SO_NNN, DO_NNN, EN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN};
+    enum NNN_PDU_TYPE { NULL_NNN = 0, SO_NNN, DO_NNN, EN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN};
 
     /**
      * @brief enum for payload type the NNN data transmission packets are carrying
@@ -42,6 +42,11 @@ namespace ns3
      * @brief enum for NNN version being used
      */
     enum NNN_VER { A_NNN = 0 };
+
+    /**
+     * @brief enum for NNN POAs supported
+     */
+    enum POA_TYPES { POA_MAC48 = 0, POA_IP };
 
     class NNNPacket
     {
@@ -110,7 +115,7 @@ namespace ns3
       SetWire (Ptr<const Packet> packet) const;
 
     protected:
-      uint32_t m_packetid;                  ///< @brief Packet Identifier
+      uint32_t m_packetid;              ///< @brief Packet Identifier
       Time m_ttl;                           ///< @brief Packet life time (TTL)
       uint16_t m_version;                   ///< @brief NNN Packet version
       mutable Ptr<const Packet> m_wire;

@@ -26,118 +26,94 @@ NS_LOG_COMPONENT_DEFINE ("nnn.EN");
 
 namespace ns3 {
 
-class Packet;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-EN::EN ()
- : m_packetid (3)
- , m_ttl      (Seconds (0))
- , m_poa_type (0)
- , m_poas     (std::vector<Mac48Address> ())
- , m_wire     (0)
-{
+    EN::EN () : NNNPacket (EN_NNN, Seconds(0))
+    , m_poa_type (POA_MAC48)
+    , m_poas     (std::vector<Address> ())
+    {
+    }
 
-}
+    EN::EN (std::vector<Address> signatures)
+    : NNNPacket (EN_NNN, Seconds(0))
+    , m_poa_type (POA_MAC48)
+    , m_poas     (signatures)
+    {
+    }
 
-EN::EN (std::vector<Mac48Address> signatures)
- : m_packetid (3)
- , m_ttl      (Seconds (1))
- , m_poa_type (0)
- , m_poas     (signatures)
- , m_wire     (0)
-{
-}
+    EN::EN (const EN &en_p)
+    : NNNPacket (EN_NNN, en_p.GetLifetime ())
+    , m_poa_type  (en_p.GetPoaType ())
+    , m_poas      (en_p.GetPoas ())
+    {
+      NS_LOG_FUNCTION("EN correct copy constructor");
 
-EN::EN (const EN &en_p)
- : m_packetid  (3)
- , m_ttl       (en_p.m_ttl)
- , m_poa_type  (en_p.m_poa_type)
- , m_poas      (en_p.m_poas)
- , m_wire      (0)
-{
-	NS_LOG_FUNCTION("EN correct copy constructor");
-}
+      SetWire (en_p.GetWire ());
+    }
 
-uint32_t
-EN::GetPacketId ()
-{
-	return m_packetid;
-}
+    uint16_t
+    EN::GetPoaType () const
+    {
+      return m_poa_type;
+    }
 
-uint16_t
-EN::GetPoaType () const
-{
-	return m_poa_type;
-}
+    void
+    EN::SetPoaType (uint16_t type)
+    {
+      m_poa_type = type;
+    }
 
-void
-EN::SetPoaType (uint16_t type)
-{
-	m_poa_type = type;
-}
+    void
+    EN::AddPoa (Address signature)
+    {
+      m_poas.push_back(signature);
+    }
 
-void
-EN::AddPoa (Mac48Address signature)
-{
-	m_poas.push_back(signature);
-}
+    void
+    EN::AddPoa (std::vector<Address> signatures)
+    {
+      m_poas.insert(m_poas.end (), signatures.begin (), signatures.end ());
+    }
 
-void
-EN::AddPoa (std::vector<Mac48Address> signatures)
-{
-	m_poas.insert(m_poas.end (), signatures.begin (), signatures.end ());
-}
+    uint32_t
+    EN::GetNumPoa () const
+    {
+      return m_poas.size();
+    }
 
-uint32_t
-EN::GetNumPoa () const
-{
-	return m_poas.size();
-}
+    std::vector<Address>
+    EN::GetPoas () const
+    {
+      return m_poas;
+    }
 
-std::vector<Mac48Address>
-EN::GetPoas () const
-{
-	return m_poas;
-}
+    Address
+    EN::GetOnePoa (uint32_t index) const
+    {
+      if (index < GetNumPoa ())
+	return m_poas[index];
+      else
+	return Address();
+    }
 
-Mac48Address
-EN::GetOnePoa (uint32_t index) const
-{
-	if (index < GetNumPoa ())
-		return m_poas[index];
-	else
-		return Mac48Address();
-}
 
-void
-EN::SetLifetime (Time ttl)
-{
-	m_ttl = ttl;
-	m_wire = 0;
-}
-
-Time
-EN::GetLifetime () const
-{
-	return m_ttl;
-}
-
-void
-EN::Print (std::ostream &os) const
-{
-	uint32_t num = GetNumPoa ();
-	uint16_t type = GetPoaType ();
-	os << "<EN>\n";
-	os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-	os << "  <POATYPE>" << type << "</POATYPE>\n";
-	os << "  <POANUM>" << num << "</POANUM>\n";
-	for (int i = 0; i < num; i++)
+    void
+    EN::Print (std::ostream &os) const
+    {
+      uint32_t num = GetNumPoa ();
+      uint16_t type = GetPoaType ();
+      os << "<EN>\n";
+      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
+      os << "  <POATYPE>" << type << "</POATYPE>\n";
+      os << "  <POANUM>" << num << "</POANUM>\n";
+      for (int i = 0; i < num; i++)
 	{
-		os << "  <POA" << i << ">" << m_poas[i] << "</POA" << i << ">\n";
+	  os << "  <POA" << i << ">" << m_poas[i] << "</POA" << i << ">\n";
 	}
-	os << "</EN>";
-}
+      os << "</EN>";
+    }
 
-}
-}
+  } // namespace nnn
+} // namespace ns3

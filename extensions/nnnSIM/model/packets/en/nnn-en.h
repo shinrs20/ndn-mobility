@@ -23,171 +23,117 @@
 
 #include <vector>
 
-#include <ns3-dev/ns3/mac48-address.h>
+#include <ns3-dev/ns3/address.h>
 #include <ns3-dev/ns3/nstime.h>
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/simple-ref-count.h>
 
+#include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
 
-class Packet;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-/**
- * @ingroup nnn
- * @brief NNN EN packet (wire formats are defined in wire)
- **/
-class EN : public SimpleRefCount<EN>
-{
-public:
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a EN packet
-	 **/
-	EN ();
 
-	/**
-	 * \brief Constructor
-	 *
-	 *
-	 * @param name MAC Address signature creator
-	 **/
-	EN (std::vector<Mac48Address> signature);
 
-	/**
-	 * @brief Copy constructor
-	 */
-	EN (const EN &en_p);
+    /**
+     * @ingroup nnn
+     * @brief NNN EN packet (wire formats are defined in wire)
+     **/
+    class EN : public NNNPacket, public SimpleRefCount<EN>
+    {
+    public:
+      /**
+       * \brief Constructor
+       *
+       * Creates a EN packet
+       **/
+      EN ();
 
-	/**
-	 * \brief Return Id of the packet
-	 *
-	 **/
-	uint32_t
-	GetPacketId ();
+      /**
+       * \brief Constructor
+       *
+       *
+       * @param name Address signature creator
+       **/
+      EN (std::vector<Address> signature);
 
-	void
-	SetPoaType (uint16_t type);
+      /**
+       * @brief Copy constructor
+       */
+      EN (const EN &en_p);
 
-	uint16_t
-	GetPoaType () const;
+      uint16_t
+      GetPoaType () const;
 
-	/**
-	 * \brief Add Signature(MAC)
-	 *
-	 * @param signature MAC vectors
-	 *
-	 **/
-	void
-	AddPoa (Mac48Address signature);
+      void
+      SetPoaType (uint16_t type);
 
-	void
-	AddPoa (std::vector<Mac48Address> signatures);
+      /**
+       * \brief Get number of MN's Signatures
+       *
+       * @param  const reference to Name object
+       *
+       **/
+      uint32_t
+      GetNumPoa () const;
 
-	/**
-	 * \brief Get number of MN's Signatures
-	 *
-	 * @param  const reference to Name object
-	 *
-	 **/
-    uint32_t
-    GetNumPoa () const;
+      /**
+       * \brief Get Signatures of MN
+       *
+       **/
+      std::vector<Address>
+      GetPoas () const;
 
-	/**
-	 * \brief Get Signatures of MN
-	 *
-	 **/
-    std::vector<Mac48Address>
-	GetPoas () const;
+      Address
+      GetOnePoa (uint32_t index) const;
 
-    Mac48Address
-    GetOnePoa (uint32_t index) const;
+      /**
+       * \brief Add Signature(MAC)
+       *
+       * @param signature MAC vectors
+       *
+       **/
+      void
+      AddPoa (Address signature);
 
-	/**
-	 * \brief Set time out for EN packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 * @param[in] time interest lifetime
-	 */
-	void
-	SetLifetime (Time ttl);
+      void
+      AddPoa (std::vector<Address> signatures);
 
-	/**
-	 * \brief Get time out value for EN packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 */
-	Time
-	GetLifetime () const;
+      /**
+       * @brief Print EN in plain-text to the specified output stream
+       */
+      void
+      Print (std::ostream &os) const;
 
-	/**
-	 * @brief Get wire formatted packet
-	 *
-	 * If wire formatted packet has not been set before, 0 will be returned
-	 */
-	inline Ptr<const Packet>
-	GetWire () const;
+    private:
+      // NO_ASSIGN
+      EN &
+      operator = (const EN &other) { return *this; }
 
-	/**
-	 * @brief Set (cache) wire formatted packet
-	 */
-	inline void
-	SetWire (Ptr<const Packet> packet) const;
+    private:
+      uint16_t m_poa_type;      ///< @brief Type of PoA in EN packet
+      std::vector<Address> m_poas;  ///<@brief vector of Signatures
 
-	/**
-	 * @brief Print EN in plain-text to the specified output stream
-	 */
-	void
-	Print (std::ostream &os) const;
+    };
 
-private:
-	// NO_ASSIGN
-	EN &
-	operator = (const EN &other) { return *this; }
+    inline std::ostream &
+    operator << (std::ostream &os, const EN &i)
+    {
+      i.Print (os);
+      return os;
+    }
 
-private:
-	uint32_t m_packetid;      ///< @brief Packet Identifier (3 for EN)
-	Time m_ttl;               ///< @brief Packet life time (TTL)
-	uint16_t m_poa_type;      ///< @brief Type of PoA in EN packet
-	std::vector<Mac48Address> m_poas;  ///<@brief vector of Signatures
+    /**
+     * @brief Class for Interest parsing exception
+     */
+    class ENException {};
 
-	mutable Ptr<const Packet> m_wire;
-};
-
-inline std::ostream &
-operator << (std::ostream &os, const EN &i)
-{
-	i.Print (os);
-	return os;
-}
-
-inline Ptr<const Packet>
-EN::GetWire () const
-{
-	return m_wire;
-}
-
-inline void
-EN::SetWire (Ptr<const Packet> packet) const
-{
-	m_wire = packet;
-}
-
-/**
- * @brief Class for Interest parsing exception
- */
-class ENException {};
-
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
 
 #endif // _NNN_EN_HEADER_H_
