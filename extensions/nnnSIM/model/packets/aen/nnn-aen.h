@@ -31,116 +31,116 @@
 
 namespace ns3 {
 
-class Packet;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-/**
- * @ingroup nnn
- * @brief NNN AEN packet (wire formats are defined in wire)
- **/
-class AEN : public NNNPacket, public SimpleRefCount<AEN>
-{
-public:
-  /**
-   * \brief Constructor
-   *
-   * Creates a AEN packet
-   **/
-  AEN ();
+    /**
+     * @ingroup nnn
+     * @brief NNN AEN packet (wire formats are defined in wire)
+     **/
+    class AEN : public NNNPacket, public SimpleRefCount<AEN>
+    {
+    public:
+      /**
+       * \brief Constructor
+       *
+       * Creates a AEN packet
+       **/
+      AEN ();
 
-  /**
-   * \brief Constructor
-   *
-   *
-   * @param name NNN Address Ptr
-   **/
-  AEN(Ptr<NNNAddress> name);
+      /**
+       * \brief Constructor
+       *
+       *
+       * @param name NNN Address Ptr
+       **/
+      AEN(Ptr<NNNAddress> name);
 
-  /**
-   * \brief Constructor
-   *
-   * Creates a AEN packet with payload
-   *
-   * @param name NNN Address
-   * @param payload Packet Ptr
-   **/
-  AEN(const NNNAddress &name);
+      /**
+       * \brief Constructor
+       *
+       * Creates a AEN packet with payload
+       *
+       * @param name NNN Address
+       * @param payload Packet Ptr
+       **/
+      AEN(const NNNAddress &name);
 
-  /**
-   * @brief Copy constructor
-   */
-  AEN (const AEN &aen_p);
+      /**
+       * @brief Copy constructor
+       */
+      AEN (const AEN &aen_p);
 
-  /**
-   * \brief Get interest name
-   *
-   * Gets name of the interest.
-   **/
-  const NNNAddress&
-  GetName () const;
+      /**
+       * \brief Get interest name
+       *
+       * Gets name of the interest.
+       **/
+      const NNNAddress&
+      GetName () const;
 
-  /**
-   * @brief Get smart pointer to the interest name (to avoid extra memory usage)
-   */
-  Ptr<const NNNAddress>
-  GetNamePtr () const;
+      /**
+       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
+       */
+      Ptr<const NNNAddress>
+      GetNamePtr () const;
 
-  /**
-   * \brief Set interest name
-   *
-   * @param name smart pointer to Name
-   *
-   **/
+      /**
+       * \brief Set interest name
+       *
+       * @param name smart pointer to Name
+       *
+       **/
 
-  void
-  SetName (Ptr<NNNAddress> name);
+      void
+      SetName (Ptr<NNNAddress> name);
 
-  /**
-   * \brief Another variant to set interest name
-   *
-   * @param name const reference to Name object
-   *
-   **/
-  void
-  SetName (const NNNAddress &name);
+      /**
+       * \brief Another variant to set interest name
+       *
+       * @param name const reference to Name object
+       *
+       **/
+      void
+      SetName (const NNNAddress &name);
 
-  Time
-  GetLeasetime() const;
+      Time
+      GetLeasetime() const;
 
-  void
-  SetLeasetime (Time lease);
+      void
+      SetLeasetime (Time lease);
 
-  /**
-   * @brief Print AEN in plain-text to the specified output stream
-   */
-  void
-  Print (std::ostream &os) const;
+      /**
+       * @brief Print AEN in plain-text to the specified output stream
+       */
+      void
+      Print (std::ostream &os) const;
 
-private:
-  // NO_ASSIGN
-  AEN &
-  operator = (const AEN &other) { return *this; }
+    private:
+      // NO_ASSIGN
+      AEN &
+      operator = (const AEN &other) { return *this; }
 
-private:
-  Time m_lease;             ///< @brief Lease time for NNN Address
-  Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address handed
+    private:
+      Time m_lease;             ///< @brief Lease time for NNN Address
+      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address handed
 
-};
+    };
 
-inline std::ostream &
-operator << (std::ostream &os, const AEN &i)
-{
-  i.Print (os);
-  return os;
-}
+    inline std::ostream &
+    operator << (std::ostream &os, const AEN &i)
+    {
+      i.Print (os);
+      return os;
+    }
 
-/**
- * @brief Class for Interest parsing exception
- */
-class AENException {};
+    /**
+     * @brief Class for Interest parsing exception
+     */
+    class AENException {};
 
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
 
 #endif // _NNN_AEN_HEADER_H_
