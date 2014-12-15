@@ -38,8 +38,6 @@ namespace ns3 {
 
   namespace nnn {
 
-
-
     /**
      * @ingroup nnn
      * @brief NNN EN packet (wire formats are defined in wire)
