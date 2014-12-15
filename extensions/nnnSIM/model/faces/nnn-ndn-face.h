@@ -51,22 +51,16 @@ namespace ns3
       ~NDNFace ();
 
       bool
-      ReceiveInterest (Ptr<ndn::Interest> interest);
-
-      bool
-      ReceiveData (Ptr<ndn::Data> data);
-
-      bool
       SendInterest (Ptr<const ndn::Interest> interest);
 
       bool
       SendData (Ptr<const ndn::Data> data);
 
       void
-      insertSO(Ptr<ndn::Name> name, Ptr<NNNAddress> addr);
+      insertDO(Ptr<const ndn::Name> name, Ptr<NNNAddress> addr);
 
       void
-      insertDO(Ptr<ndn::Name> name, Ptr<NNNAddress> addr);
+      insertSO(Ptr<const ndn::Name> name, Ptr<NNNAddress> addr);
 
     protected:
       bool
@@ -80,8 +74,8 @@ namespace ns3
 
     private:
 
-      std::multimap<Ptr<ndn::Name>, Ptr<NNNAddress> > ndn_nnn_so_map;
-      std::multimap<Ptr<ndn::Name>, Ptr<NNNAddress> > ndn_nnn_do_map;
+      std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> > ndn_nnn_pending_so;
+      std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> > ndn_nnn_pending_do;
 
     };
 

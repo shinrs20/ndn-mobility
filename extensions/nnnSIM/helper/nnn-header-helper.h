@@ -23,6 +23,8 @@
 
 #include <ns3-dev/ns3/ptr.h>
 
+#include "../model/packets/nnn-packet.h"
+
 namespace ns3 {
 
 class Header;
@@ -37,26 +39,16 @@ typedef NNNAddress NameComponents;
 /**
  * @ingroup nnn-helpers
  *
- * \brief Class implementing functionality to detect Nnn packet type and
+ * \brief Class implementing functionality to detect NNN packet type and
  * create the corresponding object
- *
- * Nnn doesn't really have a header, so we need this class to
- * determine type of Nnn packet and return corresponent header class,
- * NULLp, SO, DO, EN, AEN, REN or INF
  *
  * Throws UnknownHeaderException if header type couldn't be determined
  */
 class HeaderHelper
 {
 public:
-	/**
-     @brief enum for Nnn packet types
-	 */
-	enum Type {NULL_NNN, SO_NNN, DO_NNN,
-		EN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN};
-
-	static Type
-	GetNNNHeaderType (Ptr<const Packet> packet);
+  static NNN_PDU_TYPE
+  GetNNNHeaderType (Ptr<const Packet> packet);
 };
 
 /**

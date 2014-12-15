@@ -31,144 +31,143 @@ NNN_NAMESPACE_BEGIN
 
 struct Wire
 {
-	enum
-	{
-		WIRE_FORMAT_DEFAULT = -2,
-		WIRE_FORMAT_AUTODETECT = -1,
+  enum
+  {
+    WIRE_FORMAT_DEFAULT = -2,
+    WIRE_FORMAT_AUTODETECT = -1,
+    WIRE_FORMAT_NNNSIM = 0
+  };
 
-		WIRE_FORMAT_NNNSIM = 0
-	};
+  static Ptr<Packet>
+  FromNULLp (Ptr<const NULLp> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static Ptr<Packet>
-	FromNULLp (Ptr<const NULLp> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<NULLp>
+  ToNULLp (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<NULLp>
-	ToNULLp (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static Ptr<Packet>
+  FromSO (Ptr<const SO> so_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static Ptr<Packet>
-	FromSO (Ptr<const SO> so_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<SO>
+  ToSO (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<SO>
-	ToSO (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static Ptr<Packet>
+  FromDO (Ptr<const DO> do_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static Ptr<Packet>
-	FromDO (Ptr<const DO> do_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<DO>
+  ToDO (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<DO>
-	ToDO (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static Ptr<Packet>
+  FromEN (Ptr<const EN> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static Ptr<Packet>
-	FromEN (Ptr<const EN> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<EN>
+  ToEN (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<EN>
-	ToEN (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static Ptr<Packet>
+  FromAEN (Ptr<const AEN> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static Ptr<Packet>
-	FromAEN (Ptr<const AEN> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<AEN>
+  ToAEN (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<AEN>
-	ToAEN (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static Ptr<Packet>
+  FromREN (Ptr<const REN> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static Ptr<Packet>
-	FromREN (Ptr<const REN> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<REN>
+  ToREN (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<REN>
-	ToREN (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static Ptr<Packet>
+  FromDEN (Ptr<const DEN> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static Ptr<Packet>
-	FromDEN (Ptr<const DEN> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<DEN>
+  ToDEN (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<DEN>
-	ToDEN (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static Ptr<Packet>
+  FromINF (Ptr<const INF> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static Ptr<Packet>
-	FromINF (Ptr<const INF> n_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<INF>
+  ToINF (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<INF>
-	ToINF (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+  // Helper methods for Python
+  static std::string
+  FromNULLpStr (Ptr<const NULLp> so_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	// Helper methods for Python
-	static std::string
-	FromNULLpStr (Ptr<const NULLp> so_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<NULLp>
+  ToNULLpStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<NULLp>
-	ToNULLpStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static std::string
+  FromSOStr (Ptr<const SO> so_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static std::string
-	FromSOStr (Ptr<const SO> so_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<SO>
+  ToSOStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<SO>
-	ToSOStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static std::string
+  FromDOStr (Ptr<const DO> do_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static std::string
-	FromDOStr (Ptr<const DO> do_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<DO>
+  ToDOStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<DO>
-	ToDOStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static std::string
+  FromENStr (Ptr<const EN> en_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static std::string
-	FromENStr (Ptr<const EN> en_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<EN>
+  ToENStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<EN>
-	ToENStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static std::string
+  FromAENStr (Ptr<const AEN> aen_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static std::string
-	FromAENStr (Ptr<const AEN> aen_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<AEN>
+  ToAENStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<AEN>
-	ToAENStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static std::string
+  FromRENStr (Ptr<const REN> ren_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static std::string
-	FromRENStr (Ptr<const REN> ren_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<REN>
+  ToRENStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<REN>
-	ToRENStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static std::string
+  FromDENStr (Ptr<const DEN> den_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static std::string
-	FromDENStr (Ptr<const DEN> den_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<DEN>
+  ToDENStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<DEN>
-	ToDENStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+  static std::string
+  FromINFStr (Ptr<const INF> inf_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	static std::string
-	FromINFStr (Ptr<const INF> inf_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  static Ptr<INF>
+  ToINFStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
-	static Ptr<INF>
-	ToINFStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+  // /*
+  //  * @brief Get size of buffer to fit wire-formatted name object
+  //  */
+  // static uint32_t
+  // FromNameSize (Ptr<const Name> name, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	// /*
-	//  * @brief Get size of buffer to fit wire-formatted name object
-	//  */
-	// static uint32_t
-	// FromNameSize (Ptr<const Name> name, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  /**
+   * @brief Convert name to wire format
+   */
+  static std::string
+  FromName (Ptr<const NNNAddress> name, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 
-	/**
-	 * @brief Convert name to wire format
-	 */
-	static std::string
-	FromName (Ptr<const NNNAddress> name, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
-
-	/**
-	 * @brief Convert name from wire format
-	 */
-	static Ptr<NNNAddress>
-	ToName (const std::string &wire, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+  /**
+   * @brief Convert name from wire format
+   */
+  static Ptr<NNNAddress>
+  ToName (const std::string &wire, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
 };
 
 inline std::string
 PacketToBuffer (Ptr<const Packet> pkt)
 {
-	std::string buffer;
-	buffer.resize (pkt->GetSize ());
-	pkt->CopyData (reinterpret_cast<uint8_t*> (&buffer[0]), buffer.size ());
+  std::string buffer;
+  buffer.resize (pkt->GetSize ());
+  pkt->CopyData (reinterpret_cast<uint8_t*> (&buffer[0]), buffer.size ());
 
-	return buffer;
+  return buffer;
 }
 
 inline Ptr<Packet>
 BufferToPacket (const std::string &buffer)
 {
-	return Create<Packet> (reinterpret_cast<const uint8_t*> (&buffer[0]), buffer.size ());
+  return Create<Packet> (reinterpret_cast<const uint8_t*> (&buffer[0]), buffer.size ());
 }
 
 NNN_NAMESPACE_END

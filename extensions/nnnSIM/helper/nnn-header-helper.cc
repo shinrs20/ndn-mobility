@@ -31,52 +31,52 @@
 NS_LOG_COMPONENT_DEFINE ("nnn.HeaderHelper");
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-HeaderHelper::Type
-HeaderHelper::GetNNNHeaderType (Ptr<const Packet> packet)
-{
-	// Our header ID is of 32 bits
-	uint8_t type[4];
-	uint32_t read = packet->CopyData (type, 4);
+    NNN_PDU_TYPE
+    HeaderHelper::GetNNNHeaderType (Ptr<const Packet> packet)
+    {
+      // Our header ID is of 32 bits
+      uint8_t type[4];
+      uint32_t read = packet->CopyData (type, 4);
 
-	if (read != 4) throw UnknownHeaderException();
+      if (read != 4) throw UnknownHeaderException();
 
-	// Convert the bytes to a 32 bit unsigned integer
-	uint32_t retval = 0;
-	retval |= type[0];
-	retval <<= 8;
-	retval |= type[1];
-	retval <<= 8;
-	retval |= type[2];
-	retval <<= 8;
-	retval |= type[3];
+      // Convert the bytes to a 32 bit unsigned integer
+      uint32_t retval = 0;
+      retval |= type[0];
+      retval <<= 8;
+      retval |= type[1];
+      retval <<= 8;
+      retval |= type[2];
+      retval <<= 8;
+      retval |= type[3];
 
-	NS_LOG_DEBUG (*packet);
+      NS_LOG_DEBUG (*packet);
 
-	switch (retval)
-	{
+      switch (retval)
+      {
 	case 0:
-		return HeaderHelper::NULL_NNN;
+	  return NULL_NNN;
 	case 1:
-		return HeaderHelper::SO_NNN;
+	  return SO_NNN;
 	case 2:
-		return HeaderHelper::DO_NNN;
+	  return DO_NNN;
 	case 3:
-		return HeaderHelper::EN_NNN;
+	  return EN_NNN;
 	case 4:
-		return HeaderHelper::AEN_NNN;
+	  return AEN_NNN;
 	case 5:
-		return HeaderHelper::REN_NNN;
+	  return REN_NNN;
 	case 6:
-		return HeaderHelper::DEN_NNN;
+	  return DEN_NNN;
 	case 7:
-		return HeaderHelper::INF_NNN;
-	}
+	  return INF_NNN;
+      }
 
-	NS_LOG_DEBUG (*packet);
-	throw UnknownHeaderException();
-}
+      NS_LOG_DEBUG (*packet);
+      throw UnknownHeaderException();
+    }
 
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3

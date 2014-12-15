@@ -63,40 +63,119 @@ namespace ns3
     }
 
     bool
-    NDNFace::ReceiveInterest (Ptr<ndn::Interest> interest)
-    {
-
-    }
-
-    bool
-    NDNFace::ReceiveData (Ptr<ndn::Data> data)
-    {
-
-    }
-
-    bool
     NDNFace::SendInterest (Ptr<const ndn::Interest> interest)
     {
+      NS_LOG_FUNCTION(this << interest);
 
+      // Create a pair to use equal_range on the SO multimap
+      std::pair < std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> >::iterator ,
+      std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> >::iterator> ret;
+
+      // Get the ndn::Name used in the Interest packet
+      Ptr<const ndn::Name> name = interest->GetNamePtr();
+
+      // Encode the Interest packet to attach it as payload
+      Ptr<Packet> p = ndn::Wire::FromInterest(interest);
+
+      // Get the equal_range values
+      ret = ndn_nnn_pending_so.equal_range(name);
+
+      // If the equal_range pair first value is different than end (), then
+      // there was a match and we need to recreate the SO packet
+      if (ret.first != ndn_nnn_pending_so.end ())
+	{
+	  // Go through the NNN Address we have stored
+	  for (std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> >::iterator it = ret.first;
+	      it != ret.second; ++it)
+	    {
+	      // For the ones found, we create and send a SO packet
+	      Ptr<SO> so_o = Create<SO> ((*it).second, p);
+	      so_o->SetLifetime(Minutes (1));
+
+	      ReceiveSO (so_o);
+	    }
+	  // Since we have supplied the NNN address, now we delete the entries
+	  ndn_nnn_pending_so.erase(ret.first, ret.second);
+	}
+      // We don't have information about this Name, so we send a NULLp packet down
+      else
+	{
+	  Ptr<NULLp> null_o = Create<NULLp> (p);
+	  null_o->SetLifetime(Minutes (1));
+
+	  ReceiveNULLp(null_o);
+	}
+
+      return true;
     }
-
 
     bool
     NDNFace::SendData (Ptr<const ndn::Data> data)
     {
+      NS_LOG_FUNCTION(this << data);
 
+      // Create a pair to use equal_range on the DO multimap
+      std::pair < std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> >::iterator ,
+      std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> >::iterator> retDO;
+
+      // Create a pair to use equal_range on the SO multimap
+      std::pair < std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> >::iterator ,
+      std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> >::iterator> retSO;
+
+      // Get the ndn::Name used in the Data packet
+      Ptr<const ndn::Name> name = data->GetNamePtr();
+
+      // Encode the Data packet to attach it as payload
+      Ptr<Packet> p = ndn::Wire::FromData(data);
+
+      // Get the equal_range values
+      retDO = ndn_nnn_pending_do.equal_range(name);
+
+      // If the equal_range pair first value is different than end (), then
+      // there was a match and we need to recreate the DO packet
+      if (retDO.first != ndn_nnn_pending_do.end ())
+	{
+	  // Go through the NNN Address we have stored
+	  for (std::multimap<Ptr<const ndn::Name>, Ptr<NNNAddress> >::iterator it = retDO.first;
+	      it != retDO.second; ++it)
+	    {
+	      // For the ones found, we create and send a SO packet
+	      Ptr<DO> do_o = Create<DO> ((*it).second, p);
+	      do_o->SetLifetime(Minutes (1));
+
+	      ReceiveDO (do_o);
+	    }
+	  // Since we have supplied the NNN address, now we delete the entries
+	  ndn_nnn_pending_do.erase(retDO.first, retDO.second);
+	}
+      // We don't have information about this Name in the DO. There is a probability that, so we send a NULLp packet down
+      else
+	{
+	  Ptr<NULLp> null_o = Create<NULLp> (p);
+	  null_o->SetLifetime(Minutes (1));
+
+	  ReceiveNULLp(null_o);
+	}
+
+      return true;
     }
 
+    /**
+     * \brief Stores the NNN Address of a NNN SO packet for later use
+     */
     void
-    NDNFace::insertSO(Ptr<ndn::Name> name, Ptr<NNNAddress> addr)
+    NDNFace::insertDO(Ptr<const ndn::Name> name, Ptr<NNNAddress> addr)
     {
-      ndn_nnn_so_map.insert(std::pair<Ptr<ndn::Name>, Ptr<NNNAddress> > (name, addr) );
+      ndn_nnn_pending_do.insert(std::pair<Ptr<const ndn::Name>, Ptr<NNNAddress> > (name, addr) );
     }
 
+    /**
+     * \brief Stores the NNN Address of a NNN SO packet for later use
+     */
     void
-    NDNFace::insertDO(Ptr<ndn::Name> name, Ptr<NNNAddress> addr)
+    NDNFace::insertSO(Ptr<const ndn::Name> name, Ptr<NNNAddress> addr)
     {
-      ndn_nnn_so_map.insert(std::pair<Ptr<ndn::Name>, Ptr<NNNAddress> > (name, addr) );
+      ndn_nnn_pending_so.insert(std::pair<Ptr<const ndn::Name>, Ptr<NNNAddress> > (name, addr) );
     }
 
     bool
@@ -121,24 +200,24 @@ namespace ns3
       // First attempt to match to NNN packets
       try
       {
-	  nnn::HeaderHelper::Type type = nnn::HeaderHelper::GetNNNHeaderType (cpacket);
+	  nnn::NNN_PDU_TYPE type = nnn::HeaderHelper::GetNNNHeaderType (cpacket);
 	  switch (type)
 	  {
-	    case HeaderHelper::NULL_NNN:
+	    case nnn::NULL_NNN:
 	      return ReceiveNULLp (Wire::ToNULLp (cpacket, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::SO_NNN:
+	    case nnn::SO_NNN:
 	      return ReceiveSO (Wire::ToSO (cpacket, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::DO_NNN:
+	    case nnn::DO_NNN:
 	      return ReceiveDO (Wire::ToDO (cpacket, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::EN_NNN:
+	    case nnn::EN_NNN:
 	      return ReceiveEN (Wire::ToEN (cpacket, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::AEN_NNN:
+	    case nnn::AEN_NNN:
 	      return ReceiveAEN (Wire::ToAEN (cpacket, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::REN_NNN:
+	    case nnn::REN_NNN:
 	      return ReceiveREN (Wire::ToREN (cpacket, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::DEN_NNN:
+	    case nnn::DEN_NNN:
 	      return ReceiveDEN (Wire::ToDEN (cpacket, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::INF_NNN:
+	    case nnn::INF_NNN:
 	      return ReceiveINF (Wire::ToINF (cpacket, Wire::WIRE_FORMAT_NNNSIM));
 	  }
 	  // exception will be thrown if packet is not recognized

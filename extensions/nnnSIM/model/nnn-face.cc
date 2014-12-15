@@ -36,6 +36,7 @@
 #include "nnn-face.h"
 #include "nnn-nnnsim-wire.h"
 
+#include "packets/nnn-packet.h"
 #include "../helper/nnn-header-helper.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Face");
@@ -49,14 +50,14 @@ namespace ns3 {
     Face::GetTypeId ()
     {
       static TypeId tid = TypeId ("ns3::nnn::Face")
-    		    .SetParent<Object> ()
-    		    .SetGroupName ("nnn")
-    		    .AddAttribute ("Id", "Face id (unique integer for the Nnn stack on this node)",
-    		                   TypeId::ATTR_GET, // allow only getting it.
-    		                   UintegerValue (0),
-    		                   MakeUintegerAccessor (&Face::m_id),
-    		                   MakeUintegerChecker<uint32_t> ())
-    		                   ;
+	  .SetParent<Object> ()
+	  .SetGroupName ("nnn")
+	  .AddAttribute ("Id", "Face id (unique integer for the Nnn stack on this node)",
+	                 TypeId::ATTR_GET, // allow only getting it.
+	                 UintegerValue (0),
+	                 MakeUintegerAccessor (&Face::m_id),
+	                 MakeUintegerChecker<uint32_t> ())
+	                 ;
       return tid;
     }
 
@@ -263,24 +264,24 @@ namespace ns3 {
       Ptr<Packet> packet = p->Copy (); // give upper layers a rw copy of the packet
       try
       {
-	  HeaderHelper::Type type = HeaderHelper::GetNNNHeaderType (packet);
+	  NNN_PDU_TYPE type = HeaderHelper::GetNNNHeaderType (packet);
 	  switch (type)
 	  {
-	    case HeaderHelper::NULL_NNN:
+	    case nnn::NULL_NNN:
 	      return ReceiveNULLp (Wire::ToNULLp (packet, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::SO_NNN:
+	    case nnn::SO_NNN:
 	      return ReceiveSO (Wire::ToSO (packet, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::DO_NNN:
+	    case nnn::DO_NNN:
 	      return ReceiveDO (Wire::ToDO (packet, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::EN_NNN:
+	    case nnn::EN_NNN:
 	      return ReceiveEN (Wire::ToEN (packet, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::AEN_NNN:
+	    case nnn::AEN_NNN:
 	      return ReceiveAEN (Wire::ToAEN (packet, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::REN_NNN:
+	    case nnn::REN_NNN:
 	      return ReceiveREN (Wire::ToREN (packet, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::DEN_NNN:
+	    case nnn::DEN_NNN:
 	      return ReceiveDEN (Wire::ToDEN (packet, Wire::WIRE_FORMAT_NNNSIM));
-	    case HeaderHelper::INF_NNN:
+	    case nnn::INF_NNN:
 	      return ReceiveINF (Wire::ToINF (packet, Wire::WIRE_FORMAT_NNNSIM));
 	    default:
 	      NS_FATAL_ERROR ("Not supported NNN header");
