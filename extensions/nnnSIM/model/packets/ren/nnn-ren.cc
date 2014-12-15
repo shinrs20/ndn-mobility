@@ -27,178 +27,147 @@
 NS_LOG_COMPONENT_DEFINE ("nnn.REN");
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-REN::REN ()
- : m_packetid (5)
- , m_ttl      (Seconds (0))
- , m_re_lease (Seconds (0))
- , m_poa_type (0)
- , m_poas     (std::vector<Mac48Address> ())
- , m_wire     (0)
-{
+    REN::REN ()
+    : NNNPacket (REN_NNN, Seconds (0))
+    , m_re_lease (Seconds (0))
+    , m_poa_type (POA_MAC48)
+    , m_poas     (std::vector<Address> ())
+    {
+    }
 
-}
+    REN::REN (Ptr<NNNAddress> name)
+    : NNNPacket (REN_NNN, Seconds (0))
+    , m_name     (name)
+    , m_re_lease (Seconds (0))
+    , m_poa_type (POA_MAC48)
+    , m_poas     (std::vector<Address> ())
+    {
+    }
 
-REN::REN (Ptr<NNNAddress> name)
- : m_packetid (5)
- , m_ttl      (Seconds (1))
- , m_name     (name)
- , m_re_lease (Seconds (0))
- , m_poa_type (0)
- , m_poas     (std::vector<Mac48Address> ())
- , m_wire     (0)
-{
+    REN::REN (const NNNAddress &name)
+    : NNNPacket (REN_NNN, Seconds (0))
+    , m_name     (Create<NNNAddress> (name))
+    , m_re_lease (Seconds (0))
+    , m_poa_type (POA_MAC48)
+    , m_poas     (std::vector<Address> ())
+    {
+    }
 
-}
+    REN::REN (const REN &ren_p)
+    : NNNPacket (REN_NNN, ren_p.GetLifetime ())
+    , m_name     (Create<NNNAddress> (ren_p.GetName()))
+    , m_re_lease (ren_p.GetRemainLease ())
+    , m_poa_type (ren_p.GetPoaType ())
+    , m_poas     (ren_p.GetPoas ())
+    {
+      NS_LOG_FUNCTION("REN correct copy constructor");
 
-REN::REN (const NNNAddress &name)
- : m_packetid (5)
- , m_ttl      (Seconds (1))
- , m_name     (Create<NNNAddress> (name))
- , m_re_lease (Seconds (0))
- , m_poa_type (0)
- , m_poas     (std::vector<Mac48Address> ())
- , m_wire     (0)
-{
+      SetWire (ren_p.GetWire ());
+    }
 
-}
+    const NNNAddress&
+    REN::GetName () const
+    {
+      if (m_name == 0) throw RENException ();
+      return *m_name;
+    }
 
+    Ptr<const NNNAddress>
+    REN::GetNamePtr () const
+    {
+      return m_name;
+    }
 
-REN::REN (const REN &ren_p)
- : m_packetid (5)
- , m_ttl      (ren_p.m_ttl)
- , m_name     (Create<NNNAddress> (ren_p.GetName()))
- , m_re_lease (ren_p.m_re_lease)
- , m_poa_type (ren_p.m_poa_type)
- , m_poas     (ren_p.m_poas)
- , m_wire     (0)
-{
-	NS_LOG_FUNCTION("REN correct copy constructor");
-}
+    void
+    REN::SetName (Ptr<NNNAddress> name)
+    {
+      m_name = name;
+      m_wire = 0;
+    }
 
-uint32_t
-REN::GetPacketId ()
-{
-	return m_packetid;
-}
+    void
+    REN::SetName (const NNNAddress &name)
+    {
+      m_name = Create<NNNAddress> (name);
+      m_wire = 0;
+    }
 
-void
-REN::SetName (Ptr<NNNAddress> name)
-{
-	m_name = name;
-	m_wire = 0;
-}
+    uint16_t
+    REN::GetPoaType () const
+    {
+      return m_poa_type;
+    }
 
-void
-REN::SetName (const NNNAddress &name)
-{
-	m_name = Create<NNNAddress> (name);
-	m_wire = 0;
-}
+    void
+    REN::SetPoaType (uint16_t type)
+    {
+      m_poa_type = type;
+    }
 
+    uint32_t
+    REN::GetNumPoa () const
+    {
+      return m_poas.size();
+    }
 
-const NNNAddress&
-REN::GetName () const
-{
-	if (m_name == 0) throw RENException ();
-	return *m_name;
-}
+    std::vector<Address>
+    REN::GetPoas () const
+    {
+      return m_poas;
+    }
 
+    Address
+    REN::GetOnePoa (uint32_t index) const
+    {
+      if (index < GetNumPoa ())
+	return m_poas[index];
+      else
+	return Address();
+    }
 
-Ptr<const NNNAddress>
-REN::GetNamePtr () const
-{
-	return m_name;
-}
+    void
+    REN::AddPoa (Address signature)
+    {
+      m_poas.push_back(signature);
+    }
 
-void
-REN::SetPoaType (uint16_t type)
-{
-	m_poa_type = type;
-}
+    void
+    REN::AddPoa (std::vector<Address> signatures)
+    {
+      m_poas.insert(m_poas.end (), signatures.begin (), signatures.end ());
+    }
 
-uint16_t
-REN::GetPoaType () const
-{
-	return m_poa_type;
-}
+    Time
+    REN::GetRemainLease () const
+    {
+      return m_re_lease;
+    }
 
-void
-REN::AddPoa (Mac48Address signature)
-{
-	m_poas.push_back(signature);
-}
+    void
+    REN::SetRemainLease (Time ex_lease)
+    {
+      m_re_lease = ex_lease;
+    }
 
-void
-REN::AddPoa (std::vector<Mac48Address> signatures)
-{
-	m_poas.insert(m_poas.end (), signatures.begin (), signatures.end ());
-}
-
-uint32_t
-REN::GetNumPoa () const
-{
-	return m_poas.size();
-}
-
-std::vector<Mac48Address>
-REN::GetPoas () const
-{
-	return m_poas;
-}
-
-Mac48Address
-REN::GetOnePoa (uint32_t index) const
-{
-	if (index < GetNumPoa ())
-		return m_poas[index];
-	else
-		return Mac48Address();
-}
-
-void
-REN::SetLifetime (Time ttl)
-{
-	m_ttl = ttl;
-	m_wire = 0;
-}
-
-Time
-REN::GetLifetime () const
-{
-	return m_ttl;
-}
-
-void
-REN::SetRemainLease (Time ex_lease)
-{
-	m_re_lease = ex_lease;
-}
-
-Time
-REN::GetRemainLease () const
-{
-	return m_re_lease;
-}
-
-void
-REN::Print (std::ostream &os) const
-{
-	uint32_t num = GetNumPoa ();
-	uint16_t type = GetPoaType ();
-	os << "<REN>\n";
-	os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-	os << "  <Name>" << GetName () << "</Name>\n";
-	os << "  <RLease>" << GetRemainLease () << "</RLease>\n";
-	os << "  <POATYPE>" << type << "</POATYPE>\n";
-	os << "  <POANUM>" << num << "</POANUM>\n";
-	for (int i = 0; i < num; i++)
+    void
+    REN::Print (std::ostream &os) const
+    {
+      uint32_t num = GetNumPoa ();
+      uint16_t type = GetPoaType ();
+      os << "<REN>\n";
+      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
+      os << "  <Name>" << GetName () << "</Name>\n";
+      os << "  <RLease>" << GetRemainLease () << "</RLease>\n";
+      os << "  <POATYPE>" << type << "</POATYPE>\n";
+      os << "  <POANUM>" << num << "</POANUM>\n";
+      for (int i = 0; i < num; i++)
 	{
-		os << "  <POA" << i << ">" << m_poas[i] << "</POA" << i << ">\n";
+	  os << "  <POA" << i << ">" << m_poas[i] << "</POA" << i << ">\n";
 	}
-	os << "</REN>";
-}
+      os << "</REN>";
+    }
 
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3

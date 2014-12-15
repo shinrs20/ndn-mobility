@@ -23,222 +23,165 @@
 
 #include <vector>
 
-#include <ns3-dev/ns3/mac48-address.h>
+#include <ns3-dev/ns3/address.h>
 #include <ns3-dev/ns3/nstime.h>
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/simple-ref-count.h>
 
+#include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
 
-class Packet;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-/**
- * @ingroup nnn
- * @brief NNN REN packet (wire formats are defined in wire)
- **/
-class REN : public SimpleRefCount<REN>
-{
-public:
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a REN packet
-	 **/
-	REN ();
+    /**
+     * @ingroup nnn
+     * @brief NNN REN packet (wire formats are defined in wire)
+     **/
+    class REN : public NNNPacket, public SimpleRefCount<REN>
+    {
+    public:
+      /**
+       * \brief Constructor
+       *
+       * Creates a REN packet
+       **/
+      REN ();
 
-	/**
-	 * \brief Constructor
-	 *
-	 *
-	 * @param name NNN Address Ptr
-	 **/
-	REN(Ptr<NNNAddress> name);
+      /**
+       * \brief Constructor
+       *
+       *
+       * @param name NNN Address Ptr
+       **/
+      REN(Ptr<NNNAddress> name);
 
-	/**
-	 * \brief Constructor
-	 *
-	 * Creates a REN packet with payload
-	 *
-	 * @param name NNN Address
-	 * @param payload Packet Ptr
-	 **/
-	REN(const NNNAddress &name);
+      /**
+       * \brief Constructor
+       *
+       * Creates a REN packet with payload
+       *
+       * @param name NNN Address
+       * @param payload Packet Ptr
+       **/
+      REN(const NNNAddress &name);
 
-	/**
-	 * @brief Copy constructor
-	 */
-	REN (const REN &ren_p);
+      /**
+       * @brief Copy constructor
+       */
+      REN (const REN &ren_p);
 
-	/**
-	 * \brief Return Id of the packet
-	 *
-	 **/
-	uint32_t
-	GetPacketId ();
-	
-	void
-	SetPoaType (uint16_t type);
+      void
+      SetPoaType (uint16_t type);
 
-	uint16_t
-	GetPoaType () const;
+      uint16_t
+      GetPoaType () const;
 
-	/**
-	 * \brief Add Signature(MAC)
-	 *
-	 * @param signature MAC vectors
-	 *
-	 **/
-	void
-	AddPoa (Mac48Address signature);
+      /**
+       * \brief Get number of MN's Signatures
+       *
+       * @param  const reference to Name object
+       *
+       **/
+      uint32_t
+      GetNumPoa () const;
 
-	void
-	AddPoa (std::vector<Mac48Address> signatures);
+      /**
+       * \brief Get Signatures of MN
+       *
+       **/
+      std::vector<Address>
+      GetPoas () const;
 
-	/**
-	 * \brief Get number of MN's Signatures
-	 *
-	 * @param  const reference to Name object
-	 *
-	 **/
-	uint32_t
-	GetNumPoa () const;
+      Address
+      GetOnePoa (uint32_t index) const;
 
-	/**
-	 * \brief Get Signatures of MN
-	 *
-	 **/
-	std::vector<Mac48Address>
-	GetPoas () const;
+      /**
+       * \brief Add Signature(MAC)
+       *
+       * @param signature MAC vectors
+       *
+       **/
+      void
+      AddPoa (Address signature);
 
-	Mac48Address
-	GetOnePoa (uint32_t index) const;
+      void
+      AddPoa (std::vector<Address> signatures);
 
-	/**
-	 * \brief Set interest name
-	 *
-	 * @param name smart pointer to Name
-	 *
-	 **/
-	void
-	SetName (Ptr<NNNAddress> name);
+      /**
+       * \brief Get interest name
+       *
+       * Gets name of the interest.
+       **/
+      const NNNAddress&
+      GetName () const;
 
-	/**
-	 * \brief Another variant to set interest name
-	 *
-	 * @param name const reference to Name object
-	 *
-	 **/
-	void
-	SetName (const NNNAddress &name);
+      /**
+       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
+       */
+      Ptr<const NNNAddress>
+      GetNamePtr () const;
 
-	/**
-	 * \brief Get interest name
-	 *
-	 * Gets name of the interest.
-	 **/
-	const NNNAddress&
-	GetName () const;
+      /**
+       * \brief Set interest name
+       *
+       * @param name smart pointer to Name
+       *
+       **/
+      void
+      SetName (Ptr<NNNAddress> name);
 
-	/**
-	 * @brief Get smart pointer to the interest name (to avoid extra memory usage)
-	 */
-	Ptr<const NNNAddress>
-	GetNamePtr () const;
+      /**
+       * \brief Another variant to set interest name
+       *
+       * @param name const reference to Name object
+       *
+       **/
+      void
+      SetName (const NNNAddress &name);
 
-	/**
-	 * \brief Set time out for REN packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 * @param[in] time interest lifetime
-	 */
-	void
-	SetLifetime (Time ttl);
+      Time
+      GetRemainLease () const;
 
-	/**
-	 * \brief Get time out value for REN packet
-	 * Indicates the (approximate) time remaining before the packet times out.
-	 * The timeout is relative to the arrival time of the interest at the current node.
-	 * Based heavily on the NDN implementation for Interest Life time
-	 * \see http://www.ndn.org/releases/latest/doc/technical/InterestMessage.html for more information.
-	 */
-	Time
-	GetLifetime () const;
+      void
+      SetRemainLease (Time ex_lease);
 
-	void
-	SetRemainLease (Time ex_lease);
+      /**
+       * @brief Print REN in plain-text to the specified output stream
+       */
+      void
+      Print (std::ostream &os) const;
 
-	Time
-	GetRemainLease () const;
+    private:
+      // NO_ASSIGN
+      REN &
+      operator = (const REN &other) { return *this; }
 
-	/**
-	 * @brief Get wire formatted packet
-	 *
-	 * If wire formatted packet has not been set before, 0 will be returned
-	 */
-	inline Ptr<const Packet>
-	GetWire () const;
+    private:
+      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
+      Time m_re_lease;          ///< @brief Packet Remaining lease time
+      uint16_t m_poa_type;      ///< @brief Type of PoA in REN packet
+      std::vector<Address> m_poas;  ///<@brief vector of Signatures
 
-	/**
-	 * @brief Set (cache) wire formatted packet
-	 */
-	inline void
-	SetWire (Ptr<const Packet> packet) const;
+    };
 
-	/**
-	 * @brief Print REN in plain-text to the specified output stream
-	 */
-	void
-	Print (std::ostream &os) const;
+    inline std::ostream &
+    operator << (std::ostream &os, const REN &i)
+    {
+      i.Print (os);
+      return os;
+    }
 
-private:
-	// NO_ASSIGN
-	REN &
-	operator = (const REN &other) { return *this; }
+    /**
+     * @brief Class for Interest parsing exception
+     */
+    class RENException {};
 
-private:
-	uint32_t m_packetid;      ///< @brief Packet Identifier (5 for REN)
-	Time m_ttl;               ///< @brief Packet life time (TTL)
-	Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
-	Time m_re_lease;          ///< @brief Packet Remaining lease time
-	uint16_t m_poa_type;      ///< @brief Type of PoA in EN packet
-	std::vector<Mac48Address> m_poas;  ///<@brief vector of Signatures
-
-
-	mutable Ptr<const Packet> m_wire;
-};
-
-inline std::ostream &
-operator << (std::ostream &os, const REN &i)
-{
-	i.Print (os);
-	return os;
-}
-
-inline Ptr<const Packet>
-REN::GetWire () const
-{
-	return m_wire;
-}
-
-inline void
-REN::SetWire (Ptr<const Packet> packet) const
-{
-	m_wire = packet;
-}
-
-/**
- * @brief Class for Interest parsing exception
- */
-class RENException {};
-
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
 
 #endif // _NNN_REN_HEADER_H_
