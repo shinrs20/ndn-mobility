@@ -20,6 +20,7 @@
 #include <ns3-dev/ns3/nstime.h>
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/ptr.h>
+#include <ns3-dev/ns3/simple-ref-count.h>
 
 #ifndef NNN_PACKET_H_
 #define NNN_PACKET_H_

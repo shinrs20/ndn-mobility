@@ -21,9 +21,6 @@
 #ifndef _NNN_INF_HEADER_H_
 #define _NNN_INF_HEADER_H_
 
-#include <ns3-dev/ns3/nstime.h>
-#include <ns3-dev/ns3/packet.h>
-#include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/simple-ref-count.h>
 
 #include "../nnn-packet.h"
