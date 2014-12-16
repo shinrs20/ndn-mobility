@@ -223,8 +223,8 @@ REN::Deserialize (Buffer::Iterator start)
 
 		if (m_ren_p->GetPoaType () == 0)
 		{
-			Mac48Address tmp = Mac48Address ();
-			tmp.CopyFrom (buffer);
+			Address tmp = Address ();
+			tmp.CopyFrom (buffer, bufsize);
 
 			m_ren_p->AddPoa (tmp);
 		}
