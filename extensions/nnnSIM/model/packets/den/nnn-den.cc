@@ -136,9 +136,14 @@ namespace ns3 {
     void
     DEN::Print (std::ostream &os) const
     {
-      os << "<DEN>\n";
-      os << " <TTL>" << GetLifetime () << "</TTL>\n";
-      os << " <Name>" << GetName () << "</Name>\n";
+      os << "<DEN>" << std::endl;
+      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Name>" << GetName () << "</Name>" << std::endl;
+      for (int i = 0; i < GetNumPoa (); i++)
+	{
+	  os << "  <POA" << i << ">" << GetOnePoa(i) << "</POA" << i << ">"<< std::endl;
+	}
+      os << "</DEN>" << std::endl;
     }
 
   } // namespace nnn
