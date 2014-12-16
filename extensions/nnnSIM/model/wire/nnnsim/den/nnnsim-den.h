@@ -2,7 +2,7 @@
 /*
  * Copyright 2014 Waseda University, Sato Laboratory
  *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
- *   			  Zhu Li <philipszhuli1990@ruri.waseda.jp>
+ *           Zhu Li <philipszhuli1990@ruri.waseda.jp>
  *
  *  nnnsim-den.h is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero Public License as published by
@@ -27,39 +27,39 @@ NNN_NAMESPACE_BEGIN
  */
 namespace wire {
 
-/**
- * @brief Namespace for nnnSIM wire format operations
- */
-namespace nnnSIM {
+  /**
+   * @brief Namespace for nnnSIM wire format operations
+   */
+  namespace nnnSIM {
 
-class DEN : public Header
-{
-public:
-	DEN ();
-	DEN (Ptr<nnn::DEN> den_p);
+    class DEN : public Header
+    {
+    public:
+      DEN ();
+      DEN (Ptr<nnn::DEN> den_p);
 
-	Ptr<nnn::DEN>
-	GetDEN ();
+      Ptr<nnn::DEN>
+      GetDEN ();
 
-	static Ptr<Packet>
-	ToWire (Ptr<const nnn::DEN> den_p);
+      static Ptr<Packet>
+      ToWire (Ptr<const nnn::DEN> den_p);
 
-	static Ptr<nnn::DEN>
-	FromWire (Ptr<Packet> packet);
+      static Ptr<nnn::DEN>
+      FromWire (Ptr<Packet> packet);
 
-	// from Header
-	static TypeId GetTypeId (void);
-	virtual TypeId GetInstanceTypeId (void) const;
-	virtual void Print (std::ostream &os) const;
-	virtual uint32_t GetSerializedSize (void) const;
-	virtual void Serialize (Buffer::Iterator start) const;
-	virtual uint32_t Deserialize (Buffer::Iterator start);
+      // from Header
+      static TypeId GetTypeId (void);
+      virtual TypeId GetInstanceTypeId (void) const;
+      virtual void Print (std::ostream &os) const;
+      virtual uint32_t GetSerializedSize (void) const;
+      virtual void Serialize (Buffer::Iterator start) const;
+      virtual uint32_t Deserialize (Buffer::Iterator start);
 
-private:
-	Ptr<nnn::DEN> m_den_p;
-};
+    private:
+      Ptr<nnn::DEN> m_den_p;
+    };
 
-}
+  }
 }
 
 NNN_NAMESPACE_END
