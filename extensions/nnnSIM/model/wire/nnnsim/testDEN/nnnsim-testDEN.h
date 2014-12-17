@@ -11,7 +11,6 @@
 #ifndef NNNSIM_TESTDEN_H_
 #define NNNSIM_TESTDEN_H_
 
-
 namespace ns3
 {
   namespace nnn

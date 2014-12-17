@@ -39,7 +39,7 @@ namespace ns3
 	TypeId
 	TestDEN::GetTypeId(void)
 	{
-	  static TypeId tid = TypeId("ns3::nnn::DEN::nnnSIM")
+	  static TypeId tid = TypeId("ns3::nnn::TestDEN::nnnSIM")
 		  .SetGroupName("Nnn")
 		  .SetParent<Header> ()
 		  .AddConstructor<TestDEN> ()
