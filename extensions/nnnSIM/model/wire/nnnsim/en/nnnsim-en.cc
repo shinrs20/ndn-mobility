@@ -29,29 +29,23 @@ namespace wire {
     NS_LOG_COMPONENT_DEFINE ("nnn.wire.nnnSIM.EN");
 
     EN::EN ()
-    : m_en_p (Create<nnn::EN> ())
+    : CommonHeader<nnn::EN> ()
     {
     }
 
     EN::EN (Ptr<nnn::EN> en_p)
-    : m_en_p (en_p)
+    : CommonHeader<nnn::EN> (en_p)
     {
-    }
-
-    Ptr<nnn::EN>
-    EN::GetEN ()
-    {
-      return m_en_p;
     }
 
     TypeId
     EN::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::EN::nnnSIM")
-    		    .SetGroupName ("Nnn")
-    		    .SetParent<Header> ()
-    		    .AddConstructor<EN> ()
-    		    ;
+	  .SetGroupName ("Nnn")
+	  .SetParent<Header> ()
+	  .AddConstructor<EN> ()
+	  ;
       return tid;
     }
 
@@ -96,37 +90,46 @@ namespace wire {
     uint32_t
     EN::GetSerializedSize (void) const
     {
-      uint16_t poatype = m_en_p->GetPoaType ();
+      uint16_t poatype = m_ptr->GetPoaType ();
       size_t poatype_size = 0;
       size_t poa_num = 0;
 
       if (poatype == 0)
 	{
-	  poa_num = m_en_p->GetNumPoa ();
+	  poa_num = m_ptr->GetNumPoa ();
 	  poatype_size = 6; // Hardcoded size of a Mac48Address
 	}
 
       size_t size =
-	  4 +                                  /* Packetid */
-	  2 +                                  /* Length of packet */
-	  2 +                                  /* Timestamp */
-	  2 +                                  /* PoA Type */
-	  2 +                                  /* Number of PoAs */
-	  poa_num * poatype_size;              /* Total size of PoAs */
-
-      NS_LOG_INFO ("Serialize size = " << size);
+	  CommonGetSerializedSize() +         /* Common header */
+	  2 +                                 /* PoA Type*/
+	  2 +                                 /* Number of PoAs */
+	  poa_num * poatype_size              /* Total size of PoAs */
+	  ;
       return size;
     }
 
     void
     EN::Serialize (Buffer::Iterator start) const
     {
-      // Get the total size of the serialized packet
-      uint32_t totalsize = GetSerializedSize ();
-      // Find out the PoA total size
-      uint32_t totalpoabufsize = (totalsize -4 - 8);
+      // Serialize the header
+      CommonSerialize(start);
 
-      uint16_t poatype = m_en_p->GetPoaType ();
+      // Remember that CommonSerialize doesn't write the Packet length
+      // Move the iterator forward
+      start.Next(CommonGetSerializedSize() -2);
+
+      NS_LOG_INFO ("Serialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Serialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Serialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Serialize -> Pkt Len = " << GetSerializedSize());
+
+      // Serialize the packet size
+      start.WriteU16(GetSerializedSize());
+
+      uint16_t poatype = m_ptr->GetPoaType ();
+
+      NS_LOG_INFO ("Serialize -> PoA Type = " << poatype);
       size_t bufsize = 0;
 
       if (poatype == 0)
@@ -135,22 +138,9 @@ namespace wire {
       // Create a buffer to be able to serialize PoAs
       uint8_t buffer[bufsize];
 
-      uint32_t totalpoas = m_en_p->GetNumPoa();
+      uint32_t totalpoas = m_ptr->GetNumPoa();
 
-      NS_ASSERT_MSG (totalpoabufsize == (totalpoas * bufsize),
-                     "Incorrect number of PoAs or serialization sizes" );
-
-      // Serialize packetid
-      start.WriteU32(m_en_p->GetPacketId());
-      // Get the length of the packet
-      start.WriteU16(totalsize - 4); // Minus packetid size of 32 bits
-      // Check that the lifetime is within the limits
-      NS_ASSERT_MSG (0 <= m_en_p->GetLifetime ().ToInteger (Time::S) &&
-                     m_en_p->GetLifetime ().ToInteger (Time::S) < 65535,
-                     "Incorrect Lifetime (should not be smaller than 0 and larger than 65535");
-
-      // Round lifetime to seconds
-      start.WriteU16 (static_cast<uint16_t> (m_en_p->GetLifetime ().ToInteger (Time::S)));
+      NS_LOG_INFO ("Serialize -> PoA Num = " << totalpoas);
 
       // Serialize the PoA Type
       start.WriteU16(poatype);
@@ -162,13 +152,14 @@ namespace wire {
       for (int i = 0; i < totalpoas; i++)
 	{
 	  // Use the CopyTo function to get the bit representation
-	  m_en_p->GetOnePoa(i).CopyTo(buffer);
+	  m_ptr->GetOnePoa(i).CopyTo(buffer);
 
 	  // Since the bit representation is in 8 bit chunks, serialize it
 	  // accordingly
 	  for (int j = 0; j < bufsize; j++)
 	    start.WriteU8(buffer[j]);
 	}
+      NS_LOG_INFO("Finished serialization");
     }
 
     uint32_t
@@ -176,65 +167,53 @@ namespace wire {
     {
       Buffer::Iterator i = start;
 
-      // Read packet id
-      if (i.ReadU32 () != 1)
+      // Deserialize the header
+      uint32_t skip = CommonDeserialize (i);
+
+      NS_LOG_INFO ("Deserialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Deserialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Deserialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Deserialize -> Pkt len = " << m_packet_len);
+
+      // Check packet ID
+      if (m_ptr->GetPacketId() != nnn::EN_NNN)
 	throw new ENException ();
 
-      // Read length of packet
-      uint16_t packet_len = i.ReadU16 ();
+      // Move the iterator forward
+      i.Next(skip);
 
-      // Read lifetime of the packet
-      m_en_p->SetLifetime (Seconds (i.ReadU16 ()));
-
-      // Read the PoA Type
-      m_en_p->SetPoaType(i.ReadU16 ());
-
+      uint16_t poatype = i.ReadU16 ();
       size_t bufsize = 0;
 
-      // Obtain how big the buffer has to be (dividing by 8)
-      if (m_en_p->GetPoaType () == 0)
-	{
-	  bufsize = 6;
-	}
+      NS_LOG_INFO ("Deserialize -> PoA Type = " << poatype);
 
-      // Read the number of PoAs the packet is holding
-      uint32_t num_poa = i.ReadU16 ();
+      if (poatype == 0)
+	bufsize = 6; // Hardcoded Mac48Address size
 
-      // Update the length. The resulting size is the packet size that
-      // we have to deserialize
-      packet_len -= 8;
+      uint16_t totalpoas = i.ReadU16 ();
 
-      // Create the buffer size
+      NS_LOG_INFO ("Deserialize -> PoA Num = " << totalpoas);
+
+      // Create a buffer to be able to deserialize PoAs
       uint8_t buffer[bufsize];
 
-      // For the number of PoAs, read the 8 bits until the end of the PoA size
-      for (int k = 0; k < num_poa; k++)
+      for (int k = 0; k < totalpoas; k++)
 	{
 	  for (int j = 0; j < bufsize; j++)
 	    {
 	      buffer[j] = i.ReadU8 ();
 	    }
 
-	  if (m_en_p->GetPoaType () == 0)
-	    {
-	      Address tmp = Address ();
-	      tmp.CopyFrom (buffer, bufsize);
+	  Address tmp = Address ();
+	  tmp.CopyFrom(buffer, bufsize);
 
-	      m_en_p->AddPoa (tmp);
-	    }
+	  m_ptr->AddPoa(tmp);
 	}
 
       NS_ASSERT (GetSerializedSize () == (i.GetDistanceFrom (start)));
 
       return i.GetDistanceFrom (start);
     }
-
-    void
-    EN::Print (std::ostream &os) const
-    {
-      m_en_p->Print (os);
-    }
-
   }
 }
 
