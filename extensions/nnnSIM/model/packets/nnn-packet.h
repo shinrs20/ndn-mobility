@@ -37,7 +37,7 @@ namespace ns3
     /**
      * @brief enum for payload type the NNN data transmission packets are carrying
      */
-    enum NNN_PDU_TRANS { NDN_NNN = 1 };
+    enum NNN_PDU_TRANS { NDN_NNN = 1 , NNN_NNN };
 
     /**
      * @brief enum for NNN version being used
