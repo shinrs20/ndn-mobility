@@ -38,9 +38,6 @@ namespace wire {
       DEN ();
       DEN (Ptr<nnn::DEN> den_p);
 
-      Ptr<nnn::DEN>
-      GetDEN ();
-
       static Ptr<Packet>
       ToWire (Ptr<const nnn::DEN> den_p);
 
