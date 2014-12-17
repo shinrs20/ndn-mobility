@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnnsim-ren.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include "../nnnsim-common-hdr.h"
 #include "../nnnsim-common.h"
 
 NNN_NAMESPACE_BEGIN
@@ -31,14 +31,11 @@ namespace wire {
    */
   namespace nnnSIM {
 
-    class REN : public Header
+    class REN : public CommonHeader<nnn::REN>
     {
     public:
       REN ();
       REN (Ptr<nnn::REN> ren_p);
-
-      Ptr<nnn::REN>
-      GetREN ();
 
       static Ptr<Packet>
       ToWire (Ptr<const nnn::REN> ren_p);
@@ -48,16 +45,11 @@ namespace wire {
 
       // from Header
       static TypeId GetTypeId (void);
-      virtual TypeId GetInstanceTypeId (void) const;
-      virtual void Print (std::ostream &os) const;
-      virtual uint32_t GetSerializedSize (void) const;
-      virtual void Serialize (Buffer::Iterator start) const;
-      virtual uint32_t Deserialize (Buffer::Iterator start);
-
-    private:
-      Ptr<nnn::REN> m_ren_p;
+      TypeId GetInstanceTypeId (void) const;
+      uint32_t GetSerializedSize (void) const;
+      void Serialize (Buffer::Iterator start) const;
+      uint32_t Deserialize (Buffer::Iterator start);
     };
-
   }
 }
 

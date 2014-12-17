@@ -29,29 +29,23 @@ namespace wire {
     NS_LOG_COMPONENT_DEFINE ("nnn.wire.nnnSIM.REN");
 
     REN::REN ()
-    : m_ren_p (Create<nnn::REN> ())
+    : CommonHeader<nnn::REN>()
     {
     }
 
     REN::REN (Ptr<nnn::REN> ren_p)
-    : m_ren_p (ren_p)
+    : CommonHeader<nnn::REN>(ren_p)
     {
-    }
-
-    Ptr<nnn::REN>
-    REN::GetREN()
-    {
-      return m_ren_p;
     }
 
     TypeId
     REN::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::REN::nnnSIM")
-    		    .SetGroupName ("Nnn")
-    		    .SetParent<Header> ()
-    		    .AddConstructor<REN> ()
-    		    ;
+	  .SetGroupName ("Nnn")
+	  .SetParent<Header> ()
+	  .AddConstructor<REN> ()
+	  ;
       return tid;
     }
 
@@ -96,51 +90,46 @@ namespace wire {
     uint32_t
     REN::GetSerializedSize (void) const
     {
-      uint16_t poatype = m_ren_p->GetPoaType ();
+      uint16_t poatype = m_ptr->GetPoaType ();
       size_t poatype_size = 0;
       size_t poa_num = 0;
 
       if (poatype == 0)
 	{
-	  poa_num = m_ren_p->GetNumPoa ();
+	  poa_num = m_ptr->GetNumPoa ();
 	  poatype_size = 6; // Hardcoded size of a Mac48Address
 	}
 
       size_t size =
-	  4 +  									/* Packetid */
-	  2 +                                  /* Length of packet */
-	  2 +                                  /* Timestamp */
-	  2 +                                  /* PoA Type */
-	  2 +                                  /* Number of PoAs */
-	  poa_num * poatype_size +             /* Total size of PoAs */
-	  2 +                                  /* Lease time */
-	  NnnSim::SerializedSizeName (m_ren_p->GetName ()); /* Name size */
-
-      NS_LOG_INFO ("Serialize size = " << size);
+	  CommonGetSerializedSize() +                       /* Common header */
+	  2 +                                               /* PoA Type */
+	  2 +                                               /* Number of PoAs */
+	  poa_num * poatype_size +                          /* Total size of PoAs */
+	  2 +                                               /* Lease time */
+	  NnnSim::SerializedSizeName (m_ptr->GetName ()); /* Name size */
       return size;
     }
 
     void
     REN::Serialize (Buffer::Iterator start) const
     {
-      // Get the total size of the serialized packet
-      uint32_t totalsize = GetSerializedSize ();
+      // Serialize the header
+      CommonSerialize(start);
 
-      // Serialize packetid
-      start.WriteU32(m_ren_p->GetPacketId());
+      // Remember that CommonSerialize doesn't write the Packet length
+      // Move the iterator forward
+      start.Next(CommonGetSerializedSize() -2);
 
-      // Get the length of the packet
-      start.WriteU16(totalsize - 4); // Minus packetid size of 32 bits
+      NS_LOG_INFO ("Serialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Serialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Serialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Serialize -> Pkt Len = " << GetSerializedSize());
 
-      // Check that the lifetime is within the limits
-      NS_ASSERT_MSG (0 <= m_ren_p->GetLifetime ().ToInteger (Time::S) &&
-                     m_ren_p->GetLifetime ().ToInteger (Time::S) < 65535,
-                     "Incorrect Lifetime (should not be smaller than 0 and larger than 65535");
+      // Serialize the packet size
+      start.WriteU16(GetSerializedSize());
 
-      // Round lifetime to seconds
-      start.WriteU16 (static_cast<uint16_t> (m_ren_p->GetLifetime ().ToInteger (Time::S)));
-
-      uint16_t poatype = m_ren_p->GetPoaType ();
+      uint16_t poatype = m_ptr->GetPoaType ();
+      NS_LOG_INFO ("Serialize -> PoA Type = " << poatype);
       size_t bufsize = 0;
 
       if (poatype == 0)
@@ -149,7 +138,8 @@ namespace wire {
       // Create a buffer to be able to serialize PoAs
       uint8_t buffer[bufsize];
 
-      uint32_t totalpoas = m_ren_p->GetNumPoa();
+      uint32_t totalpoas = m_ptr->GetNumPoa();
+      NS_LOG_INFO ("Serialize -> PoA Num = " << totalpoas);
 
       // Serialize the PoA Type
       start.WriteU16(poatype);
@@ -161,7 +151,7 @@ namespace wire {
       for (int i = 0; i < totalpoas; i++)
 	{
 	  // Use the CopyTo function to get the bit representation
-	  m_ren_p->GetOnePoa(i).CopyTo(buffer);
+	  m_ptr->GetOnePoa(i).CopyTo(buffer);
 
 	  // Since the bit representation is in 8 bit chunks, serialize it
 	  // accordingly
@@ -169,15 +159,17 @@ namespace wire {
 	    start.WriteU8(buffer[j]);
 	}
 
-      NS_ASSERT_MSG (0 <= m_ren_p->GetRemainLease ().ToInteger (Time::S) &&
-                     m_ren_p->GetRemainLease ().ToInteger (Time::S) < 65535,
-                     "Incorrect Lease time (should not be smaller than 0 and larger than 65535");
+      NS_ASSERT_MSG (0 <= m_ptr->GetRemainLease ().ToInteger (Time::S) &&
+		     m_ptr->GetRemainLease ().ToInteger (Time::S) < 65535,
+		     "Incorrect Lease time (should not be smaller than 0 and larger than 65535");
 
-      // Round lease time to seconds
-      start.WriteU16 (static_cast<uint16_t> (m_ren_p->GetRemainLease ().ToInteger (Time::S)));
+      // Round lease time to seconds and serialize
+      start.WriteU16 (static_cast<uint16_t> (m_ptr->GetRemainLease ().ToInteger (Time::S)));
 
       // Serialize NNN address
-      NnnSim::SerializeName(start, m_ren_p->GetName());
+      NnnSim::SerializeName(start, m_ptr->GetName());
+
+      NS_LOG_INFO("Finished serialization");
     }
 
     uint32_t
@@ -185,68 +177,59 @@ namespace wire {
     {
       Buffer::Iterator i = start;
 
-      // Read packet id
-      if (i.ReadU32 () != 5)
+      // Deserialize the header
+      uint32_t skip = CommonDeserialize (i);
+
+      NS_LOG_INFO ("Deserialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Deserialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Deserialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Deserialize -> Pkt len = " << m_packet_len);
+
+      // Check packet ID
+      if (m_ptr->GetPacketId() != nnn::REN_NNN)
 	throw new RENException ();
 
-      // Read length of packet
-      uint16_t packet_len = i.ReadU16 ();
+      // Move the iterator forward
+      i.Next(skip);
 
-      // Read lifetime of the packet
-      m_ren_p->SetLifetime (Seconds (i.ReadU16 ()));
-
-      // Read the PoA Type
-      m_ren_p->SetPoaType (i.ReadU16 ());
-
-      // Read the number of PoAs
+      uint16_t poatype = i.ReadU16 ();
       size_t bufsize = 0;
 
-      // Obtain how big the buffer has to be (dividing by 8)
-      if (m_ren_p->GetPoaType () == 0)
-	{
-	  bufsize = 6;
-	}
+      NS_LOG_INFO ("Deserialize -> PoA Type = " << poatype);
 
-      // Read the number of PoAs the packet is holding
-      uint32_t num_poa = i.ReadU16 ();
+      if (poatype == 0)
+	bufsize = 6; // Hardcoded Mac48Address size
 
-      // Create the buffer size
+      uint16_t totalpoas = i.ReadU16 ();
+
+      NS_LOG_INFO ("Deserialize -> PoA Num = " << totalpoas);
+
+      // Create a buffer to be able to deserialize PoAs
       uint8_t buffer[bufsize];
 
-      // For the number of PoAs, read the 8 bits until the end of the PoA size
-      for (int k = 0; k < num_poa; k++)
+      for (int k = 0; k < totalpoas; k++)
 	{
 	  for (int j = 0; j < bufsize; j++)
 	    {
 	      buffer[j] = i.ReadU8 ();
 	    }
 
-	  if (m_ren_p->GetPoaType () == 0)
-	    {
-	      Address tmp = Address ();
-	      tmp.CopyFrom (buffer, bufsize);
+	  Address tmp = Address ();
+	  tmp.CopyFrom(buffer, bufsize);
 
-	      m_ren_p->AddPoa (tmp);
-	    }
+	  m_ptr->AddPoa(tmp);
 	}
 
-      // Read the lease time
-      m_ren_p->SetRemainLease (Seconds (i.ReadU16 ()));
+      // Deserialize the lease time
+      m_ptr->SetRemainLease (Seconds (i.ReadU16 ()));
 
       // Deserialize the old name
-      m_ren_p->SetName(NnnSim::DeserializeName(i));
+      m_ptr->SetName(NnnSim::DeserializeName(i));
 
       NS_ASSERT (GetSerializedSize () == (i.GetDistanceFrom (start)));
 
       return i.GetDistanceFrom (start);
     }
-
-    void
-    REN::Print (std::ostream &os) const
-    {
-      m_ren_p->Print (os);
-    }
-
   }
 }
 
