@@ -33,14 +33,20 @@ using namespace nnnSIM;
 
 int main (int argc, char *argv[])
 {
-  Ptr<nnn::DEN> source = Create<nnn::DEN> ();
+
 
   Mac48Address n1_mac00 = Mac48Address ("01:B2:03:04:05:06");
   Mac48Address n1_mac01 = Mac48Address ("01:02:03:04:05:06");
 
   Ptr<NNNAddress> addr = Create<NNNAddress> ("ae.34.24");
+  Ptr<NNNAddress> addr2 = Create<NNNAddress> ("45.34.76");
+
   Time ttl = Seconds (20);
   Time lease = Minutes(2);
+  Time release = Seconds (30);
+
+  // Test DEN packet serialization
+  Ptr<nnn::DEN> source = Create<nnn::DEN> ();
 
   source->SetName(addr);
   source->SetLifetime(ttl);
@@ -55,6 +61,7 @@ int main (int argc, char *argv[])
 
   std::cout << std::endl << "After " << std::endl << *target << std::endl;
 
+  // Test AEN packet serialization
   Ptr<nnn::AEN> source1 = Create<nnn::AEN> ();
 
   source1->SetName(addr);
@@ -69,4 +76,99 @@ int main (int argc, char *argv[])
 
   std::cout << std::endl << "After " << std::endl << *target1 << std::endl;
 
+  Ptr<Packet> packet1 = Create<Packet>(*packet->Copy());
+
+  // Test DO packet serialization
+  Ptr<nnn::DO> source2 = Create<nnn::DO> ();
+
+  source2->SetName(addr);
+  source2->SetLifetime(ttl);
+  source2->SetPayload(packet1);
+  source2->SetPDUPayloadType(NNN_NNN);
+
+  std::cout << std::endl << "Before" << std::endl << *source2 << std::endl;
+
+  packet = wire::nnnSIM::DO::ToWire(source2);
+
+  Ptr<nnn::DO> target2 = wire::nnnSIM::DO::FromWire(packet);
+
+  std::cout << std::endl << "After " << std::endl << *target2 << std::endl;
+
+  // Test EN packet serialization
+  Ptr<nnn::EN> source3 = Create<nnn::EN> ();
+
+  source3->AddPoa(n1_mac00.operator ns3::Address());
+  source3->SetLifetime(ttl);
+
+  std::cout << std::endl << "Before" << std::endl << *source3 << std::endl;
+
+  packet = wire::nnnSIM::EN::ToWire(source3);
+
+  Ptr<nnn::EN> target3 = wire::nnnSIM::EN::FromWire(packet);
+
+  std::cout << std::endl << "Before" << std::endl << *target3 << std::endl;
+
+  // Test INF packet serialization
+  Ptr<nnn::INF> source4 = Create<nnn::INF> ();
+
+  source4->SetLifetime(ttl);
+  source4->SetOldName(addr);
+  source4->SetNewName(addr2);
+  source4->SetRemainLease(release);
+
+  std::cout << std::endl << "Before" << std::endl << *source4 << std::endl;
+
+  packet = wire::nnnSIM::INF::ToWire(source4);
+
+  Ptr<nnn::INF> target4 = wire::nnnSIM::INF::FromWire(packet);
+
+  std::cout << std::endl << "Before" << std::endl << *target4 << std::endl;
+
+  // Test REN packet serialization
+  Ptr<nnn::REN> source5 = Create<nnn::REN> ();
+
+  source5->SetLifetime(ttl);
+  source5->SetName(addr);
+  source5->SetRemainLease(release);
+  source5->AddPoa(n1_mac00.operator ns3::Address());
+  source5->AddPoa(n1_mac01.operator ns3::Address());
+
+  std::cout << std::endl << "Before" << std::endl << *source5 << std::endl;
+
+  packet = wire::nnnSIM::REN::ToWire(source5);
+
+  Ptr<nnn::REN> target5 = wire::nnnSIM::REN::FromWire(packet);
+
+  std::cout << std::endl << "After" << std::endl << *target5 << std::endl;
+
+  // Test SO packet serialization
+  Ptr<nnn::SO> source6 = Create<nnn::SO> ();
+
+  source6->SetName(addr);
+  source6->SetLifetime(ttl);
+  source6->SetPayload(packet1);
+  source6->SetPDUPayloadType(NNN_NNN);
+
+  std::cout << std::endl << "Before" << std::endl << *source6 << std::endl;
+
+  packet = wire::nnnSIM::SO::ToWire(source6);
+
+  Ptr<nnn::SO> target6 = wire::nnnSIM::SO::FromWire(packet);
+
+  std::cout << std::endl << "After " << std::endl << *target6 << std::endl;
+
+  // Test NULLp packet serialization
+  Ptr<nnn::NULLp> source7 = Create<nnn::NULLp> ();
+
+  source7->SetLifetime(ttl);
+  source7->SetPayload(packet1);
+  source7->SetPDUPayloadType(NNN_NNN);
+
+  std::cout << std::endl << "Before" << std::endl << *source7 << std::endl;
+
+  packet = wire::nnnSIM::NULLp::ToWire(source7);
+
+  Ptr<nnn::NULLp> target7 = wire::nnnSIM::NULLp::FromWire(packet);
+
+  std::cout << std::endl << "After " << std::endl << *target7 << std::endl;
 }
