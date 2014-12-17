@@ -18,12 +18,28 @@
  *  along with nnn-face.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ *	\file
+ *	\author		Zhu Li, Jairo Eduardo Lopez
+ *	\copyright	Waseda University, Sato Laboratory
+ *	\date		2014
+ *	\brief		[brief description]
+ *	\details	[detailed description]
+ */
+
+/*
+ *  Doxygen template for functions:
+ *  \function (this can be omitted if the comment block is placed immediately before the declaration
+ *  \brief		[brief description]
+ *  \param	[parameter name] [description]
+ *  \return [description of the return value]
+ */
+
 #ifndef NNN_Face_H
 #define NNN_Face_H
 
 #include <ostream>
 #include <algorithm>
-
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/object.h>
 #include <ns3-dev/ns3/nstime.h>
@@ -50,9 +66,11 @@ class INF;
  * \ingroup nnn
  * \defgroup nnn-face Faces
  */
+
 /**
- * \ingroup nnn-Face
- * \brief Virtual class defining NNN Face
+ * \class 	Face
+ * \ingroup nnn-face
+ * \brief 	Virtual class defining NNN face
  *
  * This class defines basic functionality of NNN face. Face is core
  * component responsible for actual delivery of all NNN packets to and
@@ -64,14 +82,15 @@ class Face :
 {
 public:
 	static TypeId
-	GetTypeId ();
 
 	/**
 	 * \brief NDN protocol handlers
-	 *
-	 * \param Face Face from which packet has been received
-	 * \param packet Original packet
+	 * \param Face 		Face from which packet has been received
+	 * \param packet 	Original packet
 	 */
+	GetTypeId ();
+
+
 	typedef Callback<void, Ptr<Face>, Ptr<NULLp> > NULLpHandler;
 	typedef Callback<void, Ptr<Face>, Ptr<SO> > SOHandler;
 	typedef Callback<void, Ptr<Face>, Ptr<DO> > DOHandler;
@@ -81,15 +100,11 @@ public:
 	typedef Callback<void, Ptr<Face>, Ptr<DEN> > DENHandler;
 	typedef Callback<void, Ptr<Face>, Ptr<INF> > INFHandler;
 
-	/**
-	 * \brief Default constructor
-	 */
+	/// Default constructor
 	Face (Ptr<Node> node);
 	virtual ~Face();
 
-	/**
-	 * @brief Get node to which this Face is associated
-	 */
+	/// Get node to which this face is associated
 	Ptr<Node>
 	GetNode () const;
 
