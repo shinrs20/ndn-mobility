@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnnsim-null.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include "../nnnsim-common-hdr.h"
 #include "../nnnsim-common.h"
 NNN_NAMESPACE_BEGIN
 /**
@@ -32,14 +32,11 @@ namespace wire {
     /**
      * @brief Routines to serialize/deserialize NULL packets in nnnSIM format
      */
-    class NULLp : public Header
+    class NULLp : public CommonHeader<nnn::NULLp>
     {
     public:
       NULLp ();
       NULLp (Ptr<nnn::NULLp> null_p);
-
-      Ptr<nnn::NULLp>
-      GetNULLp ();
 
       static Ptr<Packet>
       ToWire (Ptr<const nnn::NULLp> null_p);
@@ -49,14 +46,10 @@ namespace wire {
 
       // from Header
       static TypeId GetTypeId (void);
-      virtual TypeId GetInstanceTypeId (void) const;
-      virtual void Print (std::ostream &os) const;
-      virtual uint32_t GetSerializedSize (void) const;
-      virtual void Serialize (Buffer::Iterator start) const;
-      virtual uint32_t Deserialize (Buffer::Iterator start);
-
-    private:
-      Ptr<nnn::NULLp> m_null_p;
+      TypeId GetInstanceTypeId (void) const;
+      uint32_t GetSerializedSize (void) const;
+      void Serialize (Buffer::Iterator start) const;
+      uint32_t Deserialize (Buffer::Iterator start);
     };
   }
 }
