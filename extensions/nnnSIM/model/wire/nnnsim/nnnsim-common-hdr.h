@@ -24,8 +24,6 @@
 #ifndef NNNSIM_COMMON_HDR_H_
 #define NNNSIM_COMMON_HDR_H_
 
-
-
 namespace ns3
 {
   namespace nnn

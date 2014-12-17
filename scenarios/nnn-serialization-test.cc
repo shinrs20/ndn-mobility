@@ -45,9 +45,9 @@ int main (int argc, char *argv[])
 
   std::cout << "Before " << std::endl << *source << std::endl;
 
-  Ptr<Packet> packet = wire::nnnSIM::TestDEN::ToWire(source);
+  Ptr<Packet> packet = wire::nnnSIM::DEN::ToWire(source);
 
-  Ptr<nnn::DEN> target = wire::nnnSIM::TestDEN::FromWire(packet);
+  Ptr<nnn::DEN> target = wire::nnnSIM::DEN::FromWire(packet);
 
   std::cout << std::endl << "After " << std::endl << *target << std::endl;
 

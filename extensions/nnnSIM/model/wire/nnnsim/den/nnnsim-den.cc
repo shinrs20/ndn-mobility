@@ -29,29 +29,23 @@ namespace wire{
     NS_LOG_COMPONENT_DEFINE ("nnn.wire.nnnSIM.DEN");
 
     DEN::DEN ()
-    : m_den_p (Create<nnn::DEN>())
+    : CommonHeader<nnn::DEN>()
     {
     }
 
     DEN::DEN(Ptr<nnn::DEN> den_p)
-    : m_den_p (den_p)
+    : CommonHeader<nnn::DEN>(den_p)
     {
-    }
-
-    Ptr<nnn::DEN>
-    DEN::GetDEN()
-    {
-      return m_den_p;
     }
 
     TypeId
     DEN::GetTypeId(void)
     {
       static TypeId tid = TypeId("ns3::nnn::DEN::nnnSIM")
-				    .SetGroupName("Nnn")
-				    .SetParent<Header> ()
-				    .AddConstructor<DEN> ()
-				    ;
+	  .SetGroupName("Nnn")
+	  .SetParent<Header> ()
+	  .AddConstructor<DEN> ()
+	  ;
       return tid;
     }
 
@@ -92,41 +86,82 @@ namespace wire{
 
       return den_p;
     }
+
     uint32_t
     DEN::GetSerializedSize(void) const
     {
-      size_t size =
-	  4 +									/* Packetid */
-	  2 +									/* Length of packet */
-	  2 +									/* Timestamp */
-	  NnnSim::SerializedSizeName(m_den_p->GetName()); /* Name size */
+      uint16_t poatype = m_ptr->GetPoaType ();
+      size_t poatype_size = 0;
+      size_t poa_num = 0;
 
-      NS_LOG_INFO ("Serialize size = " << size);
+      if (poatype == 0)
+	{
+	  poa_num = m_ptr->GetNumPoa ();
+	  poatype_size = 6; // Hardcoded size of a Mac48Address
+	}
+
+      size_t size = CommonGetSerializedSize() +         /* Common header */
+	  2 +                                           /* PoA Type*/
+	  2 +                                           /* Number of PoAs */
+	  poa_num * poatype_size +                      /* Total size of PoAs */
+	  NnnSim::SerializedSizeName(m_ptr->GetName()); /* Name size */
       return size;
     }
 
     void
     DEN::Serialize(Buffer::Iterator start) const
     {
-      // Get the total size of the serialized packet
-      uint32_t totalsize = GetSerializedSize();
+      // Serialize the header
+      CommonSerialize(start);
 
-      //Serialize packetid
-      start.WriteU32(m_den_p->GetPacketId());
+      // Remember that CommonSerialize doesn't write the Packet length
+      // Move the iterator forward
+      start.Next(CommonGetSerializedSize() -2);
 
-      // Get the length of the packet
-      start.WriteU16(totalsize - 4); // Minus packetid size of 32 bits
+      NS_LOG_INFO ("Serialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Serialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Serialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Serialize -> Pkt Len = " << GetSerializedSize());
 
-      // Check that the lifetime is within the limits
-      NS_ASSERT_MSG (0 <= m_den_p->GetLifetime().ToInteger (Time::S) &&
-                     m_den_p->GetLifetime().ToInteger(Time::S) < 65535,
-                     "Incorrect Lifetime (should not be smaller than 0 and larger than 65535");
+      start.WriteU16(GetSerializedSize());
 
-      // Round lifetime to seconds
-      start.WriteU16 (static_cast<uint16_t> (m_den_p->GetLifetime().ToInteger(Time::S)));
+      uint16_t poatype = m_ptr->GetPoaType ();
+
+      NS_LOG_INFO ("Serialize -> PoA Type = " << poatype);
+      size_t bufsize = 0;
+
+      if (poatype == 0)
+	bufsize = 6; // Hardcoded Mac48Address size
+
+      // Create a buffer to be able to serialize PoAs
+      uint8_t buffer[bufsize];
+
+      uint32_t totalpoas = m_ptr->GetNumPoa();
+
+      NS_LOG_INFO ("Serialize -> PoA Num = " << totalpoas);
+
+      // Serialize PoA Type
+      start.WriteU16(poatype);
+
+      // Serialize Number of PoAs
+      start.WriteU16(totalpoas);
+
+      // Serialize PoAs
+      for (int i = 0; i < totalpoas; i++)
+	{
+	  // Use the CopyTo function to get the bit representation
+	  m_ptr->GetOnePoa(i).CopyTo(buffer);
+
+	  // Since the bit representation is in 8 bit chunks, serialize it
+	  // accordingly
+	  for (int j = 0; j < bufsize; j++)
+	    start.WriteU8(buffer[j]);
+	}
 
       // Serialize NNN address
-      NnnSim::SerializeName(start, m_den_p->GetName());
+      NnnSim::SerializeName(start, m_ptr->GetName());
+
+      NS_LOG_INFO("Finished serialization");
     }
 
     uint32_t
@@ -134,27 +169,56 @@ namespace wire{
     {
       Buffer::Iterator i = start;
 
-      // Read packet id
-      if (i.ReadU32() != 6)
+      // Deserialize the header
+      uint32_t skip = CommonDeserialize (i);
+
+      NS_LOG_INFO ("Deserialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Deserialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Deserialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Deserialize -> Pkt len = " << m_packet_len);
+
+      // Check packet ID
+      if (m_ptr->GetPacketId() != nnn::DEN_NNN)
 	throw new DENException ();
 
-      // Read length of packet
-      uint16_t pakcet_len = i.ReadU16();
+      // Move the iterator forward
+      i.Next(skip);
 
-      // Read lifetime of the packet
-      m_den_p->SetLifetime (Seconds (i.ReadU16()));
+      uint16_t poatype = i.ReadU16 ();
+      size_t bufsize = 0;
+
+      NS_LOG_INFO ("Deserialize -> PoA Type = " << poatype);
+
+      if (poatype == 0)
+	bufsize = 6; // Hardcoded Mac48Address size
+
+      uint16_t totalpoas = i.ReadU16 ();
+
+      NS_LOG_INFO ("Deserialize -> PoA Num = " << totalpoas);
+
+      // Create a buffer to be able to deserialize PoAs
+      uint8_t buffer[bufsize];
+
+      for (int k = 0; k < totalpoas; k++)
+	{
+	  for (int j = 0; j < bufsize; j++)
+	    {
+	      buffer[j] = i.ReadU8 ();
+	    }
+
+	  Address tmp = Address ();
+	  tmp.CopyFrom(buffer, bufsize);
+
+	  m_ptr->AddPoa(tmp);
+	}
+
+      // Deserialize the old name
+      m_ptr->SetName(NnnSim::DeserializeName(i));
 
       NS_ASSERT (GetSerializedSize ()== (i.GetDistanceFrom (start)));
 
       return i.GetDistanceFrom (start);
     }
-
-    void
-    DEN::Print (std::ostream &os) const
-    {
-      m_den_p->Print(os);
-    }
-
   }
 }
 
