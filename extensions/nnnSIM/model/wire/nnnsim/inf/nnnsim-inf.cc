@@ -29,29 +29,23 @@ namespace wire {
     NS_LOG_COMPONENT_DEFINE ("nnn.wire.nnnSIM.INF");
 
     INF::INF ()
-    : m_inf_p (Create<nnn::INF> ())
+    : CommonHeader<nnn::INF> ()
     {
     }
 
     INF::INF (Ptr<nnn::INF> inf_p)
-    : m_inf_p (inf_p)
+    : CommonHeader<nnn::INF>(inf_p)
     {
-    }
-
-    Ptr<nnn::INF>
-    INF::GetINF()
-    {
-      return m_inf_p;
     }
 
     TypeId
     INF::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::INF::nnnSIM")
-    		    .SetGroupName ("Nnn")
-    		    .SetParent<Header> ()
-    		    .AddConstructor<INF> ()
-    		    ;
+	  .SetGroupName ("Nnn")
+	  .SetParent<Header> ()
+	  .AddConstructor<INF> ()
+	  ;
       return tid;
     }
 
@@ -97,49 +91,44 @@ namespace wire {
     INF::GetSerializedSize (void) const
     {
       size_t size =
-	  4 +                                  /* Packetid */
-	  2 +                                  /* Length of packet */
-	  2 +                                  /* Timestamp */
-	  2 +                                  /* re Lease time */
-	  NnnSim::SerializedSizeName (m_inf_p->GetOldName ()) + /* Name size */
-	  NnnSim::SerializedSizeName (m_inf_p->GetNewName ()); /* Name size */
-
-      NS_LOG_INFO ("Serialize size = " << size);
+	  CommonGetSerializedSize() +                         /* Common header */
+	  2 +                                                 /* re Lease time */
+	  NnnSim::SerializedSizeName (m_ptr->GetOldName ()) + /* Name size */
+	  NnnSim::SerializedSizeName (m_ptr->GetNewName ());  /* Name size */
       return size;
     }
 
     void
     INF::Serialize (Buffer::Iterator start) const
     {
-      // Get the total size of the serialized packet
-      uint32_t totalsize = GetSerializedSize ();
+      // Serialize the header
+      CommonSerialize(start);
 
-      // Serialize packetid
-      start.WriteU32(m_inf_p->GetPacketId());
+      // Remember that CommonSerialize doesn't write the Packet length
+      // Move the iterator forward
+      start.Next(CommonGetSerializedSize() -2);
 
-      // Get the length of the packet
-      start.WriteU16(totalsize - 4); // Minus packetid size of 32 bits
+      NS_LOG_INFO ("Serialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Serialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Serialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Serialize -> Pkt Len = " << GetSerializedSize());
 
-      // Check that the lifetime is within the limits
-      NS_ASSERT_MSG (0 <= m_inf_p->GetLifetime ().ToInteger (Time::S) &&
-                     m_inf_p->GetLifetime ().ToInteger (Time::S) < 65535,
-                     "Incorrect Lifetime (should not be smaller than 0 and larger than 65535");
+      // Serialize the packet size
+      start.WriteU16(GetSerializedSize());
 
-      // Round lifetime to seconds
-      start.WriteU16 (static_cast<uint16_t> (m_inf_p->GetLifetime ().ToInteger (Time::S)));
+      NS_ASSERT_MSG (0 <= m_ptr->GetRemainLease ().ToInteger (Time::S) &&
+		     m_ptr->GetRemainLease ().ToInteger (Time::S) < 65535,
+		     "Incorrect Lease time (should not be smaller than 0 and larger than 65535");
 
-      NS_ASSERT_MSG (0 <= m_inf_p->GetRemainLease ().ToInteger (Time::S) &&
-                     m_inf_p->GetRemainLease ().ToInteger (Time::S) < 65535,
-                     "Incorrect Lease time (should not be smaller than 0 and larger than 65535");
-
-      // Round lease time to seconds
-      start.WriteU16 (static_cast<uint16_t> (m_inf_p->GetRemainLease ().ToInteger (Time::S)));
+      // Round lease time to seconds and serialize
+      start.WriteU16 (static_cast<uint16_t> (m_ptr->GetRemainLease ().ToInteger (Time::S)));
 
       // Serialize NNN address
-      NnnSim::SerializeName(start, m_inf_p->GetOldName());
+      NnnSim::SerializeName(start, m_ptr->GetOldName());
 
       // Serialize NNN address
-      NnnSim::SerializeName(start, m_inf_p->GetNewName());
+      NnnSim::SerializeName(start, m_ptr->GetNewName());
+      NS_LOG_INFO("Finished serialization");
     }
 
     uint32_t
@@ -147,36 +136,34 @@ namespace wire {
     {
       Buffer::Iterator i = start;
 
-      // Read packet id
-      if (i.ReadU32 () != 7)
+      // Deserialize the header
+      uint32_t skip = CommonDeserialize (i);
+
+      NS_LOG_INFO ("Deserialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Deserialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Deserialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Deserialize -> Pkt len = " << m_packet_len);
+
+      // Check packet ID
+      if (m_ptr->GetPacketId() != nnn::INF_NNN)
 	throw new INFException ();
 
-      // Read length of packet
-      uint16_t packet_len = i.ReadU16 ();
-
-      // Read lifetime of the packet
-      m_inf_p->SetLifetime (Seconds (i.ReadU16 ()));
+      // Move the iterator forward
+      i.Next(skip);
 
       // Read the PoA Type
-      m_inf_p->SetRemainLease (Seconds (i.ReadU16 ()));
+      m_ptr->SetRemainLease (Seconds (i.ReadU16 ()));
 
       // Deserialize the old name
-      m_inf_p->SetOldName(NnnSim::DeserializeName(i));
+      m_ptr->SetOldName(NnnSim::DeserializeName(i));
 
       // Deserialize the new name
-      m_inf_p->SetNewName(NnnSim::DeserializeName(i));
+      m_ptr->SetNewName(NnnSim::DeserializeName(i));
 
       NS_ASSERT (GetSerializedSize () == (i.GetDistanceFrom (start)));
 
       return i.GetDistanceFrom (start);
     }
-
-    void
-    INF::Print (std::ostream &os) const
-    {
-      m_inf_p->Print (os);
-    }
-
   }
 }
 
