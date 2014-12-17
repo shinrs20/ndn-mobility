@@ -123,6 +123,7 @@ namespace wire{
       NS_LOG_INFO ("Serialize -> Version = " << m_ptr->GetVersion ());
       NS_LOG_INFO ("Serialize -> Pkt Len = " << GetSerializedSize());
 
+      // Serialize the packet size
       start.WriteU16(GetSerializedSize());
 
       uint16_t poatype = m_ptr->GetPoaType ();
