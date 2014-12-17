@@ -98,11 +98,12 @@ namespace ns3 {
     void
     AEN::Print (std::ostream &os) const
     {
-      os << "<AEN>\n";
-      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-      os << "  <Name>" << GetName () << "</Name>\n";
-      os << "  <Lease>" << GetLeasetime () << "</Lease>\n";
-      os << "</AEN>";
+      os << "<AEN>" << std::endl;
+      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      os << "  <Name>" << GetName () << "</Name>" << std::endl;
+      os << "  <Lease>" << GetLeasetime () << "</Lease>" << std::endl;
+      os << "</AEN>"  << std::endl;
     }
 
   } // namespace nnn

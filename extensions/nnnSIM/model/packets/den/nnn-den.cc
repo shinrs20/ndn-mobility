@@ -28,7 +28,8 @@ NS_LOG_COMPONENT_DEFINE ("nnn.DEN");
 namespace ns3 {
   namespace nnn{
 
-    DEN::DEN () : NNNPacket (DEN_NNN, Seconds(0))
+    DEN::DEN ()
+    : NNNPacket (DEN_NNN, Seconds(0))
     , m_poa_type (POA_MAC48)
     , m_poas     (std::vector<Address> ())
     {
@@ -138,6 +139,7 @@ namespace ns3 {
     {
       os << "<DEN>" << std::endl;
       os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
       for (int i = 0; i < GetNumPoa (); i++)
 	{

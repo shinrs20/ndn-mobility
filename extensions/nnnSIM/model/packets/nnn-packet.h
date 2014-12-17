@@ -65,13 +65,13 @@ namespace ns3
        *
        */
       inline uint32_t
-      GetPacketId();
+      GetPacketId() const;
 
       /**
        * \brief Get the version of the packet
        */
       inline uint16_t
-      GetVersion ();
+      GetVersion () const;
 
       /**
        * \brief Set the version of the packet
@@ -123,13 +123,13 @@ namespace ns3
     };
 
     inline uint32_t
-    NNNPacket::GetPacketId()
+    NNNPacket::GetPacketId() const
     {
       return m_packetid;
     }
 
     inline uint16_t
-    NNNPacket::GetVersion()
+    NNNPacket::GetVersion() const
     {
       return m_version;
     }
