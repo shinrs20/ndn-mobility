@@ -86,16 +86,18 @@ namespace ns3 {
     void
     NULLp::Print (std::ostream &os) const
     {
-      os << "<NULLp>\n";
-      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
+      os << "<NULLp>" << std::endl;
+      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      os << "  <PDU Type>" << GetPDUPayloadType() << "</PDU Type>" << std::endl;
       if (m_payload != 0)
 	{
-	  os << "  <Payload>Yes</Payload>\n";
+	  os << "  <Payload>Yes</Payload>" << std::endl;
 	} else
 	  {
-	    os << "  <Payload>No</Payload>\n";
+	    os << "  <Payload>No</Payload>" << std::endl;
 	  }
-      os << "</NULLp>";
+      os << "</NULLp>" << std::endl;
     }
   } // namespace nnn
 } // namespace ns3

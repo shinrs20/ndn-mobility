@@ -127,12 +127,13 @@ namespace ns3 {
     void
     INF::Print (std::ostream &os) const
     {
-      os << "<INF>\n";
-      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-      os << "  <OldName>" << GetOldName () << "</OldName>\n";
-      os << "  <NewName>" << GetNewName () << "</NewName>\n";
-      os << "  <RLease>" << GetRemainLease () << "</RLease>\n";
-      os << "</INF>";
+      os << "<INF>" << std::endl;
+      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      os << "  <OldName>" << GetOldName () << "</OldName>" << std::endl;
+      os << "  <NewName>" << GetNewName () << "</NewName>" << std::endl;
+      os << "  <RLease>" << GetRemainLease () << "</RLease>" << std::endl;
+      os << "</INF>" << std::endl;
     }
   } // namespace nnn
 } // namespace ns3

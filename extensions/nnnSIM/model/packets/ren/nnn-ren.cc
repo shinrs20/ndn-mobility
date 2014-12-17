@@ -155,17 +155,18 @@ namespace ns3 {
     {
       uint32_t num = GetNumPoa ();
       uint16_t type = GetPoaType ();
-      os << "<REN>\n";
-      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-      os << "  <Name>" << GetName () << "</Name>\n";
-      os << "  <RLease>" << GetRemainLease () << "</RLease>\n";
-      os << "  <POATYPE>" << type << "</POATYPE>\n";
-      os << "  <POANUM>" << num << "</POANUM>\n";
+      os << "<REN>" << std::endl;
+      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      os << "  <Name>" << GetName () << "</Name>" << std::endl;
+      os << "  <RLease>" << GetRemainLease () << "</RLease>" << std::endl;
+      os << "  <POA Type>" << type << "</POA Type>" << std::endl;
+      os << "  <POA Num>" << num << "</POA Num>" << std::endl;
       for (int i = 0; i < num; i++)
 	{
-	  os << "  <POA" << i << ">" << m_poas[i] << "</POA" << i << ">\n";
+	  os << "  <POA" << i << ">" << m_poas[i] << "</POA" << i << ">" << std::endl;
 	}
-      os << "</REN>";
+      os << "</REN>" << std::endl;
     }
 
   } // namespace nnn

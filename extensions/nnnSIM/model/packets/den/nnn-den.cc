@@ -137,11 +137,15 @@ namespace ns3 {
     void
     DEN::Print (std::ostream &os) const
     {
+      uint32_t num = GetNumPoa ();
+      uint16_t type = GetPoaType ();
       os << "<DEN>" << std::endl;
       os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
       os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
-      for (int i = 0; i < GetNumPoa (); i++)
+      os << "  <POA Type>" << type << "</POA Type>"<< std::endl;
+      os << "  <POA Num>" << num << "</POA Num>"<< std::endl;
+      for (int i = 0; i < num; i++)
 	{
 	  os << "  <POA" << i << ">" << GetOnePoa(i) << "</POA" << i << ">"<< std::endl;
 	}
