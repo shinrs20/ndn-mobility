@@ -130,17 +130,20 @@ namespace ns3 {
     void
     DO::Print (std::ostream &os) const
     {
-      os << "<DO>\n";
-      os << "  <TTL>" << GetLifetime () << "</TTL>\n";
-      os << "  <Name>" << GetName () << "</Name>\n";
+      os << "<DO>" << std::endl;
+      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      os << "  <Name>" << GetName () << "</Name>" << std::endl;
+      os << "  <PDU Type>" << GetPDUPayloadType() << "</PDU Type>" << std::endl;
       if (m_payload != 0)
 	{
-	  os << "  <Payload>Yes</Payload>\n";
-	} else
-	  {
-	    os << "  <Payload>No</Payload>\n";
-	  }
-      os << "</DO>";
+	  os << "  <Payload>Yes</Payload>" << std::endl;
+	}
+      else
+	{
+	  os << "  <Payload>No</Payload>" << std::endl;
+	}
+      os << "</DO>" << std::endl;
     }
 
   } // namespace nnn
