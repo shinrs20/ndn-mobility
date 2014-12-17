@@ -23,7 +23,6 @@
 
 // Extensions
 #include "nnnSIM/nnnSIM-module.h"
-#include "nnnSIM/model/wire/nnnsim/testDEN/nnnsim-testDEN.h"
 
 using namespace ns3;
 using namespace std;
@@ -35,11 +34,16 @@ using namespace nnnSIM;
 int main (int argc, char *argv[])
 {
   Ptr<nnn::DEN> source = Create<nnn::DEN> ();
+
   Mac48Address n1_mac00 = Mac48Address ("01:B2:03:04:05:06");
   Mac48Address n1_mac01 = Mac48Address ("01:02:03:04:05:06");
 
-  source->SetName(Create<NNNAddress> ("ae.34.24"));
-  source->SetLifetime(Seconds (20));
+  Ptr<NNNAddress> addr = Create<NNNAddress> ("ae.34.24");
+  Time ttl = Seconds (20);
+  Time lease = Minutes(2);
+
+  source->SetName(addr);
+  source->SetLifetime(ttl);
   source->AddPoa(n1_mac00.operator ns3::Address());
   source->AddPoa(n1_mac01.operator ns3::Address());
 
@@ -50,5 +54,19 @@ int main (int argc, char *argv[])
   Ptr<nnn::DEN> target = wire::nnnSIM::DEN::FromWire(packet);
 
   std::cout << std::endl << "After " << std::endl << *target << std::endl;
+
+  Ptr<nnn::AEN> source1 = Create<nnn::AEN> ();
+
+  source1->SetName(addr);
+  source1->SetLifetime(ttl);
+  source1->SetLeasetime(lease);
+
+  std::cout << std::endl << "Before" << std::endl << *source1 << std::endl;
+
+  packet = wire::nnnSIM::AEN::ToWire(source1);
+
+  Ptr<nnn::AEN> target1 = wire::nnnSIM::AEN::FromWire(packet);
+
+  std::cout << std::endl << "After " << std::endl << *target1 << std::endl;
 
 }
