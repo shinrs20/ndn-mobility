@@ -50,14 +50,14 @@ namespace ns3 {
     Face::GetTypeId ()
     {
       static TypeId tid = TypeId ("ns3::nnn::Face")
-	  .SetParent<Object> ()
-	  .SetGroupName ("nnn")
-	  .AddAttribute ("Id", "Face id (unique integer for the Nnn stack on this node)",
-	                 TypeId::ATTR_GET, // allow only getting it.
-	                 UintegerValue (0),
-	                 MakeUintegerAccessor (&Face::m_id),
-	                 MakeUintegerChecker<uint32_t> ())
-	                 ;
+	      .SetParent<Object> ()
+	      .SetGroupName ("nnn")
+	      .AddAttribute ("Id", "Face id (unique integer for the Nnn stack on this node)",
+	                     TypeId::ATTR_GET, // allow only getting it.
+	                     UintegerValue (0),
+	                     MakeUintegerAccessor (&Face::m_id),
+	                     MakeUintegerChecker<uint32_t> ())
+	                     ;
       return tid;
     }
 
@@ -152,6 +152,18 @@ namespace ns3 {
       return Send (Wire::FromNULLp (n_o));
     }
 
+    bool
+    Face::SendNULLp (Ptr<const NULLp> n_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << n_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromNULLp (n_o), addr);
+    }
 
     bool
     Face::SendSO (Ptr<const SO> so_o)
@@ -164,6 +176,19 @@ namespace ns3 {
 	}
 
       return Send (Wire::FromSO (so_o));
+    }
+
+    bool
+    Face::SendSO (Ptr<const SO> so_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << so_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromSO (so_o), addr);
     }
 
     bool
@@ -180,6 +205,19 @@ namespace ns3 {
     }
 
     bool
+    Face::SendDO (Ptr<const DO> do_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << do_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromDO (do_o), addr);
+    }
+
+    bool
     Face::SendEN (Ptr<const EN> en_o)
     {
       NS_LOG_FUNCTION (this << en_o);
@@ -192,6 +230,18 @@ namespace ns3 {
       return Send (Wire::FromEN (en_o));
     }
 
+    bool
+    Face::SendEN (Ptr<const EN> en_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << en_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromEN (en_o), addr);
+    }
 
     bool
     Face::SendAEN (Ptr<const AEN> aen_o)
@@ -204,6 +254,19 @@ namespace ns3 {
 	}
 
       return Send (Wire::FromAEN (aen_o));
+    }
+
+    bool
+    Face::SendAEN (Ptr<const AEN> aen_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << aen_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromAEN (aen_o), addr);
     }
 
     bool
@@ -220,6 +283,19 @@ namespace ns3 {
     }
 
     bool
+    Face::SendREN (Ptr<const REN> ren_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << ren_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromREN (ren_o), addr);
+    }
+
+    bool
     Face::SendDEN (Ptr<const DEN> den_o)
     {
       NS_LOG_FUNCTION (this << boost::cref (*this) << den_o);
@@ -231,6 +307,20 @@ namespace ns3 {
 
       return Send (Wire::FromDEN (den_o));
     }
+
+    bool
+    Face::SendDEN (Ptr<const DEN> den_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << den_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromDEN (den_o), addr);
+    }
+
     bool
     Face::SendINF (Ptr<const INF> inf_o)
     {
@@ -245,7 +335,26 @@ namespace ns3 {
     }
 
     bool
+    Face::SendINF (Ptr<const INF> inf_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << inf_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromINF (inf_o), addr);
+    }
+
+    bool
     Face::Send (Ptr<Packet> packet)
+    {
+      return true;
+    }
+
+    bool
+    Face::Send (Ptr<Packet> packet, Address addr)
     {
       return true;
     }

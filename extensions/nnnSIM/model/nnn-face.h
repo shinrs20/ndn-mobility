@@ -27,6 +27,7 @@
 #include <ostream>
 #include <algorithm>
 
+#include <ns3-dev/ns3/address.h>
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/object.h>
 #include <ns3-dev/ns3/nstime.h>
@@ -127,6 +128,9 @@ namespace ns3 {
       virtual bool
       SendNULLp (Ptr<const NULLp> n_o);
 
+      virtual bool
+      SendNULLp (Ptr<const NULLp> n_o, Address addr);
+
       /**
        * @brief Send out SO through the Face
        * @param SO SO to send out
@@ -136,6 +140,9 @@ namespace ns3 {
        */
       virtual bool
       SendSO (Ptr<const SO> so_o);
+
+      virtual bool
+      SendSO (Ptr<const SO> so_o, Address addr);
 
       /**
        * @brief Send out DO packet through the Face
@@ -148,19 +155,37 @@ namespace ns3 {
       SendDO (Ptr<const DO> do_o);
 
       virtual bool
+      SendDO (Ptr<const DO> do_o, Address addr);
+
+      virtual bool
       SendEN (Ptr<const EN> en_o);
+
+      virtual bool
+      SendEN (Ptr<const EN> en_o, Address addr);
 
       virtual bool
       SendAEN (Ptr<const AEN> aen_o);
 
       virtual bool
+      SendAEN (Ptr<const AEN> aen_o, Address addr);
+
+      virtual bool
       SendREN (Ptr<const REN> ren_o);
+
+      virtual bool
+      SendREN (Ptr<const REN> ren_o, Address addr);
 
       virtual bool
       SendDEN (Ptr<const DEN> den_o);
 
       virtual bool
+      SendDEN (Ptr<const DEN> den_o, Address addr);
+
+      virtual bool
       SendINF (Ptr<const INF> inf_o);
+
+      virtual bool
+      SendINF (Ptr<const INF> inf_o, Address addr);
 
       /**
        * \brief Receive NULL from application or another node and forward it up to the NDN stack
@@ -253,8 +278,9 @@ namespace ns3 {
        */
       enum Flags
       {
-	APPLICATION = 1, ///< @brief An application directly on NNN
-	NDN = 2          ///< @brief Connects to the NDN layer
+	NNN = 1,     ///< @brief Common NNN face
+	APPLICATION, ///< @brief An application directly on NNN
+	NDN          ///< @brief Connects to the NDN layer
       };
 
       /**
@@ -314,6 +340,9 @@ namespace ns3 {
        */
       virtual bool
       Send (Ptr<Packet> packet);
+
+      virtual bool
+      Send (Ptr<Packet> packet, Address addr);
 
       /**
        * @brief Send packet up to the stack (towards forwarding strategy)
