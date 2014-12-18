@@ -118,6 +118,9 @@ namespace wire {
       // Serialize the PDU Data type
       start.WriteU16(m_ptr->GetPDUPayloadType());
 
+      // Serialize
+      NnnSim::SerializeName(start, m_ptr->GetName());
+
       NS_LOG_INFO("Finished serialization");
     }
 
