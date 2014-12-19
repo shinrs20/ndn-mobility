@@ -171,4 +171,21 @@ int main (int argc, char *argv[])
   Ptr<nnn::NULLp> target7 = wire::nnnSIM::NULLp::FromWire(packet);
 
   std::cout << std::endl << "After " << std::endl << *target7 << std::endl;
+
+  // Test DU packet serialization
+  Ptr<nnn::DU> source8 = Create<nnn::DU> ();
+
+  source8->SetLifetime(ttl);
+  source8->SetPayload(packet1);
+  source8->SetPDUPayloadType(NNN_NNN);
+  source8->SetSrcName(addr);
+  source8->SetDstName(addr2);
+
+  std::cout << std::endl << "Before" << std::endl << *source8 << std::endl;
+
+  packet = wire::nnnSIM::DU::ToWire(source8);
+
+  Ptr<nnn::DU> target8 = wire::nnnSIM::DU::FromWire(packet);
+
+  std::cout << std::endl << "After " << std::endl << *target8 << std::endl;
 }
