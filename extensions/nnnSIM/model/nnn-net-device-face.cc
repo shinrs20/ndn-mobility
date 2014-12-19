@@ -82,12 +82,13 @@ namespace ns3 {
     NetDeviceFace::RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
                                                 const DOHandler &DOHandler, const ENHandler &ENHandler,
                                                 const AENHandler &AENHandler, const RENHandler &RENHandler,
-                                                const DENHandler &DENHandler, const INFHandler &INFHandler)
+                                                const DENHandler &DENHandler, const INFHandler &INFHandler,
+						const DUHandler &DUHandler)
     {
       NS_LOG_FUNCTION (this);
 
       Face::RegisterNNNProtocolHandlers (NULLpHandler, SOHandler, DOHandler,
-                                         ENHandler, AENHandler, RENHandler, DENHandler, INFHandler);
+                                         ENHandler, AENHandler, RENHandler, DENHandler, INFHandler, DUHandler);
 
       m_node->RegisterProtocolHandler (MakeCallback (&NetDeviceFace::ReceiveFromNetDevice, this),
                                        L3Protocol::ETHERNET_FRAME_TYPE, m_netDevice, true/*promiscuous mode*/);

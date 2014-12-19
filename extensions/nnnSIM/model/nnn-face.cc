@@ -110,7 +110,8 @@ namespace ns3 {
     Face::RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
                                        const DOHandler &DOHandler, const ENHandler &ENHandler,
                                        const AENHandler &AENHandler, const RENHandler &RENHandler,
-                                       const DENHandler &DENHandler, const INFHandler &INFHandler)
+                                       const DENHandler &DENHandler, const INFHandler &INFHandler,
+				       const DUHandler &DUHandler)
     {
       NS_LOG_FUNCTION_NOARGS ();
 
@@ -122,6 +123,7 @@ namespace ns3 {
       m_upstreamRENHandler = RENHandler;
       m_upstreamDENHandler = DENHandler;
       m_upstreamINFHandler = INFHandler;
+      m_upstreamDUHandler = DUHandler;
     }
 
     void
@@ -215,6 +217,32 @@ namespace ns3 {
 	}
 
       return Send (Wire::FromDO (do_o), addr);
+    }
+
+    bool
+    Face::SendDU (Ptr<const DU> du_o)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << du_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromDU (du_o));
+    }
+
+    bool
+    Face::SendDU (Ptr<const DU> du_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << du_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromDU (du_o), addr);
     }
 
     bool
@@ -392,6 +420,8 @@ namespace ns3 {
 	      return ReceiveDEN (Wire::ToDEN (packet, Wire::WIRE_FORMAT_NNNSIM));
 	    case nnn::INF_NNN:
 	      return ReceiveINF (Wire::ToINF (packet, Wire::WIRE_FORMAT_NNNSIM));
+	    case nnn::DU_NNN:
+	      return ReceiveDU (Wire::ToDU (packet, Wire::WIRE_FORMAT_NNNSIM));
 	    default:
 	      NS_FATAL_ERROR ("Not supported NNN header");
 	      return false;
@@ -509,6 +539,19 @@ namespace ns3 {
 	}
 
       m_upstreamINFHandler (this, inf_i);
+      return true;
+    }
+
+    bool
+    Face::ReceiveDU (Ptr<DU> du_i)
+    {
+      if (!IsUp ())
+	{
+	  // no tracing here. If we were off while receiving, we shouldn't even know that something was there
+	  return false;
+	}
+
+      m_upstreamDUHandler (this, du_i);
       return true;
     }
 

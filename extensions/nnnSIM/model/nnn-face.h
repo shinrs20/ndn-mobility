@@ -49,6 +49,7 @@ namespace ns3 {
     class REN;
     class DEN;
     class INF;
+    class DU;
 
     /**
      * \ingroup nnn
@@ -84,6 +85,7 @@ namespace ns3 {
       typedef Callback<void, Ptr<Face>, Ptr<REN> > RENHandler;
       typedef Callback<void, Ptr<Face>, Ptr<DEN> > DENHandler;
       typedef Callback<void, Ptr<Face>, Ptr<INF> > INFHandler;
+      typedef Callback<void, Ptr<Face>, Ptr<DU> > DUHandler;
 
       /**
        * \brief Default constructor
@@ -108,7 +110,8 @@ namespace ns3 {
       RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
                                    const DOHandler &DOHandler, const ENHandler &ENHandler,
                                    const AENHandler &AENHandler, const RENHandler &RENHandler,
-                                   const DENHandler &DENHandler, const INFHandler &INFHandler);
+                                   const DENHandler &DENHandler, const INFHandler &INFHandler,
+				   const DUHandler &DUHandler);
 
       /**
        * \brief Un-Register callback to call when new packet arrives on the Face
@@ -187,6 +190,12 @@ namespace ns3 {
       virtual bool
       SendINF (Ptr<const INF> inf_o, Address addr);
 
+      virtual bool
+      SendDU (Ptr<const DU> du_o);
+
+      virtual bool
+      SendDU (Ptr<const DU> du_o, Address addr);
+
       /**
        * \brief Receive NULL from application or another node and forward it up to the NDN stack
        *
@@ -225,6 +234,9 @@ namespace ns3 {
 
       virtual bool
       ReceiveINF (Ptr<INF> inf_i);
+
+      virtual bool
+      ReceiveDU (Ptr<DU> du_i);
 
       ////////////////////////////////////////////////////////////////////
 
@@ -367,6 +379,7 @@ namespace ns3 {
       NULLpHandler m_upstreamNULLpHandler;
       SOHandler m_upstreamSOHandler;
       DOHandler m_upstreamDOHandler;
+      DUHandler m_upstreamDUHandler;
       ENHandler m_upstreamENHandler;
       AENHandler m_upstreamAENHandler;
       RENHandler m_upstreamRENHandler;

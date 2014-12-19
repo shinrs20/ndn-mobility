@@ -24,6 +24,7 @@
 #include "packets/nullp/nnn-nullp.h"
 #include "packets/so/nnn-so.h"
 #include "packets/do/nnn-do.h"
+#include "packets/du/nnn-du.h"
 #include "packets/en/nnn-en.h"
 #include "packets/aen/nnn-aen.h"
 #include "packets/ren/nnn-ren.h"

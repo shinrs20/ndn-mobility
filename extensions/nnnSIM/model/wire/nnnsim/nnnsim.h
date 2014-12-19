@@ -24,6 +24,7 @@
 #include "nullp/nnnsim-nullp.h"
 #include "so/nnnsim-so.h"
 #include "do/nnnsim-do.h"
+#include "du/nnnsim-du.h"
 #include "en/nnnsim-en.h"
 #include "aen/nnnsim-aen.h"
 #include "ren/nnnsim-ren.h"

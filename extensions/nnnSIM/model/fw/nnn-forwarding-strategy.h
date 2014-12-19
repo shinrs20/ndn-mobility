@@ -52,6 +52,7 @@ namespace ns3 {
     class REN;
     class DEN;
     class INF;
+    class DU;
 
     class NamesContainer;
     class NamesContainerEntry;
@@ -167,6 +168,16 @@ namespace ns3 {
        */
       virtual void
       OnINF (Ptr<Face> face, Ptr<INF> inf_p);
+
+      /**
+       * \brief Actual processing of incoming NNN DU packets
+       *
+       * Processing DU packets
+       * @param face    incoming face
+       * @param du_p    DU packet
+       */
+      virtual void
+      OnDU (Ptr<Face> face, Ptr<DU> du_p);
 
       /**
        * @brief Event fired just before PIT entry is removed by timeout

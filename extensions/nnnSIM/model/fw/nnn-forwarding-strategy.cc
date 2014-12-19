@@ -222,6 +222,13 @@ ForwardingStrategy::OnINF (Ptr<Face> face, Ptr<INF> do_p)
 }
 
 void
+ForwardingStrategy::OnDU (Ptr<Face> face, Ptr<DU> du_p)
+{
+  NS_LOG_FUNCTION (this);
+
+}
+
+void
 ForwardingStrategy::DidAddNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
 {
   NS_LOG_FUNCTION (this);
