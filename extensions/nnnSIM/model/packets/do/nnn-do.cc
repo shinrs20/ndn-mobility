@@ -73,7 +73,6 @@ namespace ns3 {
       SetWire (do_p.GetWire ());
     }
 
-
     const NNNAddress&
     DO::GetName () const
     {

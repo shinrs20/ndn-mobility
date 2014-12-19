@@ -104,13 +104,13 @@ namespace ns3 {
       SetName (const NNNAddress &name);
 
       /**
-       * @brief Gets the payload of the NULL packet
+       * @brief Gets the payload of the DO packet
        */
       Ptr<const Packet>
       GetPayload () const;
 
       /**
-       * @brief Sets the payload of the NULL packet
+       * @brief Sets the payload of the DO packet
        */
       void
       SetPayload (Ptr<Packet> payload);

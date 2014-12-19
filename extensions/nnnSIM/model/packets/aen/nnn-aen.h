@@ -2,7 +2,7 @@
 /*
  * Copyright 2014 Waseda University, Sato Laboratory
  *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
- *	         Zhu Li <philipszhuli1990@ruri.waseda.jp>
+ *	     Zhu Li <philipszhuli1990@ruri.waseda.jp>
  *
  *  nnn-aen.h is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero Public License as published by
@@ -15,7 +15,7 @@
  *  GNU Affero Public License for more details.
  *
  *  You should have received a copy of the GNU Affero Public License
- *  along with nnn-do.h.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with nnn-aen.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _NNN_AEN_HEADER_H_
