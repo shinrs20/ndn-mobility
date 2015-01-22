@@ -50,7 +50,7 @@ public:
 
 	inline
 	trie_with_policy (size_t bucketSize = 1, size_t bucketIncrement = 1)
-	: trie_ (nnn::name::Component (), bucketSize, bucketIncrement)
+	: trie_ (FullKey::Component (), bucketSize, bucketIncrement)
 	, policy_ (*this)
 	{
 	}
