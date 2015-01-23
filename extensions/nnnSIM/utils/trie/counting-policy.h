@@ -27,15 +27,15 @@
 #include <boost/intrusive/list.hpp>
 
 namespace ns3 {
-namespace nnn {
-namespace nnnSIM {
+  namespace nnn {
+    namespace nnnSIM {
 
-/**
- * @brief Traits for policy that just keeps track of number of elements
- * It's doing a rather expensive job, but just in case it needs to be extended later
- */
-struct counting_policy_traits
-{
+      /**
+       * @brief Traits for policy that just keeps track of number of elements
+       * It's doing a rather expensive job, but just in case it needs to be extended later
+       */
+      struct counting_policy_traits
+      {
 	/// @brief Name that can be used to identify the policy (for NS-3 object model and logging)
 	static std::string GetName () { return "Counting"; }
 
@@ -44,10 +44,10 @@ struct counting_policy_traits
 	template<class Container>
 	struct container_hook
 	{
-		// could be class/struct implementation
-		typedef boost::intrusive::member_hook< Container,
-				policy_hook_type,
-				&Container::policy_hook_ > type;
+	  // could be class/struct implementation
+	  typedef boost::intrusive::member_hook< Container,
+	      policy_hook_type,
+	      &Container::policy_hook_ > type;
 	};
 
 	template<class Base,
@@ -55,61 +55,61 @@ struct counting_policy_traits
 	class Hook>
 	struct policy
 	{
-		typedef typename boost::intrusive::list< Container, Hook > policy_container;
+	  typedef typename boost::intrusive::list< Container, Hook > policy_container;
 
-		// could be just typedef
-		class type : public policy_container
-		{
-		public:
-			typedef Container parent_trie;
+	  // could be just typedef
+	  class type : public policy_container
+	  {
+	  public:
+	    typedef Container parent_trie;
 
-			type (Base &base)
-			: base_ (base)
-			{
-			}
+	    type (Base &base)
+	    : base_ (base)
+	    {
+	    }
 
-			inline void
-			update (typename parent_trie::iterator item)
-			{
-				// do nothing
-			}
+	    inline void
+	    update (typename parent_trie::iterator item)
+	    {
+	      // do nothing
+	    }
 
-			inline bool
-			insert (typename parent_trie::iterator item)
-			{
-				policy_container::push_back (*item);
-				return true;
-			}
+	    inline bool
+	    insert (typename parent_trie::iterator item)
+	    {
+	      policy_container::push_back (*item);
+	      return true;
+	    }
 
-			inline void
-			lookup (typename parent_trie::iterator item)
-			{
-				// do nothing
-			}
+	    inline void
+	    lookup (typename parent_trie::iterator item)
+	    {
+	      // do nothing
+	    }
 
-			inline void
-			erase (typename parent_trie::iterator item)
-			{
-				policy_container::erase (policy_container::s_iterator_to (*item));
-			}
+	    inline void
+	    erase (typename parent_trie::iterator item)
+	    {
+	      policy_container::erase (policy_container::s_iterator_to (*item));
+	    }
 
-			inline void
-			clear ()
-			{
-				policy_container::clear ();
-			}
+	    inline void
+	    clear ()
+	    {
+	      policy_container::clear ();
+	    }
 
-		private:
-			type () : base_(*((Base*)0)) { };
+	  private:
+	    type () : base_(*((Base*)0)) { };
 
-		private:
-			Base &base_;
-		};
+	  private:
+	    Base &base_;
+	  };
 	};
-};
+      };
 
-} // nnnSIM
-} // nnn
+    } // nnnSIM
+  } // nnn
 } // ns3
 
 #endif // COUNTING_POLICY_H_

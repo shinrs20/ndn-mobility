@@ -1,8 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu" -*- */
 /*
  * Copyright 2014 Waseda University, Sato Laboratory
- *   Author: Zhu Li <phillipszhuli1990@gmail.com>
- *           Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
+ *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
  *
  *   Original template made for ndnSIM for University of California,
  *   Los Angeles by Alexander Afanasyev
@@ -20,6 +19,7 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-fib.h.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #ifndef _NNN_FIB_H_
 #define	_NNN_FIB_H_
 
