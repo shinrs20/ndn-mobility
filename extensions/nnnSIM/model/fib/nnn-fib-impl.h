@@ -24,10 +24,11 @@
 #define	_NNN_FIB_IMPL_H_
 
 #include <ns3-dev/ns3/name.h>
+#include <ns3-dev/ns3/ndnSIM/utils/trie/trie-with-policy.h>
+#include <ns3-dev/ns3/ndnSIM/utils/trie/counting-policy.h>
 
 #include "nnn-fib.h"
-#include "../../utils/trie/trie-with-policy.h"
-#include "../../utils/trie/counting-policy.h"
+
 
 namespace ns3 {
   namespace nnn {
@@ -40,10 +41,10 @@ namespace ns3 {
       class EntryImpl : public Entry
       {
       public:
-	typedef nnnSIM::trie_with_policy<
+	typedef ndn::ndnSIM::trie_with_policy<
 	    ns3::ndn::Name,
-	    nnnSIM::smart_pointer_payload_traits<EntryImpl>,
-	    nnnSIM::counting_policy_traits
+	    ndn::ndnSIM::smart_pointer_payload_traits<EntryImpl>,
+	    ndn::ndnSIM::counting_policy_traits
 	    > trie;
 
 	EntryImpl (Ptr<Fib> fib, const Ptr<const ndn::Name> &prefix)
@@ -70,14 +71,14 @@ namespace ns3 {
        * \brief Class implementing FIB functionality
        */
       class FibImpl : public Fib,
-      protected nnnSIM::trie_with_policy<ndn::Name,
-      nnnSIM::smart_pointer_payload_traits< EntryImpl >,
-      nnnSIM::counting_policy_traits >
+      protected ndn::ndnSIM::trie_with_policy<ndn::Name,
+      ndn::ndnSIM::smart_pointer_payload_traits< EntryImpl >,
+      ndn::ndnSIM::counting_policy_traits >
       {
       public:
-	typedef nnnSIM::trie_with_policy<ndn::Name,
-	    nnnSIM::smart_pointer_payload_traits<EntryImpl>,
-	    nnnSIM::counting_policy_traits > super;
+	typedef ndn::ndnSIM::trie_with_policy<ndn::Name,
+	    ndn::ndnSIM::smart_pointer_payload_traits<EntryImpl>,
+	    ndn::ndnSIM::counting_policy_traits > super;
 
 	/**
 	 * \brief Interface ID

@@ -35,12 +35,12 @@ namespace ns3 {
     typedef Interest InterestHeader;
 
     /**
-     * @ingroup ndn
-     * @defgroup ndn-fib FIB
+     * @ingroup nnn
+     * @defgroup nnn-fib FIB
      */
 
     /**
-     * @ingroup ndn-fib
+     * @ingroup nnn-fib
      * @brief Class implementing FIB functionality
      */
     class Fib : public Object
