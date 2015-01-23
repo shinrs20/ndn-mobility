@@ -26,6 +26,11 @@
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/traced-callback.h>
 
+#include <ns3-dev/ns3/name.h>
+#include <ns3-dev/ns3/ndn-data.h>
+#include <ns3-dev/ns3/ndn-interest.h>
+#include <ns3-dev/ns3/ndn-content-store.h>
+
 namespace ns3 {
   namespace nnn {
 
