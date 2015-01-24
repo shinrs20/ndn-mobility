@@ -31,6 +31,7 @@
 #include <ns3-dev/ns3/ndnSIM/helper/ndn-header-helper.h>
 
 #include "nnn-app-face.h"
+#include "nnn-packets.h"
 #include "../helper/nnn-header-helper.h"
 #include "../apps/nnn-app.h"
 
@@ -101,7 +102,7 @@ namespace ns3 {
     }
 
     bool
-    AppFace::SendData (Ptr<const Data> data)
+    AppFace::SendData (Ptr<const ndn::Data> data)
     {
       NS_LOG_FUNCTION (this << data);
 

@@ -90,7 +90,7 @@ namespace ns3
 	    {
 	      // For the ones found, we create and send a SO packet
 	      Ptr<SO> so_o = Create<SO> ((*it).second, p);
-	      so_o->SetLifetime(Minutes (1));
+	      so_o->SetLifetime(Seconds (60));
 
 	      ReceiveSO (so_o);
 	    }
@@ -101,7 +101,7 @@ namespace ns3
       else
 	{
 	  Ptr<NULLp> null_o = Create<NULLp> (p);
-	  null_o->SetLifetime(Minutes (1));
+	  null_o->SetLifetime(Seconds (60));
 
 	  ReceiveNULLp(null_o);
 	}
@@ -141,7 +141,7 @@ namespace ns3
 	    {
 	      // For the ones found, we create and send a SO packet
 	      Ptr<DO> do_o = Create<DO> ((*it).second, p);
-	      do_o->SetLifetime(Minutes (1));
+	      do_o->SetLifetime(Seconds (60));
 
 	      ReceiveDO (do_o);
 	    }
@@ -152,7 +152,7 @@ namespace ns3
       else
 	{
 	  Ptr<NULLp> null_o = Create<NULLp> (p);
-	  null_o->SetLifetime(Minutes (1));
+	  null_o->SetLifetime(Seconds (60));
 
 	  ReceiveNULLp(null_o);
 	}

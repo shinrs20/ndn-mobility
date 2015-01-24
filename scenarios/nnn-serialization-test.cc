@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
   Ptr<NNNAddress> addr2 = Create<NNNAddress> ("45.34.76");
 
   Time ttl = Seconds (20);
-  Time lease = Minutes(2);
+  Time lease = Seconds(120);
   Time release = Seconds (30);
 
   // Test DEN packet serialization

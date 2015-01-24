@@ -1,74 +1,75 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
+/* -*- Mode:C++; c-file-style:"gnu" -*- */
 /*
- * Copyright (c) 2011 University of California, Los Angeles
+ * Copyright 2014 Waseda University, Sato Laboratory
+ *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
+ *   Original template made for ndnSIM for University of California,
+ *   Los Angeles by Ilya Moiseenko and Alexander Afanasyev
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  nnn-producer.h is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  nnn-producer.h is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero Public License for more details.
  *
- * Author: Ilya Moiseenko <iliamo@cs.ucla.edu>
- *         Alexander Afanasyev <alexander.afanasyev@ucla.edu>
+ *  You should have received a copy of the GNU Affero Public License
+ *  along with nnn-producer.h.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef NNN_PRODUCER_H
+#define NNN_PRODUCER_H
 
-#ifndef NDN_PRODUCER_H
-#define NDN_PRODUCER_H
+#include <ns3-dev/ns3/ptr.h>
+
+#include <ns3-dev/ns3/name.h>
+#include <ns3-dev/ns3/ndn-data.h>
+#include <ns3-dev/ns3/ndn-interest.h>
 
 #include "nnn-app.h"
-#include "ns3/ptr.h"
-#include "ns3/ndn-name.h"
-#include "ns3/ndn-data.h"
 
 namespace ns3 {
-namespace ndn {
+  namespace nnn {
 
-/**
- * @ingroup ndn-apps
- * @brief A simple Interest-sink applia simple Interest-sink application
- *
- * A simple Interest-sink applia simple Interest-sink application,
- * which replying every incoming Interest with Data packet with a specified
- * size and name same as in Interest.cation, which replying every incoming Interest
- * with Data packet with a specified size and name same as in Interest.
- */
-class Producer : public App
-{
-public:
-  static TypeId
-  GetTypeId (void);
+    /**
+     * @ingroup nnn-apps
+     * @brief A simple Interest-sink application
+     *
+     * A simple Interest-sink application, which replying every incoming Interest with
+     * Data packet with a specified size and name same as in Interest.
+     */
+    class Producer : public App
+    {
+    public:
+      static TypeId
+      GetTypeId (void);
 
-  Producer ();
+      Producer ();
 
-  // inherited from NdnApp
-  void OnInterest (Ptr<const Interest> interest);
+      // inherited from NnnApp
+      void OnInterest (Ptr<const ndn::Interest> interest);
 
-protected:
-  // inherited from Application base class.
-  virtual void
-  StartApplication ();    // Called at time specified by Start
+    protected:
+      // inherited from Application base class.
+      virtual void
+      StartApplication ();    // Called at time specified by Start
 
-  virtual void
-  StopApplication ();     // Called at time specified by Stop
+      virtual void
+      StopApplication ();     // Called at time specified by Stop
 
-private:
-  Name m_prefix;
-  Name m_postfix;
-  uint32_t m_virtualPayloadSize;
-  Time m_freshness;
+    private:
+      ndn::Name m_prefix;
+      ndn::Name m_postfix;
+      uint32_t m_virtualPayloadSize;
+      Time m_freshness;
 
-  uint32_t m_signature;
-  Name m_keyLocator;
-};
+      uint32_t m_signature;
+      ndn::Name m_keyLocator;
+    };
 
-} // namespace ndn
+  } // namespace nnn
 } // namespace ns3
 
-#endif // NDN_PRODUCER_H
+#endif // NNN_PRODUCER_H
