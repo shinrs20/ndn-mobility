@@ -37,7 +37,7 @@
 NS_LOG_COMPONENT_DEFINE ("nnn.AppFace");
 
 namespace ns3 {
-  namespace ndn {
+  namespace nnn {
 
     NS_OBJECT_ENSURE_REGISTERED (AppFace);
 
@@ -45,9 +45,9 @@ namespace ns3 {
     AppFace::GetTypeId ()
     {
       static TypeId tid = TypeId ("ns3::nnn::AppFace")
-	    .SetParent<Face> ()
-	    .SetGroupName ("Nnn")
-	    ;
+		.SetParent<Face> ()
+		.SetGroupName ("Nnn")
+		;
       return tid;
     }
 
@@ -83,7 +83,7 @@ namespace ns3 {
     }
 
     bool
-    AppFace::SendInterest (Ptr<const Interest> interest)
+    AppFace::SendInterest (Ptr<const ndn::Interest> interest)
     {
       NS_LOG_FUNCTION (this << interest);
 

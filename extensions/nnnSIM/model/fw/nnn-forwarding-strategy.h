@@ -17,7 +17,6 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-forwarding-strategy.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #ifndef NNN_FORWARDING_STRATEGY_H
 #define NNN_FORWARDING_STRATEGY_H
 
@@ -71,6 +70,8 @@ namespace ns3 {
     }
 
     namespace nnpt { class Entry; }
+
+    class NNNAddress;
 
     //class NNSTFaceMetric;
 

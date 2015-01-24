@@ -24,14 +24,12 @@
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/packet.h>
 
-#include <ns3-dev/ns3/ndn-data.h>
-#include <ns3-dev/ns3/ndn-interest.h>
-
-#include "../model/fw/nnn-forwarding-strategy.h"
+#include "../model/nnn-app-face.h"
 #include "../model/nnn-l3-protocol.h"
+#include "../model/nnn-packets.h"
+#include "../model/fw/nnn-forwarding-strategy.h"
 
 //#include "ns3/ndn-fib.h"
-//#include "ns3/ndn-app-face.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.App");
 
@@ -99,21 +97,21 @@ namespace ns3 {
     }
 
     void
-    App::OnInterest (Ptr<const Interest> interest)
+    App::OnInterest (Ptr<const ndn::Interest> interest)
     {
       NS_LOG_FUNCTION (this << interest);
       m_receivedInterests (interest, this, m_face);
     }
 
     void
-    App::OnNack (Ptr<const Interest> interest)
+    App::OnNack (Ptr<const ndn::Interest> interest)
     {
       NS_LOG_FUNCTION (this << interest);
       m_receivedNacks (interest, this, m_face);
     }
 
     void
-    App::OnData (Ptr<const Data> contentObject)
+    App::OnData (Ptr<const ndn::Data> contentObject)
     {
       NS_LOG_FUNCTION (this << contentObject);
       m_receivedDatas (contentObject, this, m_face);
@@ -137,7 +135,7 @@ namespace ns3 {
     App::OnDU (Ptr<const DU> duObject)
     {
       NS_LOG_FUNCTION (this << duObject);
-      m_receivedDatas (duObject, this, m_face);
+      m_receivedDU (duObject, this, m_face);
     }
 
     // Application Methods

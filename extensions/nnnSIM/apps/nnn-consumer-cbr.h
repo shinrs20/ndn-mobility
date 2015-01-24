@@ -1,101 +1,102 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
+/* -*- Mode:C++; c-file-style:"gnu" -*- */
 /*
- * Copyright (c) 2011 University of California, Los Angeles
+ * Copyright 2014 Waseda University, Sato Laboratory
+ *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
+ *   Original template made for ndnSIM for University of California,
+ *   Los Angeles by Alexander Afanasyev
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  nnn-consumer-cbr.h is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  nnn-consumer-cbr.h is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero Public License for more details.
  *
- * Author: Ilya Moiseenko <iliamo@cs.ucla.edu>
- *         Alexander Afanasyev <alexander.afanasyev@ucla.edu>
+ *  You should have received a copy of the GNU Affero Public License
+ *  along with nnn-consumer-cbr.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NDN_CONSUMER_CBR_H
-#define NDN_CONSUMER_CBR_H
+#ifndef NNN_CONSUMER_CBR_H
+#define NNN_CONSUMER_CBR_H
 
 #include "nnn-consumer.h"
 
 namespace ns3 {
-namespace ndn {
+  namespace nnn {
 
-/**
- * @ingroup ndn-apps
- * @brief Ndn application for sending out Interest packets at a "constant" rate (Poisson process)
- */
-class ConsumerCbr: public Consumer
-{
-public: 
-  static TypeId GetTypeId ();
-        
-  /**
-   * \brief Default constructor 
-   * Sets up randomizer function and packet sequence number
-   */
-  ConsumerCbr ();
-  virtual ~ConsumerCbr ();
+    /**
+     * @ingroup nnn-apps
+     * @brief Nnn application for sending out Interest packets at a "constant" rate (Poisson process)
+     */
+    class ConsumerCbr: public Consumer
+    {
+    public:
+      static TypeId GetTypeId ();
 
-  // From NdnApp
-  // virtual void
-  // OnInterest (const Ptr<const Interest> &interest);
+      /**
+       * \brief Default constructor
+       * Sets up randomizer function and packet sequence number
+       */
+      ConsumerCbr ();
+      virtual ~ConsumerCbr ();
 
-  // virtual void
-  // OnNack (const Ptr<const Interest> &interest);
+      // From NnnApp
+      // virtual void
+      // OnInterest (const Ptr<const Interest> &interest);
 
-  // virtual void
-  // OnData (const Ptr<const Data> &contentObject,
-  //                  const Ptr<const Packet> &payload);
+      // virtual void
+      // OnNack (const Ptr<const Interest> &interest);
 
-protected:
-  /**
-   * \brief Constructs the Interest packet and sends it using a callback to the underlying NDN protocol
-   */
-  virtual void
-  ScheduleNextPacket ();
+      // virtual void
+      // OnData (const Ptr<const Data> &contentObject,
+      //                  const Ptr<const Packet> &payload);
 
-  /**
-   * @brief Set type of frequency randomization
-   * @param value Either 'none', 'uniform', or 'exponential'
-   */
-  void
-  SetRandomize (const std::string &value);
+    protected:
+      /**
+       * \brief Constructs the Interest packet and sends it using a callback to the underlying NDN protocol
+       */
+      virtual void
+      ScheduleNextPacket ();
 
-  /**
-   * @brief Get type of frequency randomization
-   * @returns either 'none', 'uniform', or 'exponential'
-   */
-  std::string
-  GetRandomize () const;
-  
-private:
-  // void
-  // UpdateMean ();
+      /**
+       * @brief Set type of frequency randomization
+       * @param value Either 'none', 'uniform', or 'exponential'
+       */
+      void
+      SetRandomize (const std::string &value);
 
-  // virtual void
-  // SetPayloadSize (uint32_t payload);
+      /**
+       * @brief Get type of frequency randomization
+       * @returns either 'none', 'uniform', or 'exponential'
+       */
+      std::string
+      GetRandomize () const;
 
-  // void
-  // SetDesiredRate (DataRate rate);
+    private:
+      // void
+      // UpdateMean ();
 
-  // DataRate
-  // GetDesiredRate () const;
-  
-protected:
-  double              m_frequency; // Frequency of interest packets (in hertz)
-  bool                m_firstTime;
-  RandomVariable      *m_random;
-  std::string         m_randomType;
-};
+      // virtual void
+      // SetPayloadSize (uint32_t payload);
 
-} // namespace ndn
+      // void
+      // SetDesiredRate (DataRate rate);
+
+      // DataRate
+      // GetDesiredRate () const;
+
+    protected:
+      double              m_frequency; // Frequency of interest packets (in hertz)
+      bool                m_firstTime;
+      RandomVariable      *m_random;
+      std::string         m_randomType;
+    };
+
+  } // namespace nnn
 } // namespace ns3
 
 #endif

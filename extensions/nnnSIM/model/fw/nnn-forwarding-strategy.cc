@@ -34,18 +34,8 @@
 #include <ns3-dev/ns3/string.h>
 
 #include "nnn-forwarding-strategy.h"
-
 #include "../nnn-face.h"
-#include "../nnn-packets.h"
-#include "../nnst/nnn-nnst.h"
-#include "../nnst/nnn-nnst-entry.h"
-#include "../nnst/nnn-nnst-entry-facemetric.h"
-#include "../../helper/nnn-names-container.h"
-#include "../nnpt/nnn-nnpt.h"
-#include "../nnpt/nnn-nnpt-entry.h"
-
-#include "nnn-forwarding-strategy.h"
-#include "../nnn-face.h"
+#include "../nnn-naming.h"
 #include "../nnn-packets.h"
 #include "../nnst/nnn-nnst.h"
 #include "../nnst/nnn-nnst-entry.h"
@@ -57,27 +47,27 @@
 namespace ll = boost::lambda;
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-NS_OBJECT_ENSURE_REGISTERED (ForwardingStrategy);
+    NS_OBJECT_ENSURE_REGISTERED (ForwardingStrategy);
 
-NS_LOG_COMPONENT_DEFINE (ForwardingStrategy::GetLogName ().c_str ());
+    NS_LOG_COMPONENT_DEFINE (ForwardingStrategy::GetLogName ().c_str ());
 
-std::string
-ForwardingStrategy::GetLogName ()
-{
-	return "nnn.fw";
-}
+    std::string
+    ForwardingStrategy::GetLogName ()
+    {
+      return "nnn.fw";
+    }
 
-TypeId ForwardingStrategy::GetTypeId (void)
-{
-	static TypeId tid = TypeId ("ns3::nnn::ForwardingStrategy")
-    				.SetGroupName ("nnn")
-					.SetParent<Object> ()
+    TypeId ForwardingStrategy::GetTypeId (void)
+    {
+      static TypeId tid = TypeId ("ns3::nnn::ForwardingStrategy")
+    				    .SetGroupName ("nnn")
+				    .SetParent<Object> ()
 
-					////////////////////////////////////////////////////////////////////
-					////////////////////////////////////////////////////////////////////
-					/*
+				    ////////////////////////////////////////////////////////////////////
+				    ////////////////////////////////////////////////////////////////////
+				    /*
     .AddTraceSource ("OutSOs",  "OutSOs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outSOs))
     .AddTraceSource ("InSOs",   "InSOs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inSOs))
     .AddTraceSource ("DropSOs", "DropSOs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropSOs))
@@ -111,152 +101,152 @@ TypeId ForwardingStrategy::GetTypeId (void)
                    MakeBooleanAccessor (&ForwardingStrategy::m_detectRetransmissions),
                    MakeBooleanChecker ())
     ;
-					 */
-    // Required for testing at this moment
-					.AddConstructor <ForwardingStrategy> ()
-					;
-	return tid;
-}
+				     */
+				    // Required for testing at this moment
+				    .AddConstructor <ForwardingStrategy> ()
+				    ;
+      return tid;
+    }
 
-ForwardingStrategy::ForwardingStrategy ()
-{
-}
+    ForwardingStrategy::ForwardingStrategy ()
+    {
+    }
 
-ForwardingStrategy::~ForwardingStrategy ()
-{
-}
+    ForwardingStrategy::~ForwardingStrategy ()
+    {
+    }
 
-void
-ForwardingStrategy::NotifyNewAggregate ()
-{
-	/*  if (m_pit == 0)
+    void
+    ForwardingStrategy::NotifyNewAggregate ()
+    {
+      /*  if (m_pit == 0)
     {
       m_pit = GetObject<Pit> ();
     }*/
-	if (m_nnst == 0)
+      if (m_nnst == 0)
 	{
-		m_nnst = GetObject<NNST> ();
+	  m_nnst = GetObject<NNST> ();
 	}
-	/*  if (m_contentStore == 0)
+      /*  if (m_contentStore == 0)
     {
       m_contentStore = GetObject<ContentStore> ();
     }*/
 
-	Object::NotifyNewAggregate ();
-}
+      Object::NotifyNewAggregate ();
+    }
 
-void
-ForwardingStrategy::DoDispose ()
-{
-	//  m_pit = 0;
-	//  m_contentStore = 0;
-	m_nnst = 0;
+    void
+    ForwardingStrategy::DoDispose ()
+    {
+      //  m_pit = 0;
+      //  m_contentStore = 0;
+      m_nnst = 0;
 
-	Object::DoDispose ();
-}
+      Object::DoDispose ();
+    }
 
-void
-ForwardingStrategy::DidCreateNNSTEntry (Ptr<Face> inFace, Ptr<const SO> so_p, Ptr<nnst::Entry> nnstEntry)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::DidCreateNNSTEntry (Ptr<Face> inFace, Ptr<const SO> so_p, Ptr<nnst::Entry> nnstEntry)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::OnSO (Ptr<Face> face, Ptr<SO> so_p)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::OnSO (Ptr<Face> face, Ptr<SO> so_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
-
-
-void
-ForwardingStrategy::OnDO (Ptr<Face> face, Ptr<DO> do_p)
-{
-  NS_LOG_FUNCTION (this);
-
-}
-
-void
-ForwardingStrategy::OnNULLp (Ptr<Face> face, Ptr<NULLp> null_p)
-{
-  NS_LOG_FUNCTION (this);
+    }
 
 
+    void
+    ForwardingStrategy::OnDO (Ptr<Face> face, Ptr<DO> do_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::OnEN (Ptr<Face> face, Ptr<EN> en_p)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::OnNULLp (Ptr<Face> face, Ptr<NULLp> null_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
 
-void
-ForwardingStrategy::OnAEN (Ptr<Face> face, Ptr<AEN> aen_p)
-{
-  NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::OnREN (Ptr<Face> face, Ptr<REN> ren_p)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::OnEN (Ptr<Face> face, Ptr<EN> en_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::OnDEN (Ptr<Face> face, Ptr<DEN> den_p)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::OnAEN (Ptr<Face> face, Ptr<AEN> aen_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::OnINF (Ptr<Face> face, Ptr<INF> do_p)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::OnREN (Ptr<Face> face, Ptr<REN> ren_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::OnDU (Ptr<Face> face, Ptr<DU> du_p)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::OnDEN (Ptr<Face> face, Ptr<DEN> den_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::DidAddNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::OnINF (Ptr<Face> face, Ptr<INF> do_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::WillRemoveNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::OnDU (Ptr<Face> face, Ptr<DU> du_p)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::DidAddNNPTEntry (Ptr<nnpt::Entry> NNPTEntry)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::DidAddNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-void
-ForwardingStrategy::WillRemoveNNPTEntry (Ptr<nnpt::Entry> NNPTEntry)
-{
-  NS_LOG_FUNCTION (this);
+    void
+    ForwardingStrategy::WillRemoveNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
+    {
+      NS_LOG_FUNCTION (this);
 
-}
+    }
 
-/*
+    void
+    ForwardingStrategy::DidAddNNPTEntry (Ptr<nnpt::Entry> NNPTEntry)
+    {
+      NS_LOG_FUNCTION (this);
+
+    }
+
+    void
+    ForwardingStrategy::WillRemoveNNPTEntry (Ptr<nnpt::Entry> NNPTEntry)
+    {
+      NS_LOG_FUNCTION (this);
+
+    }
+
+    /*
 void
 ForwardingStrategy::OnSO (Ptr<Face> inFace,
                                 Ptr<SO> so_p)
@@ -335,9 +325,9 @@ ForwardingStrategy::OnSO (Ptr<Face> inFace,
 
         PropagateSO (inFace, so_p, pitEntry);
       }
- */
+     */
 
-/*
+    /*
 void
 ForwardingStrategy::OnDO (Ptr<Face> inFace,
                             Ptr<DO> do_p)
@@ -414,8 +404,8 @@ ForwardingStrategy::DidReceiveDuplicateSO (Ptr<Face> inFace,
   pitEntry->AddIncoming (inFace);
   m_dropSOs (so_p, inFace);
 }
- */
-/*
+     */
+    /*
 void
 ForwardingStrategy::DidSuppressSimilarSO (Ptr<Face> face,
                                                 Ptr<const SO> so_p                                            Ptr<pit::Entry> pitEntry)
@@ -428,8 +418,8 @@ ForwardingStrategy::DidForwardSimilarSO (Ptr<Face> inFace,
                                                Ptr<pit::Entry> pitEntry)
 {
 }
- */
-/*
+     */
+    /*
 void
 ForwardingStrategy::DidExhaustForwardingOptions (Ptr<Face> inFace,
                                                  Ptr<const SO> so_p,
@@ -469,8 +459,8 @@ ForwardingStrategy::DetectRetransmittedSO (Ptr<Face> inFace,
 
   return isRetransmitted;
 }
- */
-/*
+     */
+    /*
 void
 ForwardingStrategy::SatisfyPendingSO (Ptr<Face> inFace,
                                             Ptr<const DO> do_p,
@@ -503,8 +493,8 @@ ForwardingStrategy::SatisfyPendingSO (Ptr<Face> inFace,
   // Set pruning timout on PIT entry (instead of deleting the record)
   m_pit->MarkErased (pitEntry);
 }
- */
-/*
+     */
+    /*
 void
 ForwardingStrategy::DidReceiveSolicitedDO (Ptr<Face> inFace,
                                              Ptr<const DO> do_p,
@@ -512,8 +502,8 @@ ForwardingStrategy::DidReceiveSolicitedDO (Ptr<Face> inFace,
 {
   // do nothing
 }
- */
-/*
+     */
+    /*
 void
 ForwardingStrategy::DidReceiveUnsolicitedDO (Ptr<Face> inFace,
                                                Ptr<const DO> do_p,
@@ -521,8 +511,8 @@ ForwardingStrategy::DidReceiveUnsolicitedDO (Ptr<Face> inFace,
 {
   // do nothing
 }
- */
-/*
+     */
+    /*
 void
 ForwardingStrategy::WillSatisfyPendingSO (Ptr<Face> inFace,
                                                 Ptr<pit::Entry> pitEntry)
@@ -537,8 +527,8 @@ ForwardingStrategy::WillSatisfyPendingSO (Ptr<Face> inFace,
 
   m_satisfiedSOs (pitEntry);
 }
- */
-/*
+     */
+    /*
 bool
 ForwardingStrategy::ShouldSuppressIncomingSO (Ptr<Face> inFace,
                                                     Ptr<const SO> so_p,
@@ -572,8 +562,8 @@ ForwardingStrategy::ShouldSuppressIncomingSO (Ptr<Face> inFace,
 
   return false;
 }
- */
-/*
+     */
+    /*
 void
 ForwardingStrategy::PropagateSO (Ptr<Face> inFace,
                                        Ptr<const SO> so_p,
@@ -584,7 +574,7 @@ ForwardingStrategy::PropagateSO (Ptr<Face> inFace,
 
   pitEntry->AddIncoming (inFace); //, so_p->GetSOLifetime ());
   /// @todo Make lifetime per incoming interface       */
-  /*  pitEntry->UpdateLifetime (so_p->GetSOLifetime ());
+    /*  pitEntry->UpdateLifetime (so_p->GetSOLifetime ());
 
   bool propagated = DoPropagateSO (inFace, so_p, pitEntry);
 
@@ -612,8 +602,8 @@ ForwardingStrategy::PropagateSO (Ptr<Face> inFace,
       DidExhaustForwardingOptions (inFace, so_p, pitEntry);
     }
 }
-   */
-  /*
+     */
+    /*
 bool
 ForwardingStrategy::CanSendOutSO (Ptr<Face> inFace,
                                         Ptr<Face> outFace,
@@ -642,8 +632,8 @@ ForwardingStrategy::CanSendOutSO (Ptr<Face> inFace,
 
   return true;
 }
-   */
-  /*
+     */
+    /*
 bool
 ForwardingStrategy::TrySendOutSO (Ptr<Face> inFace,
                                         Ptr<Face> outFace,
@@ -668,8 +658,8 @@ ForwardingStrategy::TrySendOutSO (Ptr<Face> inFace,
 
   return true;
 }
-   */
-  /*
+     */
+    /*
 void
 ForwardingStrategy::DidSendOutSO (Ptr<Face> inFace,
                                         Ptr<Face> outFace,
@@ -678,8 +668,8 @@ ForwardingStrategy::DidSendOutSO (Ptr<Face> inFace,
 {
   m_outSOs (so_p, outFace);
 }
-   */
-  /*
+     */
+    /*
 void
 ForwardingStrategy::DidSendOutDO (Ptr<Face> inFace,
                                     Ptr<Face> outFace,
@@ -688,38 +678,38 @@ ForwardingStrategy::DidSendOutDO (Ptr<Face> inFace,
 {
   m_outDO (do_p, inFace == 0, outFace);
 }
-   */
-  /*
+     */
+    /*
 void
 ForwardingStrategy::WillEraseTimedOutPendingSO (Ptr<pit::Entry> pitEntry)
 {
   m_timedOutSOs (pitEntry);
 }
-   */
-  void
-  ForwardingStrategy::AddFace (Ptr<Face> face)
-  {
-	  // do nothing here
-  }
+     */
+    void
+    ForwardingStrategy::AddFace (Ptr<Face> face)
+    {
+      // do nothing here
+    }
 
-  void
-  ForwardingStrategy::RemoveFace (Ptr<Face> face)
-  {
-	  // do nothing here
-  }
+    void
+    ForwardingStrategy::RemoveFace (Ptr<Face> face)
+    {
+      // do nothing here
+    }
 
-  //void
-  //ForwardingStrategy::DidAddNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
-  //{
-  //  // do nothing here
-  //}
-  //
-  //void
-  //ForwardingStrategy::WillRemoveNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
-  //{
-  //  // do nothing here
-  //}
+    //void
+    //ForwardingStrategy::DidAddNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
+    //{
+    //  // do nothing here
+    //}
+    //
+    //void
+    //ForwardingStrategy::WillRemoveNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
+    //{
+    //  // do nothing here
+    //}
 
 
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3

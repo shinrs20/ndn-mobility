@@ -1,326 +1,324 @@
-/* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
+/* -*- Mode:C++; c-file-style:"gnu" -*- */
 /*
- * Copyright (c) 2011 University of California, Los Angeles
+ * Copyright 2014 Waseda University, Sato Laboratory
+ *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
+ *   Original template made for ndnSIM for University of California,
+ *   Los Angeles by Ilya Moiseenko
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  nnn-consumer.cc is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  nnn-consumer.cc is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero Public License for more details.
  *
- * Author: Ilya Moiseenko <iliamo@cs.ucla.edu>
+ *  You should have received a copy of the GNU Affero Public License
+ *  along with nnn-consumer.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <ns3-dev/ns3/boolean.h>
+#include <ns3-dev/ns3/callback.h>
+#include <ns3-dev/ns3/double.h>
+#include <ns3-dev/ns3/integer.h>
+#include <ns3-dev/ns3/log.h>
+#include <ns3-dev/ns3/names.h>
+#include <ns3-dev/ns3/packet.h>
+#include <ns3-dev/ns3/ptr.h>
+#include <ns3-dev/ns3/simulator.h>
+#include <ns3-dev/ns3/string.h>
+#include <ns3-dev/ns3/uinteger.h>
 
-#include "nnn-consumer.h"
-
-#include "ns3/ptr.h"
-#include "ns3/log.h"
-#include "ns3/simulator.h"
-#include "ns3/packet.h"
-#include "ns3/callback.h"
-#include "ns3/string.h"
-#include "ns3/boolean.h"
-#include "ns3/uinteger.h"
-#include "ns3/integer.h"
-#include "ns3/double.h"
-
-#include "ns3/ndn-app-face.h"
-#include "ns3/ndn-interest.h"
-#include "ns3/ndn-data.h"
-#include "ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h"
-#include "ns3/ndnSIM/utils/ndn-rtt-mean-deviation.h"
+#include <ns3-dev/ns3/ndn-name.h>
+#include <ns3-dev/ns3/ndn-interest.h>
+#include <ns3-dev/ns3/ndn-data.h>
+#include <ns3-dev/ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h>
+#include <ns3-dev/ns3/ndnSIM/utils/ndn-rtt-estimator.h>
+#include <ns3-dev/ns3/ndnSIM/utils/ndn-rtt-mean-deviation.h>
 
 #include <boost/ref.hpp>
 
-#include "ns3/names.h"
+#include "../model/nnn-app-face.h"
+#include "nnn-consumer.h"
 
-NS_LOG_COMPONENT_DEFINE ("ndn.Consumer");
+NS_LOG_COMPONENT_DEFINE ("nnn.Consumer");
 
 namespace ns3 {
-namespace ndn {
+  namespace nnn {
 
-NS_OBJECT_ENSURE_REGISTERED (Consumer);
+    NS_OBJECT_ENSURE_REGISTERED (Consumer);
 
-TypeId
-Consumer::GetTypeId (void)
-{
-  static TypeId tid = TypeId ("ns3::ndn::Consumer")
-    .SetGroupName ("Ndn")
-    .SetParent<App> ()
-    .AddAttribute ("StartSeq", "Initial sequence number",
-                   IntegerValue (0),
-                   MakeIntegerAccessor(&Consumer::m_seq),
-                   MakeIntegerChecker<int32_t>())
-
-    .AddAttribute ("Prefix","Name of the Interest",
-                   StringValue ("/"),
-                   MakeNameAccessor (&Consumer::m_interestName),
-                   MakeNameChecker ())
-    .AddAttribute ("LifeTime", "LifeTime for interest packet",
-                   StringValue ("2s"),
-                   MakeTimeAccessor (&Consumer::m_interestLifeTime),
-                   MakeTimeChecker ())
-
-    .AddAttribute ("RetxTimer",
-                   "Timeout defining how frequent retransmission timeouts should be checked",
-                   StringValue ("50ms"),
-                   MakeTimeAccessor (&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
-                   MakeTimeChecker ())
-
-    .AddTraceSource ("LastRetransmittedInterestDataDelay", "Delay between last retransmitted Interest and received Data",
-                     MakeTraceSourceAccessor (&Consumer::m_lastRetransmittedInterestDataDelay))
-
-    .AddTraceSource ("FirstInterestDataDelay", "Delay between first transmitted Interest and received Data",
-                     MakeTraceSourceAccessor (&Consumer::m_firstInterestDataDelay))
-    ;
-
-  return tid;
-}
-
-Consumer::Consumer ()
-  : m_rand (0, std::numeric_limits<uint32_t>::max ())
-  , m_seq (0)
-  , m_seqMax (0) // don't request anything
-{
-  NS_LOG_FUNCTION_NOARGS ();
-
-  m_rtt = CreateObject<RttMeanDeviation> ();
-}
-
-void
-Consumer::SetRetxTimer (Time retxTimer)
-{
-  m_retxTimer = retxTimer;
-  if (m_retxEvent.IsRunning ())
+    TypeId
+    Consumer::GetTypeId (void)
     {
-      // m_retxEvent.Cancel (); // cancel any scheduled cleanup events
-      Simulator::Remove (m_retxEvent); // slower, but better for memory
+      static TypeId tid = TypeId ("ns3::nnn::Consumer")
+	  .SetGroupName ("Nnn")
+	  .SetParent<App> ()
+	  .AddAttribute ("StartSeq", "Initial sequence number",
+			 IntegerValue (0),
+			 MakeIntegerAccessor(&Consumer::m_seq),
+			 MakeIntegerChecker<int32_t>())
+	  .AddAttribute ("Prefix","Name of the Interest",
+			 StringValue ("/"),
+			 MakeNameAccessor (&Consumer::m_interestName),
+			 ndn::MakeNameChecker ())
+	  .AddAttribute ("LifeTime", "LifeTime for interest packet",
+			 StringValue ("2s"),
+			 MakeTimeAccessor (&Consumer::m_interestLifeTime),
+			 MakeTimeChecker ())
+	  .AddAttribute ("RetxTimer",
+			 "Timeout defining how frequent retransmission timeouts should be checked",
+			 StringValue ("50ms"),
+			 MakeTimeAccessor (&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
+			 MakeTimeChecker ())
+	  .AddTraceSource ("LastRetransmittedInterestDataDelay", "Delay between last retransmitted Interest and received Data",
+			 MakeTraceSourceAccessor (&Consumer::m_lastRetransmittedInterestDataDelay))
+	  .AddTraceSource ("FirstInterestDataDelay", "Delay between first transmitted Interest and received Data",
+			 MakeTraceSourceAccessor (&Consumer::m_firstInterestDataDelay))
+	;
+      return tid;
     }
 
-  // schedule even with new timeout
-  m_retxEvent = Simulator::Schedule (m_retxTimer,
-                                     &Consumer::CheckRetxTimeout, this);
-}
-
-Time
-Consumer::GetRetxTimer () const
-{
-  return m_retxTimer;
-}
-
-void
-Consumer::CheckRetxTimeout ()
-{
-  Time now = Simulator::Now ();
-
-  Time rto = m_rtt->RetransmitTimeout ();
-  // NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
-
-  while (!m_seqTimeouts.empty ())
+    Consumer::Consumer ()
+    : m_rand (0, std::numeric_limits<uint32_t>::max ())
+    , m_seq (0)
+    , m_seqMax (0) // don't request anything
     {
-      SeqTimeoutsContainer::index<i_timestamp>::type::iterator entry =
-        m_seqTimeouts.get<i_timestamp> ().begin ();
-      if (entry->time + rto <= now) // timeout expired?
-        {
-          uint32_t seqNo = entry->seq;
-          m_seqTimeouts.get<i_timestamp> ().erase (entry);
-          OnTimeout (seqNo);
-        }
-      else
-        break; // nothing else to do. All later packets need not be retransmitted
+      NS_LOG_FUNCTION_NOARGS ();
+
+      m_rtt = CreateObject<ndn::RttMeanDeviation> ();
     }
 
-  m_retxEvent = Simulator::Schedule (m_retxTimer,
-                                     &Consumer::CheckRetxTimeout, this);
-}
-
-// Application Methods
-void
-Consumer::StartApplication () // Called at time specified by Start
-{
-  NS_LOG_FUNCTION_NOARGS ();
-
-  // do base stuff
-  App::StartApplication ();
-
-  ScheduleNextPacket ();
-}
-
-void
-Consumer::StopApplication () // Called at time specified by Stop
-{
-  NS_LOG_FUNCTION_NOARGS ();
-
-  // cancel periodic packet generation
-  Simulator::Cancel (m_sendEvent);
-
-  // cleanup base stuff
-  App::StopApplication ();
-}
-
-void
-Consumer::SendPacket ()
-{
-  if (!m_active) return;
-
-  NS_LOG_FUNCTION_NOARGS ();
-
-  uint32_t seq=std::numeric_limits<uint32_t>::max (); //invalid
-
-  while (m_retxSeqs.size ())
+    void
+    Consumer::SetRetxTimer (Time retxTimer)
     {
-      seq = *m_retxSeqs.begin ();
-      m_retxSeqs.erase (m_retxSeqs.begin ());
-      break;
+      m_retxTimer = retxTimer;
+      if (m_retxEvent.IsRunning ())
+	{
+	  // m_retxEvent.Cancel (); // cancel any scheduled cleanup events
+	  Simulator::Remove (m_retxEvent); // slower, but better for memory
+	}
+
+      // schedule even with new timeout
+      m_retxEvent = Simulator::Schedule (m_retxTimer,
+					 &Consumer::CheckRetxTimeout, this);
     }
 
-  if (seq == std::numeric_limits<uint32_t>::max ())
+    Time
+    Consumer::GetRetxTimer () const
     {
-      if (m_seqMax != std::numeric_limits<uint32_t>::max ())
-        {
-          if (m_seq >= m_seqMax)
-            {
-              return; // we are totally done
-            }
-        }
-
-      seq = m_seq++;
+      return m_retxTimer;
     }
 
-  //
-  Ptr<Name> nameWithSequence = Create<Name> (m_interestName);
-  nameWithSequence->appendSeqNum (seq);
-  //
-
-  Ptr<Interest> interest = Create<Interest> ();
-  interest->SetNonce               (m_rand.GetValue ());
-  interest->SetName                (nameWithSequence);
-  interest->SetInterestLifetime    (m_interestLifeTime);
-
-  // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
-  NS_LOG_INFO ("> Interest for " << seq);
-
-  WillSendOutInterest (seq);  
-
-  FwHopCountTag hopCountTag;
-  interest->GetPayload ()->AddPacketTag (hopCountTag);
-
-  m_transmittedInterests (interest, this, m_face);
-  m_face->ReceiveInterest (interest);
-
-  ScheduleNextPacket ();
-}
-
-///////////////////////////////////////////////////
-//          Process incoming packets             //
-///////////////////////////////////////////////////
-
-
-void
-Consumer::OnData (Ptr<const Data> data)
-{
-  if (!m_active) return;
-
-  App::OnData (data); // tracing inside
-
-  NS_LOG_FUNCTION (this << data);
-
-  // NS_LOG_INFO ("Received content object: " << boost::cref(*data));
-
-  uint32_t seq = data->GetName ().get (-1).toSeqNum ();
-  NS_LOG_INFO ("< DATA for " << seq);
-
-  int hopCount = -1;
-  FwHopCountTag hopCountTag;
-  if (data->GetPayload ()->PeekPacketTag (hopCountTag))
+    void
+    Consumer::CheckRetxTimeout ()
     {
-      hopCount = hopCountTag.Get ();
+      Time now = Simulator::Now ();
+
+      Time rto = m_rtt->RetransmitTimeout ();
+      // NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
+
+      while (!m_seqTimeouts.empty ())
+	{
+	  SeqTimeoutsContainer::index<i_timestamp>::type::iterator entry =
+	      m_seqTimeouts.get<i_timestamp> ().begin ();
+	  if (entry->time + rto <= now) // timeout expired?
+	    {
+	      uint32_t seqNo = entry->seq;
+	      m_seqTimeouts.get<i_timestamp> ().erase (entry);
+	      OnTimeout (seqNo);
+	    }
+	  else
+	    break; // nothing else to do. All later packets need not be retransmitted
+	}
+
+      m_retxEvent = Simulator::Schedule (m_retxTimer,
+					 &Consumer::CheckRetxTimeout, this);
     }
 
-  SeqTimeoutsContainer::iterator entry = m_seqLastDelay.find (seq);
-  if (entry != m_seqLastDelay.end ())
+    // Application Methods
+    void
+    Consumer::StartApplication () // Called at time specified by Start
     {
-      m_lastRetransmittedInterestDataDelay (this, seq, Simulator::Now () - entry->time, hopCount);
+      NS_LOG_FUNCTION_NOARGS ();
+
+      // do base stuff
+      App::StartApplication ();
+
+      ScheduleNextPacket ();
     }
 
-  entry = m_seqFullDelay.find (seq);
-  if (entry != m_seqFullDelay.end ())
+    void
+    Consumer::StopApplication () // Called at time specified by Stop
     {
-      m_firstInterestDataDelay (this, seq, Simulator::Now () - entry->time, m_seqRetxCounts[seq], hopCount);
+      NS_LOG_FUNCTION_NOARGS ();
+
+      // cancel periodic packet generation
+      Simulator::Cancel (m_sendEvent);
+
+      // cleanup base stuff
+      App::StopApplication ();
     }
 
-  m_seqRetxCounts.erase (seq);
-  m_seqFullDelay.erase (seq);
-  m_seqLastDelay.erase (seq);
+    void
+    Consumer::SendPacket ()
+    {
+      if (!m_active) return;
 
-  m_seqTimeouts.erase (seq);
-  m_retxSeqs.erase (seq);
+      NS_LOG_FUNCTION_NOARGS ();
 
-  m_rtt->AckSeq (SequenceNumber32 (seq));
-}
+      uint32_t seq=std::numeric_limits<uint32_t>::max (); //invalid
 
-void
-Consumer::OnNack (Ptr<const Interest> interest)
-{
-  if (!m_active) return;
+      while (m_retxSeqs.size ())
+	{
+	  seq = *m_retxSeqs.begin ();
+	  m_retxSeqs.erase (m_retxSeqs.begin ());
+	  break;
+	}
 
-  App::OnNack (interest); // tracing inside
+      if (seq == std::numeric_limits<uint32_t>::max ())
+	{
+	  if (m_seqMax != std::numeric_limits<uint32_t>::max ())
+	    {
+	      if (m_seq >= m_seqMax)
+		{
+		  return; // we are totally done
+		}
+	    }
 
-  // NS_LOG_DEBUG ("Nack type: " << interest->GetNack ());
+	  seq = m_seq++;
+	}
 
-  // NS_LOG_FUNCTION (interest->GetName ());
+      //
+      Ptr<ndn::Name> nameWithSequence = Create<ndn::Name> (m_interestName);
+      nameWithSequence->appendSeqNum (seq);
+      //
 
-  // NS_LOG_INFO ("Received NACK: " << boost::cref(*interest));
-  uint32_t seq = interest->GetName ().get (-1).toSeqNum ();
-  NS_LOG_INFO ("< NACK for " << seq);
-  // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << "NACK for " << seq << "\n";
+      Ptr<ndn::Interest> interest = Create<ndn::Interest> ();
+      interest->SetNonce               (m_rand.GetValue ());
+      interest->SetName                (nameWithSequence);
+      interest->SetInterestLifetime    (m_interestLifeTime);
 
-  // put in the queue of interests to be retransmitted
-  // NS_LOG_INFO ("Before: " << m_retxSeqs.size ());
-  m_retxSeqs.insert (seq);
-  // NS_LOG_INFO ("After: " << m_retxSeqs.size ());
+      // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
+      NS_LOG_INFO ("> Interest for " << seq);
 
-  m_seqTimeouts.erase (seq);
+      WillSendOutInterest (seq);
 
-  m_rtt->IncreaseMultiplier ();             // Double the next RTO ??
-  ScheduleNextPacket ();
-}
+      ndn::FwHopCountTag hopCountTag;
+      interest->GetPayload ()->AddPacketTag (hopCountTag);
 
-void
-Consumer::OnTimeout (uint32_t sequenceNumber)
-{
-  NS_LOG_FUNCTION (sequenceNumber);
-  // std::cout << Simulator::Now () << ", TO: " << sequenceNumber << ", current RTO: " << m_rtt->RetransmitTimeout ().ToDouble (Time::S) << "s\n";
+      m_transmittedInterests (interest, this, m_face);
+      // Must adapt to 3N usage
+      //m_face->ReceiveInterest (interest);
 
-  m_rtt->IncreaseMultiplier ();             // Double the next RTO
-  m_rtt->SentSeq (SequenceNumber32 (sequenceNumber), 1); // make sure to disable RTT calculation for this sample
-  m_retxSeqs.insert (sequenceNumber);
-  ScheduleNextPacket ();
-}
+      ScheduleNextPacket ();
+    }
 
-void
-Consumer::WillSendOutInterest (uint32_t sequenceNumber)
-{
-  NS_LOG_DEBUG ("Trying to add " << sequenceNumber << " with " << Simulator::Now () << ". already " << m_seqTimeouts.size () << " items");
-
-  m_seqTimeouts.insert (SeqTimeout (sequenceNumber, Simulator::Now ()));
-  m_seqFullDelay.insert (SeqTimeout (sequenceNumber, Simulator::Now ()));
-
-  m_seqLastDelay.erase (sequenceNumber);
-  m_seqLastDelay.insert (SeqTimeout (sequenceNumber, Simulator::Now ()));
-
-  m_seqRetxCounts[sequenceNumber] ++;
-
-  m_rtt->SentSeq (SequenceNumber32 (sequenceNumber), 1);
-}
+    ///////////////////////////////////////////////////
+    //          Process incoming packets             //
+    ///////////////////////////////////////////////////
 
 
-} // namespace ndn
+    void
+    Consumer::OnData (Ptr<const ndn::Data> data)
+    {
+      if (!m_active) return;
+
+      App::OnData (data); // tracing inside
+
+      NS_LOG_FUNCTION (this << data);
+
+      // NS_LOG_INFO ("Received content object: " << boost::cref(*data));
+
+      uint32_t seq = data->GetName ().get (-1).toSeqNum ();
+      NS_LOG_INFO ("< DATA for " << seq);
+
+      int hopCount = -1;
+      ndn::FwHopCountTag hopCountTag;
+      if (data->GetPayload ()->PeekPacketTag (hopCountTag))
+	{
+	  hopCount = hopCountTag.Get ();
+	}
+
+      SeqTimeoutsContainer::iterator entry = m_seqLastDelay.find (seq);
+      if (entry != m_seqLastDelay.end ())
+	{
+	  m_lastRetransmittedInterestDataDelay (this, seq, Simulator::Now () - entry->time, hopCount);
+	}
+
+      entry = m_seqFullDelay.find (seq);
+      if (entry != m_seqFullDelay.end ())
+	{
+	  m_firstInterestDataDelay (this, seq, Simulator::Now () - entry->time, m_seqRetxCounts[seq], hopCount);
+	}
+
+      m_seqRetxCounts.erase (seq);
+      m_seqFullDelay.erase (seq);
+      m_seqLastDelay.erase (seq);
+
+      m_seqTimeouts.erase (seq);
+      m_retxSeqs.erase (seq);
+
+      m_rtt->AckSeq (SequenceNumber32 (seq));
+    }
+
+    void
+    Consumer::OnNack (Ptr<const ndn::Interest> interest)
+    {
+      if (!m_active) return;
+
+      App::OnNack (interest); // tracing inside
+
+      // NS_LOG_DEBUG ("Nack type: " << interest->GetNack ());
+
+      // NS_LOG_FUNCTION (interest->GetName ());
+
+      // NS_LOG_INFO ("Received NACK: " << boost::cref(*interest));
+      uint32_t seq = interest->GetName ().get (-1).toSeqNum ();
+      NS_LOG_INFO ("< NACK for " << seq);
+      // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << "NACK for " << seq << "\n";
+
+      // put in the queue of interests to be retransmitted
+      // NS_LOG_INFO ("Before: " << m_retxSeqs.size ());
+      m_retxSeqs.insert (seq);
+      // NS_LOG_INFO ("After: " << m_retxSeqs.size ());
+
+      m_seqTimeouts.erase (seq);
+
+      m_rtt->IncreaseMultiplier ();             // Double the next RTO ??
+      ScheduleNextPacket ();
+    }
+
+    void
+    Consumer::OnTimeout (uint32_t sequenceNumber)
+    {
+      NS_LOG_FUNCTION (sequenceNumber);
+      // std::cout << Simulator::Now () << ", TO: " << sequenceNumber << ", current RTO: " << m_rtt->RetransmitTimeout ().ToDouble (Time::S) << "s\n";
+
+      m_rtt->IncreaseMultiplier ();             // Double the next RTO
+      m_rtt->SentSeq (SequenceNumber32 (sequenceNumber), 1); // make sure to disable RTT calculation for this sample
+      m_retxSeqs.insert (sequenceNumber);
+      ScheduleNextPacket ();
+    }
+
+    void
+    Consumer::WillSendOutInterest (uint32_t sequenceNumber)
+    {
+      NS_LOG_DEBUG ("Trying to add " << sequenceNumber << " with " << Simulator::Now () << ". already " << m_seqTimeouts.size () << " items");
+
+      m_seqTimeouts.insert (SeqTimeout (sequenceNumber, Simulator::Now ()));
+      m_seqFullDelay.insert (SeqTimeout (sequenceNumber, Simulator::Now ()));
+
+      m_seqLastDelay.erase (sequenceNumber);
+      m_seqLastDelay.insert (SeqTimeout (sequenceNumber, Simulator::Now ()));
+
+      m_seqRetxCounts[sequenceNumber] ++;
+
+      m_rtt->SentSeq (SequenceNumber32 (sequenceNumber), 1);
+    }
+
+
+  } // namespace nnn
 } // namespace ns3

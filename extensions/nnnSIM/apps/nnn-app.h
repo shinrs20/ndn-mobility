@@ -28,6 +28,10 @@
 #include <ns3-dev/ns3/traced-callback.h>
 #include <ns3-dev/ns3/ptr.h>
 
+#include <ns3-dev/ns3/name.h>
+#include <ns3-dev/ns3/ndn-data.h>
+#include <ns3-dev/ns3/ndn-interest.h>
+
 namespace ns3 {
 
   class Packet;
@@ -37,9 +41,6 @@ namespace ns3 {
     class SO;
     class DO;
     class DU;
-
-    class Interest;
-    class Data;
 
     class Face;
 
@@ -77,14 +78,14 @@ namespace ns3 {
        *                 may be useful to get packet tags
        */
       virtual void
-      OnInterest (Ptr<const Interest> interest);
+      OnInterest (Ptr<const ndn::Interest> interest);
 
       /**
        * @brief Method that will be called every time new NACK arrives
        * @param interest Interest header
        */
       virtual void
-      OnNack (Ptr<const Interest> interest);
+      OnNack (Ptr<const ndn::Interest> interest);
 
       /**
        * @brief Method that will be called every time new Data arrives
@@ -92,7 +93,7 @@ namespace ns3 {
        * @param payload payload (potentially virtual) of the Data packet (may include packet tags of original packet)
        */
       virtual void
-      OnData (Ptr<const Data> contentObject);
+      OnData (Ptr<const ndn::Data> contentObject);
 
       virtual void
       OnSO (Ptr<const SO> soObject);
@@ -121,13 +122,13 @@ namespace ns3 {
       bool m_active;  ///< @brief Flag to indicate that application is active (set by StartApplication and StopApplication)
       Ptr<Face> m_face;   ///< @brief automatically created application face through which application communicates
 
-      TracedCallback<Ptr<const Interest>,
+      TracedCallback<Ptr<const ndn::Interest>,
       Ptr<App>, Ptr<Face> > m_receivedInterests; ///< @brief App-level trace of received Interests
 
-      TracedCallback<Ptr<const Interest>,
+      TracedCallback<Ptr<const ndn::Interest>,
       Ptr<App>, Ptr<Face> > m_receivedNacks; ///< @brief App-level trace of received NACKs
 
-      TracedCallback<Ptr<const Data>,
+      TracedCallback<Ptr<const ndn::Data>,
       Ptr<App>, Ptr<Face> > m_receivedDatas; ///< @brief App-level trace of received Data
 
       TracedCallback<Ptr<const SO>,
@@ -139,10 +140,10 @@ namespace ns3 {
       TracedCallback<Ptr<const DU>,
       Ptr<App>, Ptr<Face> > m_receivedDU; ///< @brief App-level trace of received DU
 
-      TracedCallback<Ptr<const Interest>,
+      TracedCallback<Ptr<const ndn::Interest>,
       Ptr<App>, Ptr<Face> > m_transmittedInterests; ///< @brief App-level trace of transmitted Interests
 
-      TracedCallback<Ptr<const Data>,
+      TracedCallback<Ptr<const ndn::Data>,
       Ptr<App>, Ptr<Face> > m_transmittedDatas; ///< @brief App-level trace of transmitted Data
     };
 

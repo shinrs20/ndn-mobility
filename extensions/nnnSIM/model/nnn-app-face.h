@@ -24,13 +24,17 @@
 
 #include <ns3-dev/ns3/traced-callback.h>
 
-#include "../model/nnn-face.h"
+#include <ns3-dev/ns3/name.h>
+#include <ns3-dev/ns3/ndn-data.h>
+#include <ns3-dev/ns3/ndn-interest.h>
+
+#include "nnn-face.h"
 
 namespace ns3 {
 
   class Packet;
 
-  namespace ndn {
+  namespace nnn {
 
     class SO;
     class DO;
@@ -52,7 +56,7 @@ namespace ns3 {
      *
      * \see AppFace, NnnNetDeviceFace
      */
-    class AppFace  : public Face
+    class AppFace  : public nnn::Face
     {
     public:
       static TypeId
@@ -67,10 +71,10 @@ namespace ns3 {
       ////////////////////////////////////////////////////////////////////
       // methods overloaded from Face
       virtual bool
-      SendInterest (Ptr<const Interest> interest);
+      SendInterest (Ptr<const ndn::Interest> interest);
 
       virtual bool
-      SendData (Ptr<const Data> data);
+      SendData (Ptr<const ndn::Data> data);
 
       virtual bool
       SendSO (Ptr<const SO> soObject);
