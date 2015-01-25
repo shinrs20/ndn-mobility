@@ -32,6 +32,9 @@
 #include <ns3-dev/ns3/ndn-data.h>
 #include <ns3-dev/ns3/ndn-interest.h>
 
+#include "../model/nnn-face.h"
+#include "../model/nnn-packets.h"
+
 namespace ns3 {
 
   class Packet;
@@ -145,6 +148,16 @@ namespace ns3 {
 
       TracedCallback<Ptr<const ndn::Data>,
       Ptr<App>, Ptr<Face> > m_transmittedDatas; ///< @brief App-level trace of transmitted Data
+
+      TracedCallback<Ptr<const SO>,
+      Ptr<App>, Ptr<Face> > m_transmittedSO; ///< @brief App-level trace of transmitted SO
+
+      TracedCallback<Ptr<const DO>,
+      Ptr<App>, Ptr<Face> > m_transmittedDO; ///< @brief App-level trace of transmitted DO
+
+      TracedCallback<Ptr<const DU>,
+      Ptr<App>, Ptr<Face> > m_transmittedDU; ///< @brief App-level trace of transmitted DU
+
     };
 
   } // namespace nnn

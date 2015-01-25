@@ -28,6 +28,8 @@
 #include <ns3-dev/ns3/ndn-data.h>
 #include <ns3-dev/ns3/ndn-interest.h>
 #include <ns3-dev/ns3/ndn-name.h>
+#include <ns3-dev/ns3/ndn-header-helper.h>
+#include <ns3-dev/ns3/ndn-wire.h>
 #include <ns3-dev/ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h>
 
 #include <boost/ref.hpp>
@@ -118,7 +120,6 @@ namespace ns3 {
       App::StopApplication ();
     }
 
-
     void
     Producer::OnInterest (Ptr<const ndn::Interest> interest)
     {
@@ -154,5 +155,136 @@ namespace ns3 {
       m_transmittedDatas (data, this, m_face);
     }
 
+    Ptr<Packet>
+    Producer::CreateReturnData (Ptr<ndn::Interest> interest)
+    {
+      Ptr<ndn::Data> data = Create<ndn::Data> (Create<Packet> (m_virtualPayloadSize));
+      Ptr<ndn::Name> dataName = Create<ndn::Name> (interest->GetName ());
+      dataName->append (m_postfix);
+      data->SetName (dataName);
+      data->SetFreshness (m_freshness);
+      data->SetTimestamp (Simulator::Now());
+
+      data->SetSignature (m_signature);
+      if (m_keyLocator.size () > 0)
+	{
+	  data->SetKeyLocator (Create<ndn::Name> (m_keyLocator));
+	}
+
+      NS_LOG_INFO ("node("<< GetNode()->GetId() <<") responding with Data: " << data->GetName ());
+
+      // Echo back FwHopCountTag if exists
+      ndn::FwHopCountTag hopCountTag;
+      if (interest->GetPayload ()->PeekPacketTag (hopCountTag))
+	{
+	  data->GetPayload ()->AddPacketTag (hopCountTag);
+	}
+
+      m_transmittedDatas (data, this, m_face);
+      return ndn::Wire::FromData(data);
+    }
+
+    void
+    Producer::OnSO (Ptr<const SO> soObject)
+    {
+      if (!m_active) return;
+
+      App::OnSO(soObject);
+
+      NS_LOG_FUNCTION (this << soObject);
+
+      Ptr<Packet> packet = soObject->GetPayload ()->Copy ();
+      uint16_t pdutype = soObject->GetPDUPayloadType ();
+
+      if (pdutype == NDN_NNN)
+	{
+	  try
+	  {
+	      ndn::HeaderHelper::Type type = ndn::HeaderHelper::GetNdnHeaderType (packet);
+	      Ptr<ndn::Interest> interest = 0;
+	      switch (type)
+	      {
+		case ndn::HeaderHelper::INTEREST_NDNSIM:
+		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+		case ndn::HeaderHelper::INTEREST_CCNB:
+		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+	      }
+
+	      if (interest != 0)
+		{
+		  App::OnInterest (interest);
+
+		  Ptr<Packet> retPkt = CreateReturnData(interest);
+
+		  Ptr<DO> do_o = Create<DO> ();
+
+		  do_o->SetName (soObject->GetName ());
+		  do_o->SetPDUPayloadType (pdutype);
+		  do_o->SetPayload (retPkt);
+
+		  m_face->ReceiveDO(do_o);
+		  m_transmittedDO (do_o, this, m_face);
+		}
+
+	      // exception will be thrown if packet is not recognized
+	  }
+	  catch (ndn::UnknownHeaderException)
+	  {
+	      NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
+	  }
+	}
+    }
+
+    void
+    Producer::OnDU (Ptr<const DU> duObject)
+    {
+      if (!m_active) return;
+
+      App::OnDU(duObject);
+
+      NS_LOG_FUNCTION (this << duObject);
+
+      Ptr<Packet> packet = duObject->GetPayload ()->Copy ();
+      uint16_t pdutype = duObject->GetPDUPayloadType ();
+
+      if (pdutype == NDN_NNN)
+	{
+	  try
+	  {
+	      ndn::HeaderHelper::Type type = ndn::HeaderHelper::GetNdnHeaderType (packet);
+	      Ptr<ndn::Interest> interest = 0;
+	      switch (type)
+	      {
+		case ndn::HeaderHelper::INTEREST_NDNSIM:
+		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+		case ndn::HeaderHelper::INTEREST_CCNB:
+		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+	      }
+
+	      if (interest != 0)
+		{
+		  App::OnInterest (interest);
+
+		  Ptr<Packet> retPkt = CreateReturnData(interest);
+
+		  Ptr<DU> du_o = Create<DU> ();
+
+		  du_o->SetSrcName (duObject->GetDstName ());
+		  du_o->SetDstName (duObject->GetSrcName ());
+		  du_o->SetPDUPayloadType (pdutype);
+		  du_o->SetPayload (retPkt);
+
+		  m_face->ReceiveDU(du_o);
+		  m_transmittedDU (du_o, this, m_face);
+		}
+
+	      // exception will be thrown if packet is not recognized
+	  }
+	  catch (ndn::UnknownHeaderException)
+	  {
+	      NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
+	  }
+	}
+    }
   } // namespace nnn
 } // namespace ns3

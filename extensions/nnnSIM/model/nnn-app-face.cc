@@ -124,6 +124,7 @@ namespace ns3 {
 	{
 	  return false;
 	}
+      m_app->OnSO (soObject);
       return true;
     }
 
@@ -137,6 +138,7 @@ namespace ns3 {
 	  return false;
 	}
 
+      m_app->OnDO (doObject);
       return true;
     }
 
@@ -150,6 +152,7 @@ namespace ns3 {
 	  return false;
 	}
 
+      m_app->OnDU (duObject);
       return true;
     }
 

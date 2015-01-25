@@ -48,8 +48,17 @@ namespace ns3 {
 
       Producer ();
 
+      Ptr<Packet>
+      CreateReturnData (Ptr<ndn::Interest> interest);
+
       // inherited from NnnApp
       void OnInterest (Ptr<const ndn::Interest> interest);
+
+      // Essentially to de-encapsulate SO
+      void OnSO (Ptr<const SO> soObject);
+
+      // Essentially to de-encapsulate DU
+      void OnDU (Ptr<const DU> duObject);
 
     protected:
       // inherited from Application base class.
