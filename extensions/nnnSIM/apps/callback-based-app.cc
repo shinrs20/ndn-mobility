@@ -32,11 +32,11 @@ namespace ns3 {
 		       MakeCallbackAccessor (&CallbackBasedApp::m_onStart),
 		       MakeCallbackChecker ())
 
-		       .AddAttribute ("OnStop", "OnStop callback",
-				      CallbackValue (),
-				      MakeCallbackAccessor (&CallbackBasedApp::m_onStop),
-				      MakeCallbackChecker ())
-				      ;
+	.AddAttribute ("OnStop", "OnStop callback",
+		       CallbackValue (),
+		       MakeCallbackAccessor (&CallbackBasedApp::m_onStop),
+		       MakeCallbackChecker ())
+	;
     return tid;
   }
 

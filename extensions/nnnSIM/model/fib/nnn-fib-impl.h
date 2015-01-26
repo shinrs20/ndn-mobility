@@ -29,7 +29,6 @@
 
 #include "nnn-fib.h"
 
-
 namespace ns3 {
   namespace nnn {
     namespace fib {
