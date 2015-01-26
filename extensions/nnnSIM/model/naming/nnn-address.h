@@ -82,6 +82,15 @@ public:
   NNNAddress (const std::vector<name::Component> name);
 
   /**
+   * @brief Create a name from a container of elements [begin, end)
+   *
+   * @param begin begin iterator of the container
+   * @param end end iterator of the container
+   */
+  template<class Iterator>
+  NNNAddress (Iterator begin, Iterator end);
+
+  /**
    * @brief Assignment operator
    */
   NNNAddress &
@@ -93,7 +102,7 @@ public:
   ///////////////////////////////////////////////////////////////////////////////
 
   /**
-   * @brief Append components from another ndn::Name object
+   * @brief Append components from another NNNAddress object
    *
    * @param comp reference to Name object
    * @returns reference to self (to allow chaining of append methods)
@@ -102,7 +111,38 @@ public:
   append (const name::Component &comp);
 
   /**
-   * @brief Append a string as a name component
+   * @brief Append a binary blob as a NNNAddress component
+   * @param comp a binary blob
+   *
+   * This version is a little bit more efficient, since it swaps contents of comp and newly added component
+   *
+   * Attention!!! This method has an intended side effect: content of comp becomes empty
+   */
+  inline NNNAddress &
+  appendBySwap (name::Component &comp);
+
+  /**
+   * @brief Append components a container of elements [begin, end)
+   *
+   * @param begin begin iterator of the container
+   * @param end end iterator of the container
+   * @returns reference to self (to allow chaining of append methods)
+   */
+  template<class Iterator>
+  inline NNNAddress &
+  append (Iterator begin, Iterator end);
+
+  /**
+   * @brief Append components from another NNNAddress object
+   *
+   * @param comp reference to NNNAddress object
+   * @returns reference to self (to allow chaining of append methods)
+   */
+  inline NNNAddress &
+  append (const NNNAddress &comp);
+
+  /**
+   * @brief Append a string as a NNNAddress component
    *
    * @param compStr a string
    * @returns reference to self (to allow chaining of append methods)
@@ -114,18 +154,7 @@ public:
   append (const std::string &compStr);
 
   /**
-   * @brief Append a binary blob as a name component
-   * @param comp a binary blob
-   *
-   * This version is a little bit more efficient, since it swaps contents of comp and newly added component
-   *
-   * Attention!!! This method has an intended side effect: content of comp becomes empty
-   */
-  inline NNNAddress &
-  appendBySwap (name::Component &comp);
-
-  /**
-   * @brief Append a binary blob as a name component
+   * @brief Append a binary blob as a NNNAddress component
    *
    * @param buf pointer to the first byte of the binary blob
    * @param size length of the binary blob
@@ -238,6 +267,12 @@ public:
    */
   bool
   isToplvlSector () const;
+
+  bool
+  isOneLabel () const;
+
+  NNNAddress
+  getLastLabel () const;
 
   /**
    * @brief Find out if NNN address is empty
@@ -404,6 +439,12 @@ NNNAddress::rend ()
 // Definition of inline methods
 /////////////////////////////////////////////////////////////////////////////////////
 
+template<class Iterator>
+NNNAddress::NNNAddress (Iterator begin, Iterator end)
+{
+  append (begin, end);
+}
+
 inline NNNAddress &
 NNNAddress::append (const name::Component &comp)
 {
@@ -421,6 +462,28 @@ NNNAddress::appendBySwap (name::Component &comp)
       newComp->swap (comp);
     }
   return *this;
+}
+
+template<class Iterator>
+inline NNNAddress &
+NNNAddress::append (Iterator begin, Iterator end)
+{
+  for (Iterator i = begin; i != end; i++)
+    {
+      append (*i);
+    }
+  return *this;
+}
+
+NNNAddress &
+NNNAddress::append (const NNNAddress &comp)
+{
+  if (this == &comp)
+    {
+      // have to double-copy if the object is self, otherwise results very frustrating (because we use vector...)
+      return append (NNNAddress (comp.begin (), comp.end ()));
+    }
+  return append (comp.begin (), comp.end ());
 }
 
 NNNAddress &

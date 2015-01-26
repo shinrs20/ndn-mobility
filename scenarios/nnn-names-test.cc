@@ -151,9 +151,19 @@ int main (int argc, char *argv[])
 	cout << "Working address is: " << working << endl;
 
 	NNNAddress workingSector = working.getSectorName();
+	NNNAddress lastLabel = working.getLastLabel();
 	NNNAddress samesecSector = samesecM.getSectorName();
 
 	cout << "Sector is: " << workingSector << endl;
+	cout << "Last label is: " << lastLabel << endl;
+
+	NNNAddress appendTest = lowerStart + lastLabel;
+
+	cout << "Append test for: " << lowerStart << " with " << lastLabel << endl;
+
+	cout << "Result is: " << appendTest << endl;
+	cout << "Address used is: " << lowerStart << endl;
+	cout << "Label used is: " << lastLabel << endl;
 
 	cout << "Second working address is: " << samesecM << endl;
 

@@ -163,6 +163,7 @@ NNNAddress
 NNNAddress::operator+ (const NNNAddress &name) const
 {
   NNNAddress newName;
+  newName.append(*this).append(name);
   return newName;
 }
 
@@ -242,6 +243,23 @@ bool
 NNNAddress::isToplvlSector () const
 {
   return (size () == 1);
+}
+
+bool
+NNNAddress::isOneLabel () const
+{
+  return isToplvlSector ();
+}
+
+NNNAddress
+NNNAddress::getLastLabel () const
+{
+  if (isEmpty()) {
+      return NNNAddress ();
+  } else
+    {
+      return NNNAddress ().append(m_address_comp.at(size() -1));
+    }
 }
 
 bool
