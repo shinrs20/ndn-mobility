@@ -25,6 +25,9 @@
 
 #include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
+#include "../../../utils/trie/trie.h"
+#include "../../../utils/trie/counting-policy.h"
+#include "../../../utils/trie/trie-with-policy.h"
 
 namespace ns3
 {
@@ -36,9 +39,8 @@ namespace ns3
     class MDO : public NNNPacket, public SimpleRefCount<MDO>
     {
     public:
+
       MDO ();
-      virtual
-      ~MDO ();
 
       void
       AddDestination (Ptr<NNNAddress> addr);

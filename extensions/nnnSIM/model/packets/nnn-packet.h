@@ -32,7 +32,7 @@ namespace ns3
     /**
      * @brief enum for NNN PacketId for NNN Packets
      */
-    enum NNN_PDU_TYPE { NULL_NNN = 0, SO_NNN, DO_NNN, DU_NNN, EN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN};
+    enum NNN_PDU_TYPE { NULL_NNN = 0, SO_NNN, DO_NNN, DU_NNN, EN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN, MDO_NNN};
 
     /**
      * @brief enum for payload type the NNN data transmission packets are carrying

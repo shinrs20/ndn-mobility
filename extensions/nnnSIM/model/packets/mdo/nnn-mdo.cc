@@ -26,15 +26,52 @@ namespace ns3
   {
 
     MDO::MDO ()
+     : NNNPacket (MDO_NNN, Seconds (0))
+     , m_payload (Create<Packet> ())
+     , m_PDUdatatype (NDN_NNN)
     {
-      // TODO Auto-generated constructor stub
-
     }
 
-    MDO::~MDO ()
+    Ptr<const Packet>
+    MDO::GetPayload () const
     {
-      // TODO Auto-generated destructor stub
+      return m_payload;
     }
 
+    void
+    MDO::SetPayload (Ptr<Packet> payload)
+    {
+      m_payload = payload;
+      m_wire = 0;
+    }
+
+    uint16_t
+    MDO::GetPDUPayloadType() const
+    {
+      return m_PDUdatatype;
+    }
+
+    void
+    MDO::SetPDUPayloadType (uint16_t pdu_type)
+    {
+      m_PDUdatatype = pdu_type;
+    }
+
+    void
+    MDO::Print (std::ostream &os) const
+    {
+      os << "<MDO>" << std::endl;
+      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      os << "  <PDU Type>" << GetPDUPayloadType() << "</PDU Type>" << std::endl;
+      if (m_payload != 0)
+	{
+	  os << "  <Payload>Yes</Payload>" << std::endl;
+	} else
+	  {
+	    os << "  <Payload>No</Payload>" << std::endl;
+	  }
+      os << "</MDO>" << std::endl;
+    }
   } /* namespace nnn */
 } /* namespace ns3 */
