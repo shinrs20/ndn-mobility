@@ -24,6 +24,7 @@
 #include <ns3-dev/ns3/simple-ref-count.h>
 
 #include "../nnn-packet.h"
+#include "../utils/nnn-addr-entry.h"
 #include "../../naming/nnn-address.h"
 #include "../../../utils/trie/trie.h"
 #include "../../../utils/trie/counting-policy.h"
@@ -36,17 +37,43 @@ namespace ns3
   namespace nnn
   {
 
-    class MDO : public NNNPacket, public SimpleRefCount<MDO>
+    class MDO : public NNNPacket, public SimpleRefCount<MDO>,
+    protected nnnSIM::trie_with_policy<
+        NNNAddress,
+        nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
+        nnnSIM::counting_policy_traits
+    >
     {
     public:
 
+      typedef nnnSIM::trie_with_policy<
+	  NNNAddress,
+	  nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
+	  nnnSIM::counting_policy_traits
+      > super;
+
       MDO ();
+
+      uint16_t
+      GetNumDistinctDestinations ();
+
+      uint16_t
+      GetNumTotalDestinations ();
+
+      uint16_t
+      GetNumDestinations (Ptr<NNNAddress> sector);
+
+      std::vector<Ptr<NNNAddress> >
+      GetDistinctDestinations ();
+
+      std::vector<Ptr<NNNAddress> >
+      GetTotalDestinations ();
+
+      std::vector<Ptr<NNNAddress> >
+      GetDestinations (Ptr<NNNAddress> sector);
 
       void
       AddDestination (Ptr<NNNAddress> addr);
-
-      void
-      AddDestinations (std::vector<Ptr<NNNAddress > > addrs);
 
       /**
        * @brief Gets the payload of the MDO packet
@@ -80,9 +107,16 @@ namespace ns3
       void
       Print (std::ostream &os) const;
 
+      Ptr<const NNNAddrEntry>
+      Begin () const;
+
+      Ptr<const NNNAddrEntry>
+      End () const;
+
+      Ptr<const NNNAddrEntry>
+      Next (Ptr<NNNAddrEntry> from) const;
+
     private:
-      std::vector<Ptr<NNNAddress> > sectors;
-      std::vector<std::vector<Ptr<NNNAddress> > > dests;
       uint16_t m_PDUdatatype;
       Ptr<Packet> m_payload;
     };

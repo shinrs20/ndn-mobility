@@ -18,6 +18,13 @@
  *
  */
 
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/core.hpp>
+#include <boost/ref.hpp>
+
+namespace ll = boost::lambda;
+
 #include "nnn-mdo.h"
 
 namespace ns3
@@ -30,6 +37,60 @@ namespace ns3
      , m_payload (Create<Packet> ())
      , m_PDUdatatype (NDN_NNN)
     {
+    }
+
+    uint16_t
+    MDO::GetNumDistinctDestinations ()
+    {
+      return super::getPolicy().size();
+    }
+
+    std::vector<Ptr<NNNAddress> >
+    MDO::GetDestinations (Ptr<NNNAddress> sector)
+    {
+      super::iterator item = super::find_exact(*sector);
+
+      if (item == super::end ())
+	return std::vector<Ptr<NNNAddress> > ();
+      else
+	{
+	  std::vector<Ptr<NNNAddress> > dests;
+
+	  std::vector<Ptr<NNNAddress> > addrs = item->payload ()->GetAddresses();
+
+	  for (std::vector<Ptr<NNNAddress> >::iterator it = addrs.begin(); it != addrs.end(); ++it)
+	    {
+	      NNNAddress test = *sector + *(*it);
+	      dests.push_back(Create<NNNAddress> (test.toDotHex()));
+	    }
+
+	  return dests;
+	}
+    }
+
+    void
+    MDO::AddDestination(Ptr<NNNAddress> addr)
+    {
+      Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
+      Ptr<NNNAddress> lastlabel = Create<NNNAddress> (addr->getLastLabel());
+
+      std::pair< super::iterator, bool> result = super::insert(*sector, 0);
+
+      if (result.first != super::end ())
+	{
+	  if (result.second)
+	    {
+	      Ptr<NNNAddrEntry> newEntry = Create<NNNAddrEntry> ();
+
+	      newEntry->AddAddress (lastlabel);
+	      newEntry->SetTrie (result.first);
+	      result.first->set_payload (newEntry);
+	    }
+	  else
+	    {
+	      result.first->payload()->AddAddress(lastlabel);
+	    }
+	}
     }
 
     Ptr<const Packet>
@@ -72,6 +133,48 @@ namespace ns3
 	    os << "  <Payload>No</Payload>" << std::endl;
 	  }
       os << "</MDO>" << std::endl;
+    }
+
+    Ptr<const NNNAddrEntry>
+    MDO::Begin () const
+    {
+      super::parent_trie::const_recursive_iterator item (super::getTrie ());
+      super::parent_trie::const_recursive_iterator end (0);
+      for (; item != end; item++)
+	{
+	  if (item->payload () == 0) continue;
+	  break;
+	}
+
+      if (item == end)
+	return End ();
+      else
+	return item->payload ();
+    }
+
+    Ptr<const NNNAddrEntry>
+    MDO::End () const
+    {
+      return 0;
+    }
+
+    Ptr<const NNNAddrEntry>
+    MDO::Next (Ptr<NNNAddrEntry> from) const
+    {
+      if (from == 0) return 0;
+
+      super::parent_trie::recursive_iterator item (*StaticCast<NNNAddrEntry> (from)->to_iterator ());
+      super::parent_trie::recursive_iterator end (0);
+      for (item++; item != end; item++)
+	{
+	  if (item->payload () == 0) continue;
+	  break;
+	}
+
+      if (item == end)
+	return End ();
+      else
+	return item->payload ();
     }
   } /* namespace nnn */
 } /* namespace ns3 */
