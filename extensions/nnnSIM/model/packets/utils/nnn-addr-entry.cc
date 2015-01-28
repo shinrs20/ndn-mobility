@@ -26,8 +26,10 @@ namespace ns3
   {
 
     NNNAddrEntry::NNNAddrEntry ()
-    : m_addresses (std::vector<Ptr<NNNAddress> > ())
+    : m_sector (Create<NNNAddress> ())
+    , m_addresses (std::vector<Ptr<NNNAddress> > ())
     , item_ (0)
+    , m_totaladdr (0)
     {
     }
 
@@ -35,17 +37,16 @@ namespace ns3
     {
     }
 
-    std::vector<Ptr<NNNAddress> >
-    NNNAddrEntry::GetAddresses () const
+    Ptr<NNNAddress>
+    NNNAddrEntry::GetSector() const
     {
-      return m_addresses;
+      return m_sector;
     }
 
     void
-    NNNAddrEntry::AddAddress (Ptr<NNNAddress> addr)
+    NNNAddrEntry::SetSector(Ptr<NNNAddress> sector)
     {
-      if (addr->isOneLabel ())
-	m_addresses.push_back(addr);
+      m_sector = sector;
     }
 
     void
@@ -54,18 +55,54 @@ namespace ns3
       item_ = item;
     }
 
+    uint16_t
+    NNNAddrEntry::GetNumAddresses() const
+    {
+      return m_totaladdr;
+    }
+
+    std::vector<Ptr<NNNAddress> >
+    NNNAddrEntry::GetAddresses () const
+    {
+      return m_addresses;
+    }
+
+    std::vector<Ptr<NNNAddress> >
+    NNNAddrEntry::GetCompleteAddresses ()
+    {
+      std::vector<Ptr<NNNAddress> > compAddr;
+
+      for (int i = 0; i < m_addresses.size(); i++)
+	{
+	  NNNAddress tmp = *m_sector + *m_addresses[i];
+	  compAddr.push_back(Create<NNNAddress> (tmp.toDotHex()));
+	}
+
+      return compAddr;
+    }
+
+    void
+    NNNAddrEntry::AddAddress (Ptr<NNNAddress> addr)
+    {
+      if (addr->isOneLabel () && !m_sector->isEmpty())
+	{
+	  m_addresses.push_back(addr);
+	  m_totaladdr++;
+	}
+    }
+
     std::ostream& operator<< (std::ostream& os, const NNNAddrEntry &entry)
     {
 
       std::vector<Ptr<NNNAddress> > all = entry.GetAddresses ();
+      Ptr<NNNAddress> sector = entry.GetSector();
 
       for(std::vector<Ptr<NNNAddress> >::iterator it = all.begin(); it != all.end(); ++it)
 	{
-	  os << *it << std::endl;
+	  os << *sector << "." << *it << std::endl;
 	}
       os << std::endl;
       return os;
     }
-
   } /* namespace nnn */
 } /* namespace ns3 */

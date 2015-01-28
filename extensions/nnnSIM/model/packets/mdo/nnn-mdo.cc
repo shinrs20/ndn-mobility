@@ -36,13 +36,46 @@ namespace ns3
      : NNNPacket (MDO_NNN, Seconds (0))
      , m_payload (Create<Packet> ())
      , m_PDUdatatype (NDN_NNN)
+     , m_totaladdr (0)
+     , m_totaldest (0)
     {
+    }
+
+    uint16_t
+    MDO::GetNumDestinations(Ptr<NNNAddress> sector)
+    {
+      super::iterator item = super::find_exact(*sector);
+
+      if (item == super::end ())
+	return 0;
+      else
+	{
+	  if (item->payload() == 0)
+	    return 0;
+	  else
+	    return item->payload()->GetNumAddresses();
+	}
     }
 
     uint16_t
     MDO::GetNumDistinctDestinations ()
     {
       return super::getPolicy().size();
+    }
+
+    uint16_t
+    MDO::GetNumTotalDestinations ()
+    {
+      uint16_t dests = 0;
+
+      Ptr<NNNAddrEntry> tmp;
+
+      for (tmp = Begin(); tmp != End(); tmp = Next(tmp))
+	{
+	  dests += tmp->GetNumAddresses();
+	}
+
+      return dests;
     }
 
     std::vector<Ptr<NNNAddress> >
@@ -54,18 +87,40 @@ namespace ns3
 	return std::vector<Ptr<NNNAddress> > ();
       else
 	{
-	  std::vector<Ptr<NNNAddress> > dests;
-
-	  std::vector<Ptr<NNNAddress> > addrs = item->payload ()->GetAddresses();
-
-	  for (std::vector<Ptr<NNNAddress> >::iterator it = addrs.begin(); it != addrs.end(); ++it)
-	    {
-	      NNNAddress test = *sector + *(*it);
-	      dests.push_back(Create<NNNAddress> (test.toDotHex()));
-	    }
-
-	  return dests;
+	  if (item->payload() == 0)
+	    return std::vector<Ptr<NNNAddress> > ();
+	  else
+	    return item->payload()->GetCompleteAddresses();
 	}
+    }
+
+    std::vector<Ptr<NNNAddress> >
+    MDO::GetDistinctDestinations()
+    {
+      std::vector<Ptr<NNNAddress> > distinct;
+      Ptr<NNNAddrEntry> tmp;
+
+      for (tmp = Begin (); tmp != End (); tmp = Next(tmp))
+	{
+	  distinct.push_back(tmp->GetSector());
+	}
+
+      return distinct;
+    }
+
+    std::vector<Ptr<NNNAddress> >
+    MDO::GetTotalDestinations ()
+    {
+      std::vector<Ptr<NNNAddress> > distinct;
+      Ptr<NNNAddrEntry> tmp;
+
+      for (tmp = Begin (); tmp != End (); tmp = Next(tmp))
+	{
+	  std::vector<Ptr<NNNAddress> > tmpV = tmp->GetCompleteAddresses ();
+	  distinct.insert(distinct.end(), tmpV.begin(), tmpV.end());
+	}
+
+      return distinct;
     }
 
     void
@@ -82,13 +137,20 @@ namespace ns3
 	    {
 	      Ptr<NNNAddrEntry> newEntry = Create<NNNAddrEntry> ();
 
+	      newEntry->SetSector(sector);
 	      newEntry->AddAddress (lastlabel);
 	      newEntry->SetTrie (result.first);
 	      result.first->set_payload (newEntry);
+
+	      m_totaldest++;
 	    }
 	  else
 	    {
-	      result.first->payload()->AddAddress(lastlabel);
+	      if (result.first->payload()->GetSector() == sector)
+		{
+		  result.first->payload()->AddAddress(lastlabel);
+		  m_totaladdr++;
+		}
 	    }
 	}
     }
@@ -135,11 +197,11 @@ namespace ns3
       os << "</MDO>" << std::endl;
     }
 
-    Ptr<const NNNAddrEntry>
-    MDO::Begin () const
+    Ptr<NNNAddrEntry>
+    MDO::Begin ()
     {
-      super::parent_trie::const_recursive_iterator item (super::getTrie ());
-      super::parent_trie::const_recursive_iterator end (0);
+      super::parent_trie::recursive_iterator item (super::getTrie ());
+      super::parent_trie::recursive_iterator end (0);
       for (; item != end; item++)
 	{
 	  if (item->payload () == 0) continue;
@@ -152,14 +214,14 @@ namespace ns3
 	return item->payload ();
     }
 
-    Ptr<const NNNAddrEntry>
-    MDO::End () const
+    Ptr<NNNAddrEntry>
+    MDO::End ()
     {
       return 0;
     }
 
-    Ptr<const NNNAddrEntry>
-    MDO::Next (Ptr<NNNAddrEntry> from) const
+    Ptr<NNNAddrEntry>
+    MDO::Next (Ptr<NNNAddrEntry> from)
     {
       if (from == 0) return 0;
 

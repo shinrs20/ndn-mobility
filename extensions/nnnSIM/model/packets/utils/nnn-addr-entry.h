@@ -39,17 +39,30 @@ namespace ns3
 	  NNNAddress,
 	  nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
 	  nnnSIM::counting_policy_traits
-	  > trie;
+      > trie;
 
       NNNAddrEntry ();
+
       virtual
       ~NNNAddrEntry ();
+
+      Ptr<NNNAddress>
+      GetSector () const;
+
+      void
+      SetSector (Ptr<NNNAddress> sector);
 
       void
       SetTrie (trie::iterator item);
 
+      uint16_t
+      GetNumAddresses () const;
+
       std::vector<Ptr<NNNAddress> >
       GetAddresses () const;
+
+      std::vector<Ptr<NNNAddress> >
+      GetCompleteAddresses ();
 
       void
       AddAddress (Ptr<NNNAddress> addr);
@@ -61,7 +74,9 @@ namespace ns3
       to_iterator ()  const { return item_; }
 
     private:
+      Ptr<NNNAddress> m_sector;
       std::vector<Ptr<NNNAddress> > m_addresses;
+      uint16_t m_totaladdr;
       trie::iterator item_;
     };
 

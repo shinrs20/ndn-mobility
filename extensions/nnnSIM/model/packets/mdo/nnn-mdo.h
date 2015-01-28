@@ -55,22 +55,22 @@ namespace ns3
       MDO ();
 
       uint16_t
+      GetNumDestinations (Ptr<NNNAddress> sector);
+
+      uint16_t
       GetNumDistinctDestinations ();
 
       uint16_t
       GetNumTotalDestinations ();
 
-      uint16_t
-      GetNumDestinations (Ptr<NNNAddress> sector);
+      std::vector<Ptr<NNNAddress> >
+      GetDestinations (Ptr<NNNAddress> sector);
 
       std::vector<Ptr<NNNAddress> >
       GetDistinctDestinations ();
 
       std::vector<Ptr<NNNAddress> >
       GetTotalDestinations ();
-
-      std::vector<Ptr<NNNAddress> >
-      GetDestinations (Ptr<NNNAddress> sector);
 
       void
       AddDestination (Ptr<NNNAddress> addr);
@@ -107,18 +107,20 @@ namespace ns3
       void
       Print (std::ostream &os) const;
 
-      Ptr<const NNNAddrEntry>
-      Begin () const;
+      Ptr<NNNAddrEntry>
+      Begin ();
 
-      Ptr<const NNNAddrEntry>
-      End () const;
+      Ptr<NNNAddrEntry>
+      End ();
 
-      Ptr<const NNNAddrEntry>
-      Next (Ptr<NNNAddrEntry> from) const;
+      Ptr<NNNAddrEntry>
+      Next (Ptr<NNNAddrEntry> from);
 
     private:
       uint16_t m_PDUdatatype;
       Ptr<Packet> m_payload;
+      uint16_t m_totaladdr;
+      uint16_t m_totaldest;
     };
 
     inline std::ostream &
