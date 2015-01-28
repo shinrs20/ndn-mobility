@@ -62,7 +62,7 @@ namespace ns3
       GetAddresses () const;
 
       std::vector<Ptr<NNNAddress> >
-      GetCompleteAddresses ();
+      GetCompleteAddresses () const;
 
       void
       AddAddress (Ptr<NNNAddress> addr);

@@ -58,19 +58,19 @@ namespace ns3
       GetNumDestinations (Ptr<NNNAddress> sector);
 
       uint16_t
-      GetNumDistinctDestinations ();
+      GetNumDistinctDestinations () const;
 
       uint16_t
-      GetNumTotalDestinations ();
+      GetNumTotalDestinations () const;
 
       std::vector<Ptr<NNNAddress> >
       GetDestinations (Ptr<NNNAddress> sector);
 
       std::vector<Ptr<NNNAddress> >
-      GetDistinctDestinations ();
+      GetDistinctDestinations () const;
 
       std::vector<Ptr<NNNAddress> >
-      GetTotalDestinations ();
+      GetTotalDestinations () const;
 
       void
       AddDestination (Ptr<NNNAddress> addr);
@@ -107,14 +107,14 @@ namespace ns3
       void
       Print (std::ostream &os) const;
 
-      Ptr<NNNAddrEntry>
-      Begin ();
+      Ptr<const NNNAddrEntry>
+      Begin () const;
 
-      Ptr<NNNAddrEntry>
-      End ();
+      Ptr<const NNNAddrEntry>
+      End () const;
 
-      Ptr<NNNAddrEntry>
-      Next (Ptr<NNNAddrEntry> from);
+      Ptr<const NNNAddrEntry>
+      Next (Ptr<const NNNAddrEntry> from) const;
 
     private:
       uint16_t m_PDUdatatype;

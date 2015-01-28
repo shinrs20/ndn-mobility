@@ -58,17 +58,17 @@ namespace ns3
     }
 
     uint16_t
-    MDO::GetNumDistinctDestinations ()
+    MDO::GetNumDistinctDestinations () const
     {
       return super::getPolicy().size();
     }
 
     uint16_t
-    MDO::GetNumTotalDestinations ()
+    MDO::GetNumTotalDestinations () const
     {
       uint16_t dests = 0;
 
-      Ptr<NNNAddrEntry> tmp;
+      Ptr<const NNNAddrEntry> tmp;
 
       for (tmp = Begin(); tmp != End(); tmp = Next(tmp))
 	{
@@ -95,10 +95,10 @@ namespace ns3
     }
 
     std::vector<Ptr<NNNAddress> >
-    MDO::GetDistinctDestinations()
+    MDO::GetDistinctDestinations() const
     {
       std::vector<Ptr<NNNAddress> > distinct;
-      Ptr<NNNAddrEntry> tmp;
+      Ptr<const NNNAddrEntry> tmp;
 
       for (tmp = Begin (); tmp != End (); tmp = Next(tmp))
 	{
@@ -109,10 +109,10 @@ namespace ns3
     }
 
     std::vector<Ptr<NNNAddress> >
-    MDO::GetTotalDestinations ()
+    MDO::GetTotalDestinations () const
     {
       std::vector<Ptr<NNNAddress> > distinct;
-      Ptr<NNNAddrEntry> tmp;
+      Ptr<const NNNAddrEntry> tmp;
 
       for (tmp = Begin (); tmp != End (); tmp = Next(tmp))
 	{
@@ -187,6 +187,18 @@ namespace ns3
       os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
       os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
       os << "  <PDU Type>" << GetPDUPayloadType() << "</PDU Type>" << std::endl;
+
+      std::vector<Ptr<NNNAddress> > tmp = GetTotalDestinations();
+      int totalnum = tmp.size();
+      if (totalnum > 0)
+	{
+	  for (int i = 0; i < totalnum; i++)
+	    {
+	      os << "<Dest" << i << "> " << *tmp[i] << "</Dest" << i << ">" << std::endl;
+	    }
+	}
+
+
       if (m_payload != 0)
 	{
 	  os << "  <Payload>Yes</Payload>" << std::endl;
@@ -197,11 +209,11 @@ namespace ns3
       os << "</MDO>" << std::endl;
     }
 
-    Ptr<NNNAddrEntry>
-    MDO::Begin ()
+    Ptr<const NNNAddrEntry>
+    MDO::Begin () const
     {
-      super::parent_trie::recursive_iterator item (super::getTrie ());
-      super::parent_trie::recursive_iterator end (0);
+      super::parent_trie::const_recursive_iterator item (super::getTrie ());
+      super::parent_trie::const_recursive_iterator end (0);
       for (; item != end; item++)
 	{
 	  if (item->payload () == 0) continue;
@@ -214,19 +226,19 @@ namespace ns3
 	return item->payload ();
     }
 
-    Ptr<NNNAddrEntry>
-    MDO::End ()
+    Ptr<const NNNAddrEntry>
+    MDO::End () const
     {
       return 0;
     }
 
-    Ptr<NNNAddrEntry>
-    MDO::Next (Ptr<NNNAddrEntry> from)
+    Ptr<const NNNAddrEntry>
+    MDO::Next (Ptr<const NNNAddrEntry> from) const
     {
       if (from == 0) return 0;
 
-      super::parent_trie::recursive_iterator item (*StaticCast<NNNAddrEntry> (from)->to_iterator ());
-      super::parent_trie::recursive_iterator end (0);
+      super::parent_trie::const_recursive_iterator item (*StaticCast<const NNNAddrEntry> (from)->to_iterator ());
+      super::parent_trie::const_recursive_iterator end (0);
       for (item++; item != end; item++)
 	{
 	  if (item->payload () == 0) continue;

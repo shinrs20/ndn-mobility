@@ -68,7 +68,7 @@ namespace ns3
     }
 
     std::vector<Ptr<NNNAddress> >
-    NNNAddrEntry::GetCompleteAddresses ()
+    NNNAddrEntry::GetCompleteAddresses () const
     {
       std::vector<Ptr<NNNAddress> > compAddr;
 
