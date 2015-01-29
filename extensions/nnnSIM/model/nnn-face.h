@@ -50,6 +50,7 @@ namespace ns3 {
     class DEN;
     class INF;
     class DU;
+    class MDO;
 
     /**
      * \ingroup nnn
@@ -86,6 +87,7 @@ namespace ns3 {
       typedef Callback<void, Ptr<Face>, Ptr<DEN> > DENHandler;
       typedef Callback<void, Ptr<Face>, Ptr<INF> > INFHandler;
       typedef Callback<void, Ptr<Face>, Ptr<DU> > DUHandler;
+      typedef Callback<void, Ptr<Face>, Ptr<MDO> > MDOHandler;
 
       /**
        * \brief Default constructor
@@ -111,7 +113,7 @@ namespace ns3 {
                                    const DOHandler &DOHandler, const ENHandler &ENHandler,
                                    const AENHandler &AENHandler, const RENHandler &RENHandler,
                                    const DENHandler &DENHandler, const INFHandler &INFHandler,
-				   const DUHandler &DUHandler);
+				   const DUHandler &DUHandler, const MDOHandler &MDOHandler);
 
       /**
        * \brief Un-Register callback to call when new packet arrives on the Face
@@ -196,6 +198,12 @@ namespace ns3 {
       virtual bool
       SendDU (Ptr<const DU> du_o, Address addr);
 
+      virtual bool
+      SendMDO (Ptr<const MDO> mdo_o);
+
+      virtual bool
+      SendMDO (Ptr<const MDO> mdo_o, Address addr);
+
       /**
        * \brief Receive NULL from application or another node and forward it up to the NDN stack
        *
@@ -237,6 +245,9 @@ namespace ns3 {
 
       virtual bool
       ReceiveDU (Ptr<DU> du_i);
+
+      virtual bool
+      ReceiveMDO (Ptr<MDO> mdo_i);
 
       ////////////////////////////////////////////////////////////////////
 
@@ -385,6 +396,7 @@ namespace ns3 {
       RENHandler m_upstreamRENHandler;
       DENHandler m_upstreamDENHandler;
       INFHandler m_upstreamINFHandler;
+      MDOHandler m_upstreamMDOHandler;
       bool m_ifup;
       uint32_t m_id; ///< \brief id of the interNN_Face in NNN stack (per-node uniqueness)
       uint16_t m_metric; ///< \brief metric of the Face

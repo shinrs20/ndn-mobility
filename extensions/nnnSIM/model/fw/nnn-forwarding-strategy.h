@@ -57,6 +57,7 @@ namespace ns3 {
     class DEN;
     class INF;
     class DU;
+    class MDO;
 
     class NamesContainer;
     class NamesContainerEntry;
@@ -184,6 +185,16 @@ namespace ns3 {
        */
       virtual void
       OnDU (Ptr<Face> face, Ptr<DU> du_p);
+
+      /**
+       * \brief Actual processing of incoming NNN DU packets
+       *
+       * Processing MDO packets
+       * @param face    incoming face
+       * @param mdo_p    DU packet
+       */
+      virtual void
+      OnMDO (Ptr<Face> face, Ptr<MDO> mdo_p);
 
       /**
        * @brief Event fired just before PIT entry is removed by timeout
@@ -645,6 +656,17 @@ namespace ns3 {
 
       TracedCallback<Ptr<const SO>,
       Ptr<const Face> > m_dropSOs; ///< @brief trace of dropped SOs
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const MDO>,
+      Ptr<const Face> > m_outMDOs; ///< @brief Transmitted SOs trace
+
+      TracedCallback<Ptr<const MDO>,
+      Ptr<const Face> > m_inMDOs; ///< @brief trace of incoming SOs
+
+      TracedCallback<Ptr<const MDO>,
+      Ptr<const Face> > m_dropMDOs; ///< @brief trace of dropped SOs
 
       ////////////////////////////////////////////////////////////////////
 

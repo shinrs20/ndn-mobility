@@ -219,6 +219,13 @@ namespace ns3 {
     }
 
     void
+    ForwardingStrategy::OnMDO (Ptr<Face> face, Ptr<MDO> mdo_p)
+    {
+      NS_LOG_FUNCTION (this);
+
+    }
+
+    void
     ForwardingStrategy::DidAddNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
     {
       NS_LOG_FUNCTION (this);

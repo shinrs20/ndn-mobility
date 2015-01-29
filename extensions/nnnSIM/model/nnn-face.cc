@@ -111,7 +111,7 @@ namespace ns3 {
                                        const DOHandler &DOHandler, const ENHandler &ENHandler,
                                        const AENHandler &AENHandler, const RENHandler &RENHandler,
                                        const DENHandler &DENHandler, const INFHandler &INFHandler,
-				       const DUHandler &DUHandler)
+				       const DUHandler &DUHandler, const MDOHandler &MDOHandler)
     {
       NS_LOG_FUNCTION_NOARGS ();
 
@@ -124,6 +124,7 @@ namespace ns3 {
       m_upstreamDENHandler = DENHandler;
       m_upstreamINFHandler = INFHandler;
       m_upstreamDUHandler = DUHandler;
+      m_upstreamMDOHandler = MDOHandler;
     }
 
     void
@@ -139,6 +140,7 @@ namespace ns3 {
       m_upstreamRENHandler = MakeNullCallback< void, Ptr<Face>, Ptr<REN> > ();
       m_upstreamDENHandler = MakeNullCallback< void, Ptr<Face>, Ptr<DEN> > ();
       m_upstreamINFHandler = MakeNullCallback< void, Ptr<Face>, Ptr<INF> > ();
+      m_upstreamMDOHandler = MakeNullCallback< void, Ptr<Face>, Ptr<MDO> > ();
     }
 
     bool
@@ -376,6 +378,32 @@ namespace ns3 {
     }
 
     bool
+    Face::SendMDO (Ptr<const MDO> mdo_o)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << mdo_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromMDO (mdo_o));
+    }
+
+    bool
+    Face::SendMDO (Ptr<const MDO> mdo_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << mdo_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromMDO (mdo_o), addr);
+    }
+
+    bool
     Face::Send (Ptr<Packet> packet)
     {
       return true;
@@ -422,6 +450,8 @@ namespace ns3 {
 	      return ReceiveINF (Wire::ToINF (packet, Wire::WIRE_FORMAT_NNNSIM));
 	    case nnn::DU_NNN:
 	      return ReceiveDU (Wire::ToDU (packet, Wire::WIRE_FORMAT_NNNSIM));
+	    case nnn::MDO_NNN:
+	      return ReceiveMDO (Wire::ToMDO (packet, Wire::WIRE_FORMAT_NNNSIM));
 	    default:
 	      NS_FATAL_ERROR ("Not supported NNN header");
 	      return false;
@@ -552,6 +582,19 @@ namespace ns3 {
 	}
 
       m_upstreamDUHandler (this, du_i);
+      return true;
+    }
+
+    bool
+    Face::ReceiveMDO (Ptr<MDO> mdo_i)
+    {
+      if (!IsUp ())
+	{
+	  // no tracing here. If we were off while receiving, we shouldn't even know that something was there
+	  return false;
+	}
+
+      m_upstreamMDOHandler (this, mdo_i);
       return true;
     }
 

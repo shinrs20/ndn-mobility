@@ -72,6 +72,8 @@ namespace ns3 {
 	  return DEN_NNN;
 	case 7:
 	  return INF_NNN;
+	case 8:
+	  return MDO_NNN;
       }
 
       NS_LOG_DEBUG (*packet);

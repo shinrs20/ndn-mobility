@@ -65,7 +65,7 @@ namespace ns3 {
                                    const DOHandler &DOHandler, const ENHandler &ENHandler,
                                    const AENHandler &AENHandler, const RENHandler &RENHandler,
                                    const DENHandler &DENHandler, const INFHandler &INFHandler,
-				   const DUHandler &DUHandler);
+				   const DUHandler &DUHandler, const MDOHandler &MDOHandler);
 
       virtual void
       UnRegisterNNNProtocolHandlers ();
