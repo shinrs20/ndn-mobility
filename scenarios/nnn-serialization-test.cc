@@ -28,18 +28,18 @@ using namespace ns3;
 using namespace std;
 using namespace nnn;
 using namespace wire;
-using namespace nnnSIM;
-
 
 int main (int argc, char *argv[])
 {
-
 
   Mac48Address n1_mac00 = Mac48Address ("01:B2:03:04:05:06");
   Mac48Address n1_mac01 = Mac48Address ("01:02:03:04:05:06");
 
   Ptr<NNNAddress> addr = Create<NNNAddress> ("ae.34.24");
   Ptr<NNNAddress> addr2 = Create<NNNAddress> ("45.34.76");
+  Ptr<NNNAddress> addr3 = Create<NNNAddress> ("45.34.5");
+  Ptr<NNNAddress> addr4 = Create<NNNAddress> ("45.34");
+  Ptr<NNNAddress> addr5 = Create<NNNAddress> ("ae.34.3");
 
   Time ttl = Seconds (20);
   Time lease = Seconds(120);
@@ -188,4 +188,24 @@ int main (int argc, char *argv[])
   Ptr<nnn::DU> target8 = wire::nnnSIM::DU::FromWire(packet);
 
   std::cout << std::endl << "After " << std::endl << *target8 << std::endl;
+
+  // Test MDO packet serialization
+  Ptr<nnn::MDO> source9 = Create<nnn::MDO> ();
+
+  source9->SetLifetime(ttl);
+  source9->SetPayload(packet1);
+  source9->SetPDUPayloadType(NNN_NNN);
+  source9->AddDestination(addr);
+  source9->AddDestination(addr2);
+  source9->AddDestination(addr3);
+  source9->AddDestination(addr4);
+  source9->AddDestination(addr5);
+
+  std::cout << std::endl << "Before" << std::endl << *source9 << std::endl;
+
+  packet = wire::nnnSIM::MDO::ToWire(source9);
+
+  Ptr<nnn::MDO> target9 = wire::nnnSIM::MDO::FromWire(packet);
+
+  std::cout << std::endl << "After " << std::endl << *target9 << std::endl;
 }

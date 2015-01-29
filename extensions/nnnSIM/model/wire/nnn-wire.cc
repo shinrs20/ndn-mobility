@@ -536,6 +536,59 @@ Wire::ToDU (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
     }
 }
 
+Ptr<Packet>
+Wire::FromMDO (Ptr<const MDO> mdo_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
+{
+  if (wireFormat == WIRE_FORMAT_DEFAULT)
+    wireFormat = GetWireFormat ();
+
+  if (wireFormat == WIRE_FORMAT_NNNSIM)
+    return wire::nnnSIM::MDO::ToWire (mdo_p);
+  else
+    {
+      NS_FATAL_ERROR ("Unsupported format requested");
+      return 0;
+    }
+}
+
+Ptr<MDO>
+Wire::ToMDO (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
+{
+  if (wireFormat == WIRE_FORMAT_AUTODETECT)
+    {
+      try
+      {
+	  NNN_PDU_TYPE type = HeaderHelper::GetNNNHeaderType (packet);
+	  switch (type)
+	  {
+	    case nnn::MDO_NNN:
+	      {
+		return wire::nnnSIM::MDO::FromWire (packet);
+	      }
+	    default:
+	      NS_FATAL_ERROR ("Unsupported format");
+	      return 0;
+	  }
+
+	  // exception will be thrown if packet is not recognized
+      }
+      catch (UnknownHeaderException)
+      {
+	  NS_FATAL_ERROR ("Unknown NNN header");
+	  return 0;
+      }
+    }
+  else
+    {
+      if (wireFormat == WIRE_FORMAT_NNNSIM)
+	return wire::nnnSIM::MDO::FromWire (packet);
+      else
+	{
+	  NS_FATAL_ERROR ("Unsupported format requested");
+	  return 0;
+	}
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper methods for Python
@@ -660,13 +713,29 @@ Wire::FromINFStr (Ptr<const INF> inf_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAUL
   return wire;
 }
 
-
-
 Ptr<INF>
 Wire::ToINFStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*/)
 {
   Ptr<Packet> pkt = Create<Packet> (reinterpret_cast<const uint8_t*> (&wire[0]), wire.size ());
   return ToINF (pkt, type);
+}
+
+std::string
+Wire::FromMDOStr (Ptr<const MDO> mdo_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
+{
+  Ptr<Packet> pkt = FromMDO (mdo_p, wireFormat);
+  std::string wire;
+  wire.resize (pkt->GetSize ());
+  pkt->CopyData (reinterpret_cast<uint8_t*> (&wire[0]), wire.size ());
+
+  return wire;
+}
+
+Ptr<MDO>
+Wire::ToMDOStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*/)
+{
+  Ptr<Packet> pkt = Create<Packet> (reinterpret_cast<const uint8_t*> (&wire[0]), wire.size ());
+  return ToMDO (pkt, type);
 }
 
 std::string

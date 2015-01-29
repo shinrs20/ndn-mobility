@@ -92,6 +92,12 @@ struct Wire
   static Ptr<DU>
   ToDU (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
 
+  static Ptr<Packet>
+  FromMDO (Ptr<const MDO> mdo_o, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+
+  static Ptr<MDO>
+  ToMDO (Ptr<Packet> packet, int8_t type = WIRE_FORMAT_AUTODETECT);
+
   // Helper methods for Python
   static std::string
   FromNULLpStr (Ptr<const NULLp> so_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
@@ -146,6 +152,12 @@ struct Wire
 
   static Ptr<DU>
   ToDUStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
+
+  static std::string
+  FromMDOStr (Ptr<const MDO> mdo_p, int8_t wireFormat = WIRE_FORMAT_DEFAULT);
+
+  static Ptr<MDO>
+  ToMDOStr (const std::string &wire, int8_t type = WIRE_FORMAT_AUTODETECT);
 
   // /*
   //  * @brief Get size of buffer to fit wire-formatted name object

@@ -18,6 +18,10 @@
  *
  */
 
+#include <ns3-dev/ns3/log.h>
+#include <ns3-dev/ns3/packet.h>
+#include <ns3-dev/ns3/unused.h>
+
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/core.hpp>
@@ -26,6 +30,8 @@
 namespace ll = boost::lambda;
 
 #include "nnn-mdo.h"
+
+NS_LOG_COMPONENT_DEFINE("nnn.MDO");
 
 namespace ns3
 {
@@ -44,7 +50,7 @@ namespace ns3
     uint16_t
     MDO::GetNumDestinations(Ptr<NNNAddress> sector)
     {
-      super::iterator item = super::find_exact(*sector);
+      /*super::iterator item = super::find_exact(*sector);
 
       if (item == super::end ())
 	return 0;
@@ -54,7 +60,8 @@ namespace ns3
 	    return 0;
 	  else
 	    return item->payload()->GetNumAddresses();
-	}
+	}*/
+      return m_sectorNum[*sector];
     }
 
     uint16_t
@@ -80,6 +87,22 @@ namespace ns3
 
     std::vector<Ptr<NNNAddress> >
     MDO::GetDestinations (Ptr<NNNAddress> sector)
+    {
+      super::iterator item = super::find_exact(*sector);
+
+      if (item == super::end ())
+	return std::vector<Ptr<NNNAddress> > ();
+      else
+	{
+	  if (item->payload() == 0)
+	    return std::vector<Ptr<NNNAddress> > ();
+	  else
+	    return item->payload()->GetAddresses();
+	}
+    }
+
+    std::vector<Ptr<NNNAddress> >
+    MDO::GetCompleteDestinations (Ptr<NNNAddress> sector)
     {
       super::iterator item = super::find_exact(*sector);
 
@@ -126,6 +149,10 @@ namespace ns3
     void
     MDO::AddDestination(Ptr<NNNAddress> addr)
     {
+      NS_LOG_FUNCTION(this << *addr);
+
+      NS_LOG_INFO("MDO: Inserting " << *addr);
+
       Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
       Ptr<NNNAddress> lastlabel = Create<NNNAddress> (addr->getLastLabel());
 
@@ -135,6 +162,7 @@ namespace ns3
 	{
 	  if (result.second)
 	    {
+	      NS_LOG_INFO("MDO: New position sector: " << *sector << " lastlabel: " << *lastlabel);
 	      Ptr<NNNAddrEntry> newEntry = Create<NNNAddrEntry> ();
 
 	      newEntry->SetSector(sector);
@@ -143,13 +171,20 @@ namespace ns3
 	      result.first->set_payload (newEntry);
 
 	      m_totaldest++;
+	      m_totaladdr++;
+	      m_sectorNum[*sector] = 1;
 	    }
 	  else
 	    {
-	      if (result.first->payload()->GetSector() == sector)
+	      NS_LOG_INFO("MDO: Sector already present: " << *sector << " lastlabel: " << *lastlabel);
+	      Ptr<NNNAddress> apparent = result.first->payload()->GetSector();
+	      NS_LOG_INFO("Testing against sector: " << *apparent);
+
+	      if (*apparent == *sector)
 		{
 		  result.first->payload()->AddAddress(lastlabel);
 		  m_totaladdr++;
+		  m_sectorNum[*sector]++;
 		}
 	    }
 	}
@@ -194,7 +229,7 @@ namespace ns3
 	{
 	  for (int i = 0; i < totalnum; i++)
 	    {
-	      os << "<Dest" << i << "> " << *tmp[i] << "</Dest" << i << ">" << std::endl;
+	      os << "  <Dest" << i << ">" << *tmp[i] << "</Dest" << i << ">" << std::endl;
 	    }
 	}
 

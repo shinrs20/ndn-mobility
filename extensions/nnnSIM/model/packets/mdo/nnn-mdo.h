@@ -38,18 +38,18 @@ namespace ns3
   {
 
     class MDO : public NNNPacket, public SimpleRefCount<MDO>,
-    protected nnnSIM::trie_with_policy<
+    protected ns3::nnn::nnnSIM::trie_with_policy<
         NNNAddress,
-        nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
-        nnnSIM::counting_policy_traits
+        ns3::nnn::nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
+        ns3::nnn::nnnSIM::counting_policy_traits
     >
     {
     public:
 
-      typedef nnnSIM::trie_with_policy<
+      typedef ns3::nnn::nnnSIM::trie_with_policy<
 	  NNNAddress,
-	  nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
-	  nnnSIM::counting_policy_traits
+	  ns3::nnn::nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
+	  ns3::nnn::nnnSIM::counting_policy_traits
       > super;
 
       MDO ();
@@ -65,6 +65,9 @@ namespace ns3
 
       std::vector<Ptr<NNNAddress> >
       GetDestinations (Ptr<NNNAddress> sector);
+
+      std::vector<Ptr<NNNAddress> >
+      GetCompleteDestinations (Ptr<NNNAddress> sector);
 
       std::vector<Ptr<NNNAddress> >
       GetDistinctDestinations () const;
@@ -121,6 +124,7 @@ namespace ns3
       Ptr<Packet> m_payload;
       uint16_t m_totaladdr;
       uint16_t m_totaldest;
+      std::map<NNNAddress,uint16_t> m_sectorNum;
     };
 
     inline std::ostream &
