@@ -35,6 +35,13 @@ namespace ns3
     {
     public:
 
+      struct PtrNNNComp
+      {
+        bool operator () (const Ptr<NNNAddress> &lhs , const Ptr<NNNAddress>  &rhs) const  {
+          return *lhs < *rhs;
+        }
+      };
+
       typedef nnnSIM::trie_with_policy<
 	  NNNAddress,
 	  nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
@@ -75,7 +82,7 @@ namespace ns3
 
     private:
       Ptr<NNNAddress> m_sector;
-      std::vector<Ptr<NNNAddress> > m_addresses;
+      std::set<Ptr<NNNAddress>, PtrNNNComp> m_addresses;
       uint16_t m_totaladdr;
       trie::iterator item_;
     };

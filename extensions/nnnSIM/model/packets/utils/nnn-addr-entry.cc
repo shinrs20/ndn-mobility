@@ -27,7 +27,7 @@ namespace ns3
 
     NNNAddrEntry::NNNAddrEntry ()
     : m_sector (Create<NNNAddress> ())
-    , m_addresses (std::vector<Ptr<NNNAddress> > ())
+    , m_addresses (std::set<Ptr<NNNAddress>, PtrNNNComp> ())
     , item_ (0)
     , m_totaladdr (0)
     {
@@ -64,7 +64,16 @@ namespace ns3
     std::vector<Ptr<NNNAddress> >
     NNNAddrEntry::GetAddresses () const
     {
-      return m_addresses;
+      std::vector<Ptr<NNNAddress> > addr;
+
+      std::set<Ptr<NNNAddress>, PtrNNNComp>::iterator it;
+
+      for (it = m_addresses.begin(); it != m_addresses.end(); ++it)
+	{
+	  addr.push_back(*it);
+	}
+
+      return addr;
     }
 
     std::vector<Ptr<NNNAddress> >
@@ -72,9 +81,11 @@ namespace ns3
     {
       std::vector<Ptr<NNNAddress> > compAddr;
 
-      for (int i = 0; i < m_addresses.size(); i++)
+      std::set<Ptr<NNNAddress>, PtrNNNComp>::iterator it;
+
+      for (it = m_addresses.begin(); it != m_addresses.end(); ++it)
 	{
-	  NNNAddress tmp = *m_sector + *m_addresses[i];
+	  NNNAddress tmp = *m_sector + **it;
 	  compAddr.push_back(Create<NNNAddress> (tmp.toDotHex()));
 	}
 
@@ -86,7 +97,7 @@ namespace ns3
     {
       if (addr->isOneLabel () && !m_sector->isEmpty())
 	{
-	  m_addresses.push_back(addr);
+	  m_addresses.insert(addr);
 	  m_totaladdr++;
 	}
     }

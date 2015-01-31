@@ -200,6 +200,8 @@ int main (int argc, char *argv[])
   source9->AddDestination(addr3);
   source9->AddDestination(addr4);
   source9->AddDestination(addr5);
+  source9->AddDestination(addr); /* Tests for multiple entries of same address */
+  source9->AddDestination(addr3);
 
   std::cout << std::endl << "Before" << std::endl << *source9 << std::endl;
 
