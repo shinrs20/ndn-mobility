@@ -30,6 +30,9 @@
 #include <ns3-dev/ns3/ndn-interest.h>
 #include <ns3-dev/ns3/ndn-content-store.h>
 
+#include "../fib/nnn-fib.h"
+#include "../pit/nnn-pit.h"
+
 namespace ns3 {
   namespace nnn {
 
@@ -556,18 +559,19 @@ namespace ns3 {
       virtual void DoDispose (); ///< @brief Do cleanup
 
     protected:
-      // Ptr<Pit> m_pit; ///< \brief Reference to PIT to which this forwarding strategy is associated
-      //Ptr<NNPT> m_nnpt; ///< \brief Reference to NNPT
+      Ptr<NNPT> m_nnpt; ///< \brief Reference to NNPT
       Ptr<NNST> m_nnst; ///< \brief Reference to NNST
 
       Ptr<NamesContainer> m_node_names; ///< \brief 3N names container for personal names
       Ptr<NamesContainer> m_leased_names; ///< \brief 3N names container for node leased names
 
-      // Ptr<ContentStore> m_contentStore; ///< \brief Content store (for caching purposes only)
+      Ptr<Pit> m_pit; ///< \brief Reference to PIT to which this forwarding strategy is associated
+      Ptr<Fib> m_fib; ///< \brief Reference to FIB to which this forwarding strategy is associated
+      Ptr<ndn::ContentStore> m_contentStore; ///< \brief Content store (for caching purposes only)
 
-      //  bool m_cacheUnsolicitedDOFromApps;
-      //  bool m_cacheUnsolicitedDO;
-      //  bool m_detectRetransmissions;
+      bool m_cacheUnsolicitedDataFromApps;
+      bool m_cacheUnsolicitedData;
+      bool m_detectRetransmissions;
 
       ////////////////////////////////////////////////////////////////////
 
@@ -670,8 +674,35 @@ namespace ns3 {
 
       ////////////////////////////////////////////////////////////////////
 
-      //  TracedCallback< Ptr<const pit::Entry> > m_satisfiedSOs;
-      //  TracedCallback< Ptr<const pit::Entry> > m_timedOutSOs;
+      TracedCallback<Ptr<const ndn::Interest>,
+      Ptr<const Face> > m_outInterests; ///< @brief Transmitted interests trace
+
+      TracedCallback<Ptr<const ndn::Interest>,
+      Ptr<const Face> > m_inInterests; ///< @brief trace of incoming Interests
+
+      TracedCallback<Ptr<const ndn::Interest>,
+      Ptr<const Face> > m_dropInterests; ///< @brief trace of dropped Interests
+
+      ////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const ndn::Data>,
+      bool /*from cache*/,
+      Ptr<const Face> > m_outData; ///< @brief trace of outgoing Data
+
+      TracedCallback<Ptr<const ndn::Data>,
+      Ptr<const Face> > m_inData; ///< @brief trace of incoming Data
+
+      TracedCallback<Ptr<const ndn::Data>,
+      Ptr<const Face> > m_dropData;  ///< @brief trace of dropped Data
+
+      ////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback< Ptr<const pit::Entry> > m_satisfiedInterests;
+      TracedCallback< Ptr<const pit::Entry> > m_timedOutInterests;
     };
 
   } // namespace nnn

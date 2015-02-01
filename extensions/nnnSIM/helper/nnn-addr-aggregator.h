@@ -75,6 +75,9 @@ namespace ns3
       AddDestination (Ptr<NNNAddress> addr);
 
       void
+      RemoveDestination (Ptr<NNNAddress> addr);
+
+      void
       Print (std::ostream &os) const;
 
       Ptr<const NNNAddrEntry>

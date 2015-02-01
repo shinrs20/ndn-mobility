@@ -74,6 +74,9 @@ namespace ns3
       void
       AddAddress (Ptr<NNNAddress> addr);
 
+      void
+      RemoveAddress (Ptr<NNNAddress> addr);
+
       trie::iterator
       to_iterator () { return item_; }
 

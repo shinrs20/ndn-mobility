@@ -190,6 +190,29 @@ namespace ns3
 	}
     }
 
+    void
+    MDO::RemoveDestination (Ptr<NNNAddress> addr)
+    {
+      Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
+      Ptr<NNNAddress> lastlabel = Create<NNNAddress> (addr->getLastLabel());
+
+      super::iterator item = super::find_exact(*sector);
+
+      if (item != super::end ())
+	{
+	  Ptr<NNNAddrEntry> tmp = item->payload();
+	  if (tmp != 0)
+	    {
+	      tmp->RemoveAddress(addr);
+	    }
+
+	  if (tmp->GetNumAddresses () < 1)
+	    {
+	      super::erase(item);
+	    }
+	}
+    }
+
     Ptr<const Packet>
     MDO::GetPayload () const
     {

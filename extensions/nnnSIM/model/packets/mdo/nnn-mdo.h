@@ -78,6 +78,9 @@ namespace ns3
       void
       AddDestination (Ptr<NNNAddress> addr);
 
+      void
+      RemoveDestination (Ptr<NNNAddress> addr);
+
       /**
        * @brief Gets the payload of the MDO packet
        */

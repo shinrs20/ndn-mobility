@@ -40,6 +40,7 @@ int main (int argc, char *argv[])
   Ptr<NNNAddress> addr3 = Create<NNNAddress> ("45.34.5");
   Ptr<NNNAddress> addr4 = Create<NNNAddress> ("45.34");
   Ptr<NNNAddress> addr5 = Create<NNNAddress> ("ae.34.3");
+  Ptr<NNNAddress> addr6 = Create<NNNAddress> ("6");
 
   Time ttl = Seconds (20);
   Time lease = Seconds(120);
@@ -202,6 +203,9 @@ int main (int argc, char *argv[])
   source9->AddDestination(addr5);
   source9->AddDestination(addr); /* Tests for multiple entries of same address */
   source9->AddDestination(addr3);
+  source9->AddDestination(addr6);
+
+  source9->RemoveDestination(addr4); /* Tests for removing address */
 
   std::cout << std::endl << "Before" << std::endl << *source9 << std::endl;
 

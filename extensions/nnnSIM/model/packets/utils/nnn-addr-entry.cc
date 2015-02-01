@@ -95,10 +95,23 @@ namespace ns3
     void
     NNNAddrEntry::AddAddress (Ptr<NNNAddress> addr)
     {
-      if (addr->isOneLabel () && !m_sector->isEmpty())
+      if (addr->isOneLabel ())
 	{
 	  m_addresses.insert(addr);
 	  m_totaladdr++;
+	}
+    }
+
+    void
+    NNNAddrEntry::RemoveAddress (Ptr<NNNAddress> addr)
+    {
+      Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
+      Ptr<NNNAddress> lastlabel = Create<NNNAddress> (addr->getLastLabel());
+
+      if (*m_sector == *sector)
+	{
+	  m_addresses.erase(lastlabel);
+	  m_totaladdr--;
 	}
     }
 
@@ -110,7 +123,7 @@ namespace ns3
 
       for(std::vector<Ptr<NNNAddress> >::iterator it = all.begin(); it != all.end(); ++it)
 	{
-	  os << *sector << "." << *it << std::endl;
+	  os << *sector << SEP << *it << std::endl;
 	}
       os << std::endl;
       return os;
