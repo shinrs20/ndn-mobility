@@ -32,7 +32,7 @@ namespace ns3
   namespace nnn
   {
 
-    class NNNAddrAggregator : SimpleRefCount<NNNAddrAggregator>,
+    class NNNAddrAggregator : public SimpleRefCount<NNNAddrAggregator>,
     protected ns3::nnn::nnnSIM::trie_with_policy<
     NNNAddress,
     ns3::nnn::nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
@@ -94,6 +94,9 @@ namespace ns3
       uint16_t m_totaldest;
       std::map<NNNAddress,uint16_t> m_sectorNum;
     };
+
+    std::ostream& operator<< (std::ostream& os, const NNNAddrAggregator &addraggr);
+
   } /* namespace nnn */
 } /* namespace ns3 */
 

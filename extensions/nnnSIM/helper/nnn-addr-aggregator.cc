@@ -241,5 +241,11 @@ namespace ns3
       else
 	return item->payload ();
     }
+
+    std::ostream& operator<< (std::ostream& os, const NNNAddrAggregator &addraggr)
+    {
+      addraggr.Print (os);
+      return os;
+    }
   } /* namespace nnn */
 } /* namespace ns3 */
