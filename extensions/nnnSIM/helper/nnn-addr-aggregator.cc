@@ -197,7 +197,14 @@ namespace ns3
     void
     NNNAddrAggregator::Print (std::ostream &os) const
     {
+      os << "3N name aggregation" << std::endl;
 
+      std::vector<Ptr<NNNAddress> > tmp = GetTotalDestinations ();
+
+      for (int i = 0; i < tmp.size(); i++)
+	{
+	  os << "<Dest" << i << ">" << *tmp[i] << "</Dest" << i << ">" << std::endl;
+	}
     }
 
     Ptr<const NNNAddrEntry>
