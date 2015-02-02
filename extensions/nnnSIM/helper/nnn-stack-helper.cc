@@ -38,8 +38,8 @@
 #include <ns3-dev/ns3/string.h>
 
 #include "nnn-stack-helper.h"
-
-//#include "nnn-face-container.h"
+#include "nnn-names-container.h"
+#include "nnn-face-container.h"
 
 #include "../model/nnn-net-device-face.h"
 #include "../model/nnn-l3-protocol.h"
@@ -48,6 +48,8 @@
 #include "../model/nnst/nnn-nnst-entry.h"
 #include "../model/nnpt/nnn-nnpt.h"
 #include "../model/nnpt/nnn-nnpt-entry.h"
+#include "../model/fib/nnn-fib.h"
+#include "../model/pit/nnn-pit.h"
 
 #include "../model/fw/nnn-forwarding-strategy.h"
 
@@ -173,14 +175,26 @@ namespace ns3 {
       Ptr<NNST> nnst = m_nnstFactory.Create<NNST> ();
       nnn->AggregateObject (nnst);
 
+      // Create and aggregate NNPT
+      Ptr<NNPT> nnpt = m_nnstFactory.Create<NNPT> ();
+      nnn->AggregateObject (nnpt);
+
+      // Create and aggregate node names container
+      nnn->AggregateObject(m_nodeNamesFactory.Create<NamesContainer> ());
+      // Create and aggregate leased names container
+      nnn->AggregateObject(m_leasedNamesFactory.Create<NamesContainer> ());
+
       // Create and aggregate PIT
-      //nnn->AggregateObject (m_pitFactory.Create<Pit> ());
+      nnn->AggregateObject (m_pitFactory.Create<Pit> ());
+
+      // Create and aggregate FIB
+      nnn->AggregateObject (m_fibFactory.Create<Fib> ());
 
       // Create and aggregate forwarding strategy
       nnn->AggregateObject (m_nnnforwardingstrategyFactory.Create<ForwardingStrategy> ());
 
       // Create and aggregate content store
-      // nnn->AggregateObject (m_contentStoreFactory.Create<ContentStore> ());
+      nnn->AggregateObject (m_contentStoreFactory.Create<ndn::ContentStore> ());
 
       // Aggregate L3Protocol on node
       node2->AggregateObject (nnn);

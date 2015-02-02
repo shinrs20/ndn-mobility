@@ -67,7 +67,7 @@ namespace ns3 {
     typedef pair_set::index<pair>::type pair_set_by_name;
     typedef pair_set::index<st_lease>::type pair_set_by_lease;
 
-    class NNPT : public SimpleRefCount<NNPT>
+    class NNPT : public Object
     {
 
     public:

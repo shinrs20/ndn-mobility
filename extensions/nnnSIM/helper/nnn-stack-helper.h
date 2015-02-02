@@ -297,10 +297,15 @@ void
     private:
       ObjectFactory m_nnnFactory;
       ObjectFactory m_nnnforwardingstrategyFactory;
-      ObjectFactory m_contentStoreFactory;
-      ObjectFactory m_fibFactory;
       ObjectFactory m_nnptFactory;
       ObjectFactory m_nnstFactory;
+
+      ObjectFactory m_leasedNamesFactory;
+      ObjectFactory m_nodeNamesFactory;
+
+      ObjectFactory m_pitFactory;
+      ObjectFactory m_fibFactory;
+      ObjectFactory m_contentStoreFactory;
 
       //  bool     m_limitsEnabled;
       //  Time     m_avgRtt;

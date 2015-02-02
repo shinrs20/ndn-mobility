@@ -63,7 +63,7 @@ namespace ns3 {
     typedef names_set::index<address>::type names_set_by_name;
     typedef names_set::index<lease>::type names_set_by_lease;
 
-    class NamesContainer : public SimpleRefCount<NamesContainer>
+    class NamesContainer : public Object
     {
 
     public:
