@@ -107,6 +107,9 @@ namespace ns3 {
       virtual void
       OnDU (Ptr<const DU> duObject);
 
+      virtual void
+      OnNULLp (Ptr<const NULLp> nullpObject);
+
     protected:
       /**
        * @brief Do cleanup when application is destroyed
@@ -134,14 +137,17 @@ namespace ns3 {
       TracedCallback<Ptr<const ndn::Data>,
       Ptr<App>, Ptr<Face> > m_receivedDatas; ///< @brief App-level trace of received Data
 
+      TracedCallback<Ptr<const NULLp>,
+      Ptr<App>, Ptr<Face> > m_receivedNULLps; ///< @brief App-level trace of received NULLp
+
       TracedCallback<Ptr<const SO>,
-      Ptr<App>, Ptr<Face> > m_receivedSO; ///< @brief App-level trace of received SO
+      Ptr<App>, Ptr<Face> > m_receivedSOs; ///< @brief App-level trace of received SO
 
       TracedCallback<Ptr<const DO>,
-      Ptr<App>, Ptr<Face> > m_receivedDO; ///< @brief App-level trace of received DO
+      Ptr<App>, Ptr<Face> > m_receivedDOs; ///< @brief App-level trace of received DO
 
       TracedCallback<Ptr<const DU>,
-      Ptr<App>, Ptr<Face> > m_receivedDU; ///< @brief App-level trace of received DU
+      Ptr<App>, Ptr<Face> > m_receivedDUs; ///< @brief App-level trace of received DU
 
       TracedCallback<Ptr<const ndn::Interest>,
       Ptr<App>, Ptr<Face> > m_transmittedInterests; ///< @brief App-level trace of transmitted Interests
@@ -149,14 +155,17 @@ namespace ns3 {
       TracedCallback<Ptr<const ndn::Data>,
       Ptr<App>, Ptr<Face> > m_transmittedDatas; ///< @brief App-level trace of transmitted Data
 
+      TracedCallback<Ptr<const NULLp>,
+      Ptr<App>, Ptr<Face> > m_transmittedNULLps; ///< @brief App-level trace of transmitted SO
+
       TracedCallback<Ptr<const SO>,
-      Ptr<App>, Ptr<Face> > m_transmittedSO; ///< @brief App-level trace of transmitted SO
+      Ptr<App>, Ptr<Face> > m_transmittedSOs; ///< @brief App-level trace of transmitted SO
 
       TracedCallback<Ptr<const DO>,
-      Ptr<App>, Ptr<Face> > m_transmittedDO; ///< @brief App-level trace of transmitted DO
+      Ptr<App>, Ptr<Face> > m_transmittedDOs; ///< @brief App-level trace of transmitted DO
 
       TracedCallback<Ptr<const DU>,
-      Ptr<App>, Ptr<Face> > m_transmittedDU; ///< @brief App-level trace of transmitted DU
+      Ptr<App>, Ptr<Face> > m_transmittedDUs; ///< @brief App-level trace of transmitted DU
 
     };
 

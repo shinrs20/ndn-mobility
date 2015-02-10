@@ -49,19 +49,43 @@ namespace ns3 {
 	.AddConstructor<App> ()
 
 	.AddTraceSource ("ReceivedInterests", "ReceivedInterests",
-			 MakeTraceSourceAccessor (&App::m_receivedInterests))
+	                 MakeTraceSourceAccessor (&App::m_receivedInterests))
 
 	.AddTraceSource ("ReceivedNacks", "ReceivedNacks",
-			 MakeTraceSourceAccessor (&App::m_receivedNacks))
+	                 MakeTraceSourceAccessor (&App::m_receivedNacks))
 
 	.AddTraceSource ("ReceivedDatas", "ReceivedDatas",
-			 MakeTraceSourceAccessor (&App::m_receivedDatas))
+	                 MakeTraceSourceAccessor (&App::m_receivedDatas))
+
+	.AddTraceSource ("ReceivedNULLps", "ReceivedNULLps",
+	                 MakeTraceSourceAccessor (&App::m_receivedNULLps))
+
+	.AddTraceSource ("ReceivedSOs", "ReceivedSOs",
+	                 MakeTraceSourceAccessor (&App::m_receivedSOs))
+
+	.AddTraceSource ("ReceivedDOs", "ReceivedDOs",
+	                 MakeTraceSourceAccessor (&App::m_receivedDOs))
+
+	.AddTraceSource ("ReceivedDUs", "ReceivedDUs",
+	                 MakeTraceSourceAccessor (&App::m_receivedDUs))
 
 	.AddTraceSource ("TransmittedInterests", "TransmittedInterests",
 			 MakeTraceSourceAccessor (&App::m_transmittedInterests))
 
 	.AddTraceSource ("TransmittedDatas", "TransmittedDatas",
-			 MakeTraceSourceAccessor (&App::m_transmittedDatas))
+	                 MakeTraceSourceAccessor (&App::m_transmittedDatas))
+
+	.AddTraceSource ("TransmittedNULLps", "TransmittedNULLps",
+	                 MakeTraceSourceAccessor (&App::m_transmittedNULLps))
+
+	.AddTraceSource ("TransmittedSOs", "TransmittedSOs",
+	                 MakeTraceSourceAccessor (&App::m_transmittedSOs))
+
+	.AddTraceSource ("TransmittedDOs", "TransmittedDOs",
+	                 MakeTraceSourceAccessor (&App::m_transmittedDOs))
+
+	.AddTraceSource ("TransmittedDUs", "TransmittedDUs",
+	                 MakeTraceSourceAccessor (&App::m_transmittedDUs))
 	;
       return tid;
     }
@@ -121,21 +145,28 @@ namespace ns3 {
     App::OnSO (Ptr<const SO> soObject)
     {
       NS_LOG_FUNCTION (this << soObject);
-      m_receivedSO (soObject, this, m_face);
+      m_receivedSOs (soObject, this, m_face);
     }
 
     void
     App::OnDO (Ptr<const DO> doObject)
     {
       NS_LOG_FUNCTION (this << doObject);
-      m_receivedDO (doObject, this, m_face);
+      m_receivedDOs (doObject, this, m_face);
     }
 
     void
     App::OnDU (Ptr<const DU> duObject)
     {
       NS_LOG_FUNCTION (this << duObject);
-      m_receivedDU (duObject, this, m_face);
+      m_receivedDUs (duObject, this, m_face);
+    }
+
+    void
+    App::OnNULLp (Ptr<const NULLp> nullpObject)
+    {
+      NS_LOG_FUNCTION (this << nullpObject);
+      m_receivedNULLps (nullpObject, this, m_face);
     }
 
     // Application Methods

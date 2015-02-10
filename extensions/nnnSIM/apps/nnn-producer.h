@@ -54,6 +54,9 @@ namespace ns3 {
       // inherited from NnnApp
       void OnInterest (Ptr<const ndn::Interest> interest);
 
+      // Essentially to de-encapsulate DU
+      void OnNULLp (Ptr<const NULLp> nullpObject);
+
       // Essentially to de-encapsulate SO
       void OnSO (Ptr<const SO> soObject);
 

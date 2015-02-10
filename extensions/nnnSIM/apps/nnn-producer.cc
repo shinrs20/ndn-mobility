@@ -185,6 +185,56 @@ namespace ns3 {
     }
 
     void
+    Producer::OnNULLp (Ptr<const NULLp> nullpObject)
+    {
+      if (!m_active) return;
+
+      App::OnNULLp(nullpObject);
+
+      NS_LOG_FUNCTION (this << nullpObject);
+
+      Ptr<Packet> packet = nullpObject->GetPayload ()->Copy ();
+      uint16_t pdutype = nullpObject->GetPDUPayloadType ();
+
+      if (pdutype == NDN_NNN)
+	{
+	  try
+	  {
+	      ndn::HeaderHelper::Type type = ndn::HeaderHelper::GetNdnHeaderType (packet);
+	      Ptr<ndn::Interest> interest = 0;
+	      switch (type)
+	      {
+		case ndn::HeaderHelper::INTEREST_NDNSIM:
+		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+		case ndn::HeaderHelper::INTEREST_CCNB:
+		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+	      }
+
+	      if (interest != 0)
+		{
+		  App::OnInterest (interest);
+
+		  Ptr<Packet> retPkt = CreateReturnData(interest);
+
+		  Ptr<NULLp> nullp_o = Create<NULLp> ();
+
+		  nullp_o->SetPDUPayloadType (pdutype);
+		  nullp_o->SetPayload (retPkt);
+
+		  m_face->ReceiveNULLp(nullp_o);
+		  m_transmittedNULLps (nullp_o, this, m_face);
+		}
+
+	      // exception will be thrown if packet is not recognized
+	  }
+	  catch (ndn::UnknownHeaderException)
+	  {
+	      NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
+	  }
+	}
+    }
+
+    void
     Producer::OnSO (Ptr<const SO> soObject)
     {
       if (!m_active) return;
@@ -223,7 +273,7 @@ namespace ns3 {
 		  do_o->SetPayload (retPkt);
 
 		  m_face->ReceiveDO(do_o);
-		  m_transmittedDO (do_o, this, m_face);
+		  m_transmittedDOs (do_o, this, m_face);
 		}
 
 	      // exception will be thrown if packet is not recognized
@@ -275,7 +325,7 @@ namespace ns3 {
 		  du_o->SetPayload (retPkt);
 
 		  m_face->ReceiveDU(du_o);
-		  m_transmittedDU (du_o, this, m_face);
+		  m_transmittedDUs (du_o, this, m_face);
 		}
 
 	      // exception will be thrown if packet is not recognized
@@ -285,6 +335,8 @@ namespace ns3 {
 	      NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
 	  }
 	}
+
+
     }
   } // namespace nnn
 } // namespace ns3
