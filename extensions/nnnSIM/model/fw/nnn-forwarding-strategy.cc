@@ -116,6 +116,12 @@ namespace ns3 {
     {
     }
 
+    Ptr<NNNAddress>
+    ForwardingStrategy::Get3NName ()
+    {
+      return m_node_names->findNewestName();
+    }
+
     void
     ForwardingStrategy::NotifyNewAggregate ()
     {

@@ -40,6 +40,7 @@ namespace ll = boost::lambda;
 #include "nnn-producer.h"
 #include "../model/nnn-app-face.h"
 #include "../model/fib/nnn-fib.h"
+#include "../model/fw/nnn-forwarding-strategy.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Producer");
 
@@ -79,6 +80,10 @@ namespace ns3 {
 		       ndn::NameValue (),
 		       MakeNameAccessor (&Producer::m_keyLocator),
 		       ndn::MakeNameChecker ())
+	.AddAttribute ("UseDU", "Node using 3N DU PDUs",
+		       BooleanValue (false),
+		       MakeBooleanAccessor(&Producer::m_useDU),
+		       MakeBooleanChecker ())
 	;
       return tid;
     }
@@ -206,8 +211,10 @@ namespace ns3 {
 	      {
 		case ndn::HeaderHelper::INTEREST_NDNSIM:
 		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+		  break;
 		case ndn::HeaderHelper::INTEREST_CCNB:
 		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+		  break;
 	      }
 
 	      if (interest != 0)
@@ -216,13 +223,29 @@ namespace ns3 {
 
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 
-		  Ptr<NULLp> nullp_o = Create<NULLp> ();
+		  if (m_useDU)
+		    {
+		      // We don't have all the information for a DU, so send a SO
+		      Ptr<SO> so_o = Create<SO> ();
+		      so_o->SetPDUPayloadType(pdutype);
+		      Ptr<NNNAddress> tmp = GetNode ()->GetObject<ForwardingStrategy> ()->Get3NName ();
+		      so_o->SetName(tmp);
+		      so_o->SetLifetime(m_3n_lifetime);
 
-		  nullp_o->SetPDUPayloadType (pdutype);
-		  nullp_o->SetPayload (retPkt);
+		      m_face->ReceiveSO(so_o);
+		      m_transmittedSOs (so_o, this, m_face);
+		    }
+		  else
+		    {
+		      Ptr<NULLp> nullp_o = Create<NULLp> ();
 
-		  m_face->ReceiveNULLp(nullp_o);
-		  m_transmittedNULLps (nullp_o, this, m_face);
+		      nullp_o->SetPDUPayloadType (pdutype);
+		      nullp_o->SetPayload (retPkt);
+		      nullp_o->SetLifetime(m_3n_lifetime);
+
+		      m_face->ReceiveNULLp(nullp_o);
+		      m_transmittedNULLps (nullp_o, this, m_face);
+		    }
 		}
 
 	      // exception will be thrown if packet is not recognized
@@ -256,8 +279,10 @@ namespace ns3 {
 	      {
 		case ndn::HeaderHelper::INTEREST_NDNSIM:
 		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+		  break;
 		case ndn::HeaderHelper::INTEREST_CCNB:
 		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+		  break;
 	      }
 
 	      if (interest != 0)
@@ -266,14 +291,32 @@ namespace ns3 {
 
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 
-		  Ptr<DO> do_o = Create<DO> ();
+		  if (m_useDU)
+		    {
+		      // We can use DU packets now
+		      Ptr<DU> du_o = Create<DU> ();
+		      du_o->SetPDUPayloadType(pdutype);
+		      Ptr<NNNAddress> tmp = GetNode ()->GetObject<ForwardingStrategy> ()->Get3NName ();
+		      du_o->SetSrcName(tmp);
+		      Ptr<NNNAddress> tmp2 = Create<NNNAddress> (soObject->GetNamePtr()->toDotHex());
+		      du_o->SetDstName(tmp2);
+		      du_o->SetLifetime(m_3n_lifetime);
 
-		  do_o->SetName (soObject->GetName ());
-		  do_o->SetPDUPayloadType (pdutype);
-		  do_o->SetPayload (retPkt);
+		      m_face->ReceiveDU(du_o);
+		      m_transmittedDUs (du_o, this, m_face);
+		    }
+		  else
+		    {
+		      Ptr<DO> do_o = Create<DO> ();
 
-		  m_face->ReceiveDO(do_o);
-		  m_transmittedDOs (do_o, this, m_face);
+		      do_o->SetName (soObject->GetName ());
+		      do_o->SetPDUPayloadType (pdutype);
+		      do_o->SetPayload (retPkt);
+		      do_o->SetLifetime(m_3n_lifetime);
+
+		      m_face->ReceiveDO(do_o);
+		      m_transmittedDOs (do_o, this, m_face);
+		    }
 		}
 
 	      // exception will be thrown if packet is not recognized
@@ -307,8 +350,10 @@ namespace ns3 {
 	      {
 		case ndn::HeaderHelper::INTEREST_NDNSIM:
 		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+		  break;
 		case ndn::HeaderHelper::INTEREST_CCNB:
 		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+		  break;
 	      }
 
 	      if (interest != 0)
@@ -323,6 +368,7 @@ namespace ns3 {
 		  du_o->SetDstName (duObject->GetSrcName ());
 		  du_o->SetPDUPayloadType (pdutype);
 		  du_o->SetPayload (retPkt);
+		  du_o->SetLifetime (m_3n_lifetime);
 
 		  m_face->ReceiveDU(du_o);
 		  m_transmittedDUs (du_o, this, m_face);

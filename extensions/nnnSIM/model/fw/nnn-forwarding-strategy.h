@@ -99,6 +99,9 @@ namespace ns3 {
       ForwardingStrategy ();
       virtual ~ForwardingStrategy ();
 
+      virtual Ptr<NNNAddress>
+      Get3NName ();
+
       /**
        * \brief Actual processing of incoming Nnn SOs.
        *

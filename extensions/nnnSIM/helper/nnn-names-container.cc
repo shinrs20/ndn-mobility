@@ -44,7 +44,7 @@ namespace ns3 {
     }
 
     void
-    NamesContainer::addEntry (NNNAddress name, Time lease_expire)
+    NamesContainer::addEntry (Ptr<NNNAddress> name, Time lease_expire)
     {
       NS_LOG_FUNCTION (this << name << lease_expire);
       container.insert(NamesContainerEntry(name, lease_expire));
@@ -53,7 +53,7 @@ namespace ns3 {
     }
 
     void
-    NamesContainer::addEntry (NNNAddress name, Time lease_expire, Time renew)
+    NamesContainer::addEntry (Ptr<NNNAddress> name, Time lease_expire, Time renew)
     {
       NS_LOG_FUNCTION (this << name << lease_expire << renew);
       container.insert(NamesContainerEntry(name, lease_expire, renew));
@@ -69,7 +69,7 @@ namespace ns3 {
     }
 
     void
-    NamesContainer::deleteEntry (NNNAddress name)
+    NamesContainer::deleteEntry (Ptr<NNNAddress> name)
     {
       NS_LOG_FUNCTION (this << name);
       NamesContainerEntry tmp = findEntry (name);
@@ -78,7 +78,7 @@ namespace ns3 {
     }
 
     bool
-    NamesContainer::foundName (NNNAddress name)
+    NamesContainer::foundName (Ptr<NNNAddress> name)
     {
       NS_LOG_FUNCTION (this << name);
       names_set_by_name& names_index = container.get<address> ();
@@ -91,7 +91,7 @@ namespace ns3 {
     }
 
     NamesContainerEntry
-    NamesContainer::findEntry (NNNAddress name)
+    NamesContainer::findEntry (Ptr<NNNAddress> name)
     {
       NS_LOG_FUNCTION (this << name);
       names_set_by_name& names_index = container.get<address> ();
@@ -107,7 +107,7 @@ namespace ns3 {
 	}
     }
 
-    NNNAddress
+    Ptr<NNNAddress>
     NamesContainer::findNewestName ()
     {
       NS_LOG_FUNCTION (this);
@@ -120,7 +120,7 @@ namespace ns3 {
     }
 
     Time
-    NamesContainer::findNameExpireTime (NNNAddress name)
+    NamesContainer::findNameExpireTime (Ptr<NNNAddress> name)
     {
       NS_LOG_FUNCTION (this << name);
       NamesContainerEntry tmp = findEntry(name);
@@ -129,7 +129,7 @@ namespace ns3 {
     }
 
     void
-    NamesContainer::updateLeaseTime (NNNAddress name, Time lease_expire)
+    NamesContainer::updateLeaseTime (Ptr<NNNAddress> name, Time lease_expire)
     {
       NS_LOG_FUNCTION (this << name << lease_expire);
       names_set_by_name& names_index = container.get<address> ();
@@ -150,7 +150,7 @@ namespace ns3 {
     }
 
     void
-    NamesContainer::updateLeaseTime (NNNAddress name, Time lease_expire, Time renew)
+    NamesContainer::updateLeaseTime (Ptr<NNNAddress> name, Time lease_expire, Time renew)
     {
       NS_LOG_FUNCTION (this << name << lease_expire << renew);
       names_set_by_name& names_index = container.get<address> ();

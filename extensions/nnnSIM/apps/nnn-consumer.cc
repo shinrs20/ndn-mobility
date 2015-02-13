@@ -34,6 +34,8 @@
 #include <ns3-dev/ns3/ndn-name.h>
 #include <ns3-dev/ns3/ndn-interest.h>
 #include <ns3-dev/ns3/ndn-data.h>
+#include <ns3-dev/ns3/ndn-header-helper.h>
+#include <ns3-dev/ns3/ndn-wire.h>
 #include <ns3-dev/ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h>
 #include <ns3-dev/ns3/ndnSIM/utils/ndn-rtt-estimator.h>
 #include <ns3-dev/ns3/ndnSIM/utils/ndn-rtt-mean-deviation.h>
@@ -42,6 +44,7 @@
 
 #include "../model/nnn-app-face.h"
 #include "nnn-consumer.h"
+#include "../model/fw/nnn-forwarding-strategy.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Consumer");
 
@@ -73,6 +76,10 @@ namespace ns3 {
 			 StringValue ("50ms"),
 			 MakeTimeAccessor (&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
 			 MakeTimeChecker ())
+	  .AddAttribute ("UseSO", "Node using 3N SO PDUs",
+			 BooleanValue (false),
+			 MakeBooleanAccessor(&Consumer::m_useSO),
+			 MakeBooleanChecker ())
 	  .AddTraceSource ("LastRetransmittedInterestDataDelay", "Delay between last retransmitted Interest and received Data",
 			 MakeTraceSourceAccessor (&Consumer::m_lastRetransmittedInterestDataDelay))
 	  .AddTraceSource ("FirstInterestDataDelay", "Delay between first transmitted Interest and received Data",
@@ -85,6 +92,8 @@ namespace ns3 {
     : m_rand (0, std::numeric_limits<uint32_t>::max ())
     , m_seq (0)
     , m_seqMax (0) // don't request anything
+    , m_useSO (false)
+    , m_possibleDestination (0)
     {
       NS_LOG_FUNCTION_NOARGS ();
 
@@ -191,10 +200,8 @@ namespace ns3 {
 	  seq = m_seq++;
 	}
 
-      //
       Ptr<ndn::Name> nameWithSequence = Create<ndn::Name> (m_interestName);
       nameWithSequence->appendSeqNum (seq);
-      //
 
       Ptr<ndn::Interest> interest = Create<ndn::Interest> ();
       interest->SetNonce               (m_rand.GetValue ());
@@ -210,8 +217,33 @@ namespace ns3 {
       interest->GetPayload ()->AddPacketTag (hopCountTag);
 
       m_transmittedInterests (interest, this, m_face);
-      // Must adapt to 3N usage
-      //m_face->ReceiveInterest (interest);
+
+      // Encode the packet
+      Ptr<Packet> retPkt = ndn::Wire::FromInterest(interest, ndn::Wire::WIRE_FORMAT_NDNSIM);
+
+      // If not mobile, then we can send NULLp packets
+      if (m_useSO)
+	{
+	  Ptr<SO> so_o = Create<SO> ();
+	  so_o->SetPDUPayloadType(NDN_NNN);
+	  so_o->SetPayload(retPkt);
+	  so_o->SetName(GetNode ()->GetObject<ForwardingStrategy> ()->Get3NName ());
+	  so_o->SetLifetime(m_3n_lifetime);
+
+	  m_face->ReceiveSO(so_o);
+	  m_transmittedSOs (so_o, this, m_face);
+	}
+      else
+	{
+	  Ptr<NULLp> nullp_o = Create<NULLp> ();
+
+	  nullp_o->SetPDUPayloadType (NDN_NNN);
+	  nullp_o->SetPayload (retPkt);
+	  nullp_o->SetLifetime(m_3n_lifetime);
+
+	  m_face->ReceiveNULLp(nullp_o);
+	  m_transmittedNULLps (nullp_o, this, m_face);
+	}
 
       ScheduleNextPacket ();
     }
@@ -220,6 +252,45 @@ namespace ns3 {
     //          Process incoming packets             //
     ///////////////////////////////////////////////////
 
+    void
+    Consumer::Deencapsulate3N(Ptr<Packet> packet)
+    {
+      NS_LOG_FUNCTION (this << packet);
+
+      try
+      {
+	  ndn::HeaderHelper::Type type = ndn::HeaderHelper::GetNdnHeaderType (packet);
+	  Ptr<ndn::Data> data = 0;
+	  Ptr<ndn::Interest> interest = 0;
+	  switch (type)
+	  {
+	    case ndn::HeaderHelper::CONTENT_OBJECT_NDNSIM:
+	      data = ndn::Wire::ToData (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+	      break;
+	    case ndn::HeaderHelper::CONTENT_OBJECT_CCNB:
+	      data = ndn::Wire::ToData (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+	      break;
+	    case ndn::HeaderHelper::INTEREST_NDNSIM:
+	      interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+	      break;
+	    case ndn::HeaderHelper::INTEREST_CCNB:
+	      interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+	      break;
+	  }
+
+	  if (data != 0)
+	    OnData(data);
+
+	  if (interest != 0)
+	    OnNack(interest);
+
+	  // exception will be thrown if packet is not recognized
+      }
+      catch (ndn::UnknownHeaderException)
+      {
+	  NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
+      }
+    }
 
     void
     Consumer::OnData (Ptr<const ndn::Data> data)
@@ -262,6 +333,80 @@ namespace ns3 {
       m_retxSeqs.erase (seq);
 
       m_rtt->AckSeq (SequenceNumber32 (seq));
+    }
+
+    void
+    Consumer::OnNULLp (Ptr<const NULLp> nullpObject)
+    {
+      if (!m_active) return;
+
+      App::OnNULLp(nullpObject);
+
+      NS_LOG_FUNCTION (this << nullpObject);
+
+      Ptr<Packet> packet = nullpObject->GetPayload ()->Copy ();
+      uint16_t pdutype = nullpObject->GetPDUPayloadType ();
+
+      if (pdutype == NDN_NNN)
+	{
+	  Deencapsulate3N(packet);
+	}
+    }
+
+    void
+    Consumer::OnSO (Ptr<const SO> soObject)
+    {
+      if (!m_active) return;
+
+      App::OnSO(soObject);
+
+      NS_LOG_FUNCTION (this << soObject);
+
+      Ptr<Packet> packet = soObject->GetPayload ()->Copy ();
+      uint16_t pdutype = soObject->GetPDUPayloadType ();
+
+      if (pdutype == NDN_NNN)
+	{
+	  m_possibleDestination = soObject->GetNamePtr();
+	  Deencapsulate3N(packet);
+	}
+    }
+
+    void
+    Consumer::OnDO (Ptr<const DO> doObject)
+    {
+      if (!m_active) return;
+
+      App::OnDO(doObject);
+
+      NS_LOG_FUNCTION (this << doObject);
+
+      Ptr<Packet> packet = doObject->GetPayload ()->Copy ();
+      uint16_t pdutype = doObject->GetPDUPayloadType ();
+
+      if (pdutype == NDN_NNN)
+	{
+	  Deencapsulate3N(packet);
+	}
+    }
+
+    void
+    Consumer::OnDU (Ptr<const DU> duObject)
+    {
+      if (!m_active) return;
+
+      App::OnDU(duObject);
+
+      NS_LOG_FUNCTION (this << duObject);
+
+      Ptr<Packet> packet = duObject->GetPayload ()->Copy ();
+      uint16_t pdutype = duObject->GetPDUPayloadType ();
+
+      if (pdutype == NDN_NNN)
+	{
+	  m_possibleDestination = duObject->GetSrcNamePtr();
+	  Deencapsulate3N(packet);
+	}
     }
 
     void

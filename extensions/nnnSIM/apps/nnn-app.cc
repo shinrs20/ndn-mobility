@@ -23,6 +23,7 @@
 #include <ns3-dev/ns3/assert.h>
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/packet.h>
+#include <ns3-dev/ns3/string.h>
 
 #include "../model/nnn-app-face.h"
 #include "../model/nnn-l3-protocol.h"
@@ -47,6 +48,10 @@ namespace ns3 {
 	.SetGroupName ("Nnn")
 	.SetParent<Application> ()
 	.AddConstructor<App> ()
+	.AddAttribute ("3NLifetime", "LifeTime for 3N PDUs",
+		       StringValue ("2s"),
+		       MakeTimeAccessor (&App::m_3n_lifetime),
+		       MakeTimeChecker ())
 
 	.AddTraceSource ("ReceivedInterests", "ReceivedInterests",
 	                 MakeTraceSourceAccessor (&App::m_receivedInterests))

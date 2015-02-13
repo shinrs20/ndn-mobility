@@ -41,6 +41,7 @@ namespace ns3 {
 
   namespace nnn {
 
+    class NULLp;
     class SO;
     class DO;
     class DU;
@@ -127,6 +128,7 @@ namespace ns3 {
     protected:
       bool m_active;  ///< @brief Flag to indicate that application is active (set by StartApplication and StopApplication)
       Ptr<Face> m_face;   ///< @brief automatically created application face through which application communicates
+      Time m_3n_lifetime; ///< @brief Lifetime for 3N packets
 
       TracedCallback<Ptr<const ndn::Interest>,
       Ptr<App>, Ptr<Face> > m_receivedInterests; ///< @brief App-level trace of received Interests

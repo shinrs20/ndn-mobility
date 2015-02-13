@@ -79,6 +79,7 @@ namespace ns3 {
 
       uint32_t m_signature;
       ndn::Name m_keyLocator;
+      bool m_useDU;
     };
 
   } // namespace nnn

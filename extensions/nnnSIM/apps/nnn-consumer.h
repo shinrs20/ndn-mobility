@@ -65,10 +65,25 @@ namespace ns3 {
       // OnInterest (const Ptr<const Interest> &interest);
 
       virtual void
+      Deencapsulate3N(Ptr<Packet> packet);
+
+      virtual void
       OnNack (Ptr<const ndn::Interest> interest);
 
       virtual void
       OnData (Ptr<const ndn::Data> contentObject);
+
+      virtual void
+      OnNULLp (Ptr<const NULLp> nullpObject);
+
+      virtual void
+      OnSO (Ptr<const SO> soObject);
+
+      virtual void
+      OnDO (Ptr<const DO> doObject);
+
+      virtual void
+      OnDU (Ptr<const DU> duObject);
 
       /**
        * @brief Timeout event
@@ -137,11 +152,11 @@ namespace ns3 {
       EventId         m_retxEvent; ///< @brief Event to check whether or not retransmission should be performed
 
       Ptr<ndn::RttEstimator> m_rtt; ///< @brief RTT estimator
-      Time               m_offTime;             ///< \brief Time interval between packets
-      ndn::Name     m_interestName;        ///< \brief NDN Name of the Interest (use Name)
-      Time               m_interestLifeTime;    ///< \brief LifeTime for interest packet
-      bool          m_mobile;    ///< \brief If Interests should be sent in SOs, if true and NULLps if false
-
+      Time                   m_offTime;             ///< \brief Time interval between packets
+      ndn::Name              m_interestName;        ///< \brief NDN Name of the Interest (use Name)
+      Time                   m_interestLifeTime;    ///< \brief LifeTime for interest packet
+      bool                   m_useSO;    ///< \brief If Interests should be sent in SOs, if true and NULLps if false
+      Ptr<const NNNAddress>  m_possibleDestination; ///< \brief Possible destination obtained from a PDU
       /// @cond include_hidden
       /**
        * \struct This struct contains sequence numbers of packets to be retransmitted

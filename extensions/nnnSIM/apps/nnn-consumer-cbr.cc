@@ -135,23 +135,5 @@ namespace ns3 {
       return m_randomType;
     }
 
-
-    ///////////////////////////////////////////////////
-    //          Process incoming packets             //
-    ///////////////////////////////////////////////////
-
-    // void
-    // Consumer::OnData (const Ptr<const Data> &contentObject,
-    //                                const Ptr<const Packet> &payload)
-    // {
-    //   Consumer::OnData (contentObject, payload); // tracing inside
-    // }
-
-    // void
-    // Consumer::OnNack (const Ptr<const Interest> &interest)
-    // {
-    //   Consumer::OnNack (interest); // tracing inside
-    // }
-
   } // namespace nnn
 } // namespace ns3

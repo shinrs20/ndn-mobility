@@ -44,17 +44,6 @@ namespace ns3 {
       ConsumerCbr ();
       virtual ~ConsumerCbr ();
 
-      // From NnnApp
-      // virtual void
-      // OnInterest (const Ptr<const Interest> &interest);
-
-      // virtual void
-      // OnNack (const Ptr<const Interest> &interest);
-
-      // virtual void
-      // OnData (const Ptr<const Data> &contentObject,
-      //                  const Ptr<const Packet> &payload);
-
     protected:
       /**
        * \brief Constructs the Interest packet and sends it using a callback to the underlying NDN protocol
@@ -75,19 +64,6 @@ namespace ns3 {
        */
       std::string
       GetRandomize () const;
-
-    private:
-      // void
-      // UpdateMean ();
-
-      // virtual void
-      // SetPayloadSize (uint32_t payload);
-
-      // void
-      // SetDesiredRate (DataRate rate);
-
-      // DataRate
-      // GetDesiredRate () const;
 
     protected:
       double              m_frequency; // Frequency of interest packets (in hertz)
