@@ -580,72 +580,75 @@ namespace ns3 {
       bool m_cacheUnsolicitedDataFromApps;
       bool m_cacheUnsolicitedData;
       bool m_detectRetransmissions;
+      bool m_produce3Nnames;
+
+      Time m_3n_lease_time;
 
       ////////////////////////////////////////////////////////////////////
 
       TracedCallback<Ptr<const EN>,
-      Ptr<const Face> > m_outEN; ///< @brief trace of outgoing EN
+      Ptr<const Face> > m_outENs; ///< @brief trace of outgoing EN
 
       TracedCallback<Ptr<const EN>,
-      Ptr<const Face> > m_inEN; ///< @brief trace of incoming EN
+      Ptr<const Face> > m_inENs; ///< @brief trace of incoming EN
 
       TracedCallback<Ptr<const EN>,
-      Ptr<const Face> > m_dropEN;  ///< @brief trace of dropped EN
+      Ptr<const Face> > m_dropENs;  ///< @brief trace of dropped EN
 
       ////////////////////////////////////////////////////////////////////
 
       TracedCallback<Ptr<const AEN>,
-      Ptr<const Face> > m_outAEN; ///< @brief trace of outgoing AEN
+      Ptr<const Face> > m_outAENs; ///< @brief trace of outgoing AEN
 
       TracedCallback<Ptr<const AEN>,
-      Ptr<const Face> > m_inAEN; ///< @brief trace of incoming AEN
+      Ptr<const Face> > m_inAENs; ///< @brief trace of incoming AEN
 
       TracedCallback<Ptr<const AEN>,
-      Ptr<const Face> > m_dropAEN;  ///< @brief trace of dropped AEN
+      Ptr<const Face> > m_dropAENs;  ///< @brief trace of dropped AEN
 
       ////////////////////////////////////////////////////////////////////
 
       TracedCallback<Ptr<const DEN>,
-      Ptr<const Face> > m_outDEN; ///< @brief trace of outgoing DEN
+      Ptr<const Face> > m_outDENs; ///< @brief trace of outgoing DEN
 
       TracedCallback<Ptr<const DEN>,
-      Ptr<const Face> > m_inDEN; ///< @brief trace of incoming DEN
+      Ptr<const Face> > m_inDENs; ///< @brief trace of incoming DEN
 
       TracedCallback<Ptr<const DEN>,
-      Ptr<const Face> > m_dropDEN;  ///< @brief trace of dropped DEN
+      Ptr<const Face> > m_dropDENs;  ///< @brief trace of dropped DEN
 
       ////////////////////////////////////////////////////////////////////
 
       TracedCallback<Ptr<const REN>,
-      Ptr<const Face> > m_outREN; ///< @brief trace of outgoing REN
+      Ptr<const Face> > m_outRENs; ///< @brief trace of outgoing REN
 
       TracedCallback<Ptr<const REN>,
-      Ptr<const Face> > m_inREN; ///< @brief trace of incoming REN
+      Ptr<const Face> > m_inRENs; ///< @brief trace of incoming REN
 
       TracedCallback<Ptr<const REN>,
-      Ptr<const Face> > m_dropREN;  ///< @brief trace of dropped REN
+      Ptr<const Face> > m_dropRENs;  ///< @brief trace of dropped REN
 
       ////////////////////////////////////////////////////////////////////
 
       TracedCallback<Ptr<const INF>,
-      Ptr<const Face> > m_outINF; ///< @brief trace of outgoing INF
+      Ptr<const Face> > m_outINFs; ///< @brief trace of outgoing INF
 
       TracedCallback<Ptr<const INF>,
-      Ptr<const Face> > m_inINF; ///< @brief trace of incoming INF
+      Ptr<const Face> > m_inINFs; ///< @brief trace of incoming INF
 
       TracedCallback<Ptr<const INF>,
-      Ptr<const Face> > m_dropINF;  ///< @brief trace of dropped INF
+      Ptr<const Face> > m_dropINFs;  ///< @brief trace of dropped INF
 
       ////////////////////////////////////////////////////////////////////
 
       TracedCallback<Ptr<const NULLp>,
-      Ptr<const Face> > m_outNULLp; ///< @brief trace of outgoing NULLp
+      Ptr<const Face> > m_outNULLps; ///< @brief trace of outgoing NULLp
 
       TracedCallback<Ptr<const NULLp>,
-      Ptr<const Face> > m_inNULLp; ///< @brief trace of incoming NULLp
+      Ptr<const Face> > m_inNULLps; ///< @brief trace of incoming NULLp
 
       TracedCallback<Ptr<const NULLp>,
-      Ptr<const Face> > m_dropNULLp;  ///< @brief trace of dropped NULLp
+      Ptr<const Face> > m_dropNULLps;  ///< @brief trace of dropped NULLp
 
       ////////////////////////////////////////////////////////////////////
 
@@ -661,24 +664,24 @@ namespace ns3 {
       ////////////////////////////////////////////////////////////////////
 
       TracedCallback<Ptr<const DO>,
-      Ptr<const Face> > m_outDO; ///< @brief trace of outgoing DO
+      Ptr<const Face> > m_outDOs; ///< @brief trace of outgoing DO
 
       TracedCallback<Ptr<const DO>,
-      Ptr<const Face> > m_inDO; ///< @brief trace of incoming DO
+      Ptr<const Face> > m_inDOs; ///< @brief trace of incoming DO
 
       TracedCallback<Ptr<const DO>,
-      Ptr<const Face> > m_dropDO;  ///< @brief trace of dropped DO
+      Ptr<const Face> > m_dropDOs;  ///< @brief trace of dropped DO
 
       ////////////////////////////////////////////////////////////////////
 
       TracedCallback<Ptr<const DU>,
-      Ptr<const Face> > m_outDU; ///< @brief trace of outgoing DO
+      Ptr<const Face> > m_outDUs; ///< @brief trace of outgoing DO
 
       TracedCallback<Ptr<const DU>,
-      Ptr<const Face> > m_inDU; ///< @brief trace of incoming DO
+      Ptr<const Face> > m_inDUs; ///< @brief trace of incoming DO
 
       TracedCallback<Ptr<const DU>,
-      Ptr<const Face> > m_dropDU;  ///< @brief trace of dropped DO
+      Ptr<const Face> > m_dropDUs;  ///< @brief trace of dropped DO
 
       ////////////////////////////////////////////////////////////////////
 

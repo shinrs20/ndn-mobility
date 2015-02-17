@@ -62,49 +62,123 @@ namespace ns3 {
     TypeId ForwardingStrategy::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::ForwardingStrategy")
-    				    .SetGroupName ("nnn")
-				    .SetParent<Object> ()
+	  .SetGroupName ("nnn")
+	  .SetParent<Object> ()
 
-				    ////////////////////////////////////////////////////////////////////
-				    ////////////////////////////////////////////////////////////////////
-				    /*
-    .AddTraceSource ("OutSOs",  "OutSOs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outSOs))
-    .AddTraceSource ("InSOs",   "InSOs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inSOs))
-    .AddTraceSource ("DropSOs", "DropSOs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropSOs))
+	  ////////////////////////////////////////////////////////////////////
+	  ////////////////////////////////////////////////////////////////////
+	  ////////////////////////////////////////////////////////////////////
 
-    ////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
+	  .AddTraceSource ("OutENs",  "OutENs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outENs))
+	  .AddTraceSource ("InENs",   "InENs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inENs))
+	  .AddTraceSource ("DropENs", "DropENs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropENs))
 
-    .AddTraceSource ("OutDO",  "OutDO",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outDO))
-    .AddTraceSource ("InDO",   "InDO",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inDO))
-    .AddTraceSource ("DropDO", "DropDO", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropDO))
+	  ////////////////////////////////////////////////////////////////////
 
-    ////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
+	  .AddTraceSource ("OutAENs",  "OutAENs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outAENs))
+	  .AddTraceSource ("InAENs",   "InAENs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inAENs))
+	  .AddTraceSource ("DropAENs", "DropAENs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropAENs))
 
-    .AddTraceSource ("SatisfiedSOs",  "SatisfiedSOs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_satisfiedSOs))
-    .AddTraceSource ("TimedOutSOs",   "TimedOutSOs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_timedOutSOs))
+	  ////////////////////////////////////////////////////////////////////
 
-    .AddAttribute ("CacheUnsolicitedSOFromApps", "Cache unsolicited DO that has been pushed from applications",
-                   BooleanValue (true),
-                   MakeBooleanAccessor (&ForwardingStrategy::m_cacheUnsolicitedDOFromApps),
-                   MakeBooleanChecker ())
+	  .AddTraceSource ("OutDENs",  "OutDENs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outDENs))
+	  .AddTraceSource ("InDENs",   "InDENs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inDENs))
+	  .AddTraceSource ("DropDENs", "DropDENs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropDENs))
 
-    .AddAttribute ("CacheUnsolicitedDO", "Cache overheard DO that have not been requested",
-                   BooleanValue (false),
-                   MakeBooleanAccessor (&ForwardingStrategy::m_cacheUnsolicitedDO),
-                   MakeBooleanChecker ())
+	  ////////////////////////////////////////////////////////////////////
 
-    .AddAttribute ("DetectRetransmissions", "If non-duplicate SO is received on the same face more than once, "
-                                            "it is considered a retransmission",
-                   BooleanValue (true),
-                   MakeBooleanAccessor (&ForwardingStrategy::m_detectRetransmissions),
-                   MakeBooleanChecker ())
-    ;
-				     */
-				    // Required for testing at this moment
-				    .AddConstructor <ForwardingStrategy> ()
-				    ;
+	  .AddTraceSource ("OutRENs",  "OutRENs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outRENs))
+	  .AddTraceSource ("InRENs",   "InRENs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inRENs))
+	  .AddTraceSource ("DropRENs", "DropRENs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropRENs))
+
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("OutINFs",  "OutINFs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outINFs))
+	  .AddTraceSource ("InINFs",   "InINFs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inINFs))
+	  .AddTraceSource ("DropINFs", "DropINFs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropINFs))
+
+	  ////////////////////////////////////////////////////////////////////
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("OutNULLps",  "OutNULLps",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outNULLps))
+	  .AddTraceSource ("InNULLps",   "InNULLps",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inNULLps))
+	  .AddTraceSource ("DropNULLps", "DropNULLps", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropNULLps))
+
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("OutSOs",  "OutSOs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outSOs))
+	  .AddTraceSource ("InSOs",   "InSOs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inSOs))
+	  .AddTraceSource ("DropSOs", "DropSOs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropSOs))
+
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("OutDOs",  "OutDOs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outDOs))
+	  .AddTraceSource ("InDOs",   "InDOs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inDOs))
+	  .AddTraceSource ("DropDOs", "DropDOs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropDOs))
+
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("OutDUs",  "OutDUs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outDUs))
+	  .AddTraceSource ("InDUs",   "InDUs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inDUs))
+	  .AddTraceSource ("DropDUs", "DropDUs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropDUs))
+
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("OutMDOs",  "OutMDOs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outMDOs))
+	  .AddTraceSource ("InMDOs",   "InMDOs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inMDOs))
+	  .AddTraceSource ("DropMDOs", "DropMDOs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropMDOs))
+
+	  ////////////////////////////////////////////////////////////////////
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("OutInterests",  "OutInterests",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outInterests))
+	  .AddTraceSource ("InInterests",   "InInterests",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inInterests))
+	  .AddTraceSource ("DropInterests", "DropInterests", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropInterests))
+
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("OutData",  "OutData",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outData))
+	  .AddTraceSource ("InData",   "InData",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inData))
+	  .AddTraceSource ("DropData", "DropData", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropData))
+
+	  ////////////////////////////////////////////////////////////////////
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddTraceSource ("SatisfiedInterets", "SatisfiedInterests", MakeTraceSourceAccessor (&ForwardingStrategy::m_satisfiedInterests))
+	  .AddTraceSource ("TimedOutInterests", "TimedOutInterests", MakeTraceSourceAccessor (&ForwardingStrategy::m_timedOutInterests))
+
+	  ////////////////////////////////////////////////////////////////////
+	  ////////////////////////////////////////////////////////////////////
+	  ////////////////////////////////////////////////////////////////////
+
+	  .AddAttribute ("CacheUnsolicitedDataFromApps", "Cache unsolicited Data that has been pushed from applications",
+	                 BooleanValue (true),
+	                 MakeBooleanAccessor (&ForwardingStrategy::m_cacheUnsolicitedDataFromApps),
+	                 MakeBooleanChecker ())
+
+	  .AddAttribute ("CacheUnsolicitedData", "Cache overheard Data that have not been requested",
+	                 BooleanValue (false),
+	                 MakeBooleanAccessor (&ForwardingStrategy::m_cacheUnsolicitedData),
+	                 MakeBooleanChecker ())
+
+	  .AddAttribute ("DetectRetransmissions", "If non-duplicate Interest is received on the same face more than once, it is considered a retransmission",
+	                 BooleanValue (true),
+	                 MakeBooleanAccessor (&ForwardingStrategy::m_detectRetransmissions),
+	                 MakeBooleanChecker ())
+
+	  .AddAttribute ("Produce3Nnames", "Produce 3N names from delegated name space",
+	                 BooleanValue (true),
+	                 MakeBooleanAccessor (&ForwardingStrategy::m_produce3Nnames),
+	                 MakeBooleanChecker ())
+
+	  .AddAttribute ("3NLeasetime", "Lease time for a 3N name (Only in use if Produce3Nnames is used)",
+	                 StringValue ("300s"),
+	                 MakeTimeAccessor (&ForwardingStrategy::m_3n_lease_time),
+	                 MakeTimeChecker ())
+
+	  // Required for testing at this moment
+	  .AddConstructor <ForwardingStrategy> ()
+	  ;
       return tid;
     }
 
@@ -121,8 +195,6 @@ namespace ns3 {
     {
       return m_node_names->findNewestName();
     }
-
-
 
     void
     ForwardingStrategy::OnEN (Ptr<Face> face, Ptr<EN> en_p)
