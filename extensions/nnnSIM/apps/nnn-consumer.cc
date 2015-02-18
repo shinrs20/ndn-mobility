@@ -227,7 +227,7 @@ namespace ns3 {
 	  Ptr<SO> so_o = Create<SO> ();
 	  so_o->SetPDUPayloadType(NDN_NNN);
 	  so_o->SetPayload(retPkt);
-	  so_o->SetName(GetNode ()->GetObject<ForwardingStrategy> ()->Get3NName ());
+	  so_o->SetName(GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NName ());
 	  so_o->SetLifetime(m_3n_lifetime);
 
 	  m_face->ReceiveSO(so_o);

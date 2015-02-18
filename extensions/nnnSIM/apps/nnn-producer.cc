@@ -147,7 +147,7 @@ namespace ns3 {
 	  data->SetKeyLocator (Create<ndn::Name> (m_keyLocator));
 	}
 
-      NS_LOG_INFO ("node("<< GetNode()->GetId() <<") respodning with Data: " << data->GetName ());
+      NS_LOG_INFO ("node("<< GetNode()->GetId() <<") responding with Data: " << data->GetName ());
 
       // Echo back FwHopCountTag if exists
       ndn::FwHopCountTag hopCountTag;
@@ -228,7 +228,7 @@ namespace ns3 {
 		      // We don't have all the information for a DU, so send a SO
 		      Ptr<SO> so_o = Create<SO> ();
 		      so_o->SetPDUPayloadType(pdutype);
-		      Ptr<NNNAddress> tmp = GetNode ()->GetObject<ForwardingStrategy> ()->Get3NName ();
+		      Ptr<NNNAddress> tmp = GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NName ();
 		      so_o->SetName(tmp);
 		      so_o->SetLifetime(m_3n_lifetime);
 
@@ -296,7 +296,7 @@ namespace ns3 {
 		      // We can use DU packets now
 		      Ptr<DU> du_o = Create<DU> ();
 		      du_o->SetPDUPayloadType(pdutype);
-		      Ptr<NNNAddress> tmp = GetNode ()->GetObject<ForwardingStrategy> ()->Get3NName ();
+		      Ptr<NNNAddress> tmp = GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NName ();
 		      du_o->SetSrcName(tmp);
 		      Ptr<NNNAddress> tmp2 = Create<NNNAddress> (soObject->GetNamePtr()->toDotHex());
 		      du_o->SetDstName(tmp2);

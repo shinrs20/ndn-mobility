@@ -100,7 +100,7 @@ namespace ns3 {
       virtual ~ForwardingStrategy ();
 
       virtual Ptr<NNNAddress>
-      Get3NName ();
+      GetNode3NName ();
 
       /**
        * \brief Actual processing of incoming Nnn content objects

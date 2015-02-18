@@ -191,7 +191,7 @@ namespace ns3 {
     }
 
     Ptr<NNNAddress>
-    ForwardingStrategy::Get3NName ()
+    ForwardingStrategy::GetNode3NName ()
     {
       return m_node_names->findNewestName();
     }
