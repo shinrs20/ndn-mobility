@@ -30,6 +30,10 @@
 #include <ns3-dev/ns3/ndn-interest.h>
 #include <ns3-dev/ns3/ndn-content-store.h>
 
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
+
 #include "../fib/nnn-fib.h"
 #include "../pit/nnn-pit.h"
 
@@ -75,6 +79,8 @@ namespace ns3 {
 
     namespace nnpt { class Entry; }
 
+    namespace name { class Component; }
+
     class NNNAddress;
 
     //class NNSTFaceMetric;
@@ -99,8 +105,19 @@ namespace ns3 {
       ForwardingStrategy ();
       virtual ~ForwardingStrategy ();
 
+      // Obtain a random number between min and max
+      uint64_t
+      obtain_Num(uint64_t min, uint64_t max);
+
+      virtual void
+      SetNode3NName (Ptr<NNNAddress> name, Time lease);
+
       virtual Ptr<NNNAddress>
       GetNode3NName ();
+
+      // Produces a random 3N name under the delegated name space
+      virtual Ptr<NNNAddress>
+      produce3NName ();
 
       /**
        * \brief Actual processing of incoming Nnn content objects
@@ -724,6 +741,9 @@ namespace ns3 {
 
       TracedCallback< Ptr<const pit::Entry> > m_satisfiedInterests;
       TracedCallback< Ptr<const pit::Entry> > m_timedOutInterests;
+    private:
+      // Number generator
+      boost::random::mt19937_64 gen;
     };
 
   } // namespace nnn

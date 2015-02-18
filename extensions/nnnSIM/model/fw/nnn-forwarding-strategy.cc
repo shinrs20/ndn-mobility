@@ -27,10 +27,11 @@
 #include <boost/tuple/tuple.hpp>
 
 #include <ns3-dev/ns3/assert.h>
-#include <ns3-dev/ns3/ptr.h>
-#include <ns3-dev/ns3/log.h>
-#include <ns3-dev/ns3/simulator.h>
 #include <ns3-dev/ns3/boolean.h>
+#include <ns3-dev/ns3/log.h>
+#include <ns3-dev/ns3/ptr.h>
+#include <ns3-dev/ns3/nstime.h>
+#include <ns3-dev/ns3/simulator.h>
 #include <ns3-dev/ns3/string.h>
 
 #include "nnn-forwarding-strategy.h"
@@ -45,6 +46,9 @@
 #include "../../helper/nnn-names-container.h"
 
 namespace ll = boost::lambda;
+
+// Max label, which is a really the maximum unsigned int
+#define MAX3NLABEL 4294967295
 
 namespace ns3 {
   namespace nnn {
@@ -190,10 +194,62 @@ namespace ns3 {
     {
     }
 
+    uint64_t
+    ForwardingStrategy::obtain_Num(uint64_t min, uint64_t max)
+    {
+      // Make sure to seed our random
+      Time now = Simulator::Now();
+
+      gen.seed((long long)(now.GetMilliSeconds()) + (long long)getpid() << 32);
+
+      boost::random::uniform_int_distribution<> dist(min, max);
+
+      return dist(gen);
+    }
+
+    void
+    ForwardingStrategy::SetNode3NName (Ptr<NNNAddress> name, Time lease)
+    {
+      m_node_names->addEntry(name, lease);
+    }
+
     Ptr<NNNAddress>
     ForwardingStrategy::GetNode3NName ()
     {
       return m_node_names->findNewestName();
+    }
+
+    Ptr<NNNAddress>
+    ForwardingStrategy::produce3NName ()
+    {
+      bool produced = false;
+
+      // Get this nodes currently functioning 3N name
+      Ptr<NNNAddress> tmp2 = GetNode3NName ();
+
+      Ptr<NNNAddress> ret;
+      // Copy it to a new variable
+      NNNAddress base = *tmp2;
+
+      while (!produced)
+	{
+	  // Create a random numerical component
+	  name::Component tmp = tmp.fromNumber(obtain_Num(1, MAX3NLABEL));
+
+	  // Append the randomly created number to our 3N name
+	  NNNAddress tmp3 = base.append(tmp);
+
+	  ret = Create<NNNAddress> (tmp3.toDotHex());
+
+	  // Check if the random has by unfortunate circumstances created a name
+	  // that has already been leased
+	  if (! m_leased_names->foundName(ret))
+	    {
+	      produced = true;
+	    }
+	}
+
+      return ret;
     }
 
     void
@@ -602,6 +658,5 @@ namespace ns3 {
 
       Object::DoDispose ();
     }
-
   } // namespace nnn
 } // namespace ns3
