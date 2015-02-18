@@ -42,6 +42,11 @@ NNNAddress::NNNAddress ()
 {
 }
 
+NNNAddress::NNNAddress (const NNNAddress &other)
+{
+  m_address_comp = other.m_address_comp;
+}
+
 // Create a valid NNN address
 // No more than 16 hexadecimal characters with a maximum of 15 "."
 NNNAddress::NNNAddress (const string &name)
@@ -108,11 +113,6 @@ NNNAddress::NNNAddress (const string &name)
     }
 }
 
-NNNAddress::NNNAddress (const NNNAddress &other)
-{
-  m_address_comp = other.m_address_comp;
-}
-
 NNNAddress::NNNAddress (const std::vector<name::Component> name)
 {
   m_address_comp = name;
@@ -160,11 +160,20 @@ NNNAddress::operator= (const NNNAddress &other)
 }
 
 NNNAddress
-NNNAddress::operator+ (const NNNAddress &name) const
+NNNAddress::getSectorName () const
 {
-  NNNAddress newName;
-  newName.append(*this).append(name);
-  return newName;
+  if (isEmpty()) {
+      return NNNAddress ();
+  } else
+    {
+      // Copy the old name
+      std::vector<name::Component> sectorName (m_address_comp);
+
+      // Eliminate the last position
+      sectorName.pop_back();
+
+      return NNNAddress (sectorName);
+    }
 }
 
 std::string
@@ -211,23 +220,6 @@ NNNAddress::compare (const NNNAddress &name) const
   return (i == this->end ()) ? -1 : +1;
 }
 
-NNNAddress
-NNNAddress::getSectorName () const
-{
-  if (isEmpty()) {
-      return NNNAddress ();
-  } else
-    {
-      // Copy the old name
-      std::vector<name::Component> sectorName (m_address_comp);
-
-      // Eliminate the last position
-      sectorName.pop_back();
-
-      return NNNAddress (sectorName);
-    }
-}
-
 bool
 NNNAddress::isSameSector (const NNNAddress &name) const
 {
@@ -268,7 +260,6 @@ NNNAddress::isEmpty () const
   return (size () == 0);
 }
 
-
 NNNAddress
 NNNAddress::getClosestSector (const NNNAddress &name) const
 {
@@ -285,14 +276,79 @@ NNNAddress::getClosestSector (const NNNAddress &name) const
     {
       return NNNAddress (m_address_comp);
       // The address given is smaller than the one we have
-    } else if ( res == 1)
-      {
-	return getSectorName ().getClosestSector(name);
-	// The address given is bigger than the one we have
-      } else
-	{
-	  return getClosestSector (name.getSectorName ());
-	}
+    }
+  else if ( res == 1)
+    {
+      return getSectorName ().getClosestSector(name);
+      // The address given is bigger than the one we have
+    }
+  else
+    {
+      return getClosestSector (name.getSectorName ());
+    }
+}
+
+NNNAddress
+NNNAddress::operator+ (const NNNAddress &name) const
+{
+  NNNAddress newName;
+  newName.append(*this).append(name);
+  return newName;
+}
+
+uint8_t
+NNNAddress::GetType (void)
+{
+  static uint8_t type = Address::Register () ;
+  return type;
+}
+
+Address
+NNNAddress::ConvertTo (void) const
+{
+  // We use the functions existing in Wire to Serialize and pass to Address
+  Buffer buf;
+  size_t nameBytes = wire::NnnSim::SerializedSizeName(*this);
+  buf.AddAtStart(nameBytes);
+  // Create a uint8_t array, required by Address
+  uint8_t namebuf[nameBytes];
+  // Begin the buffer iterator
+  Buffer::Iterator i = buf.Begin ();
+
+  // Serialize it to our buffer
+  wire::NnnSim::SerializeName (i, *this);
+
+  i.Write (namebuf, nameBytes);
+
+  return Address(GetType (), namebuf, nameBytes);
+}
+
+NNNAddress
+NNNAddress::ConvertFrom (const Address &address)
+{
+
+  // Get the length of the address
+  uint8_t len = address.GetLength ();
+
+  // Create a 8 bit array of the length obtained
+  uint8_t namebuf[len];
+
+  // Copy the address information to the array
+  address.CopyTo(namebuf);
+
+
+  // Create a Buffer class
+  Buffer buf;
+  buf.AddAtStart(len);
+
+  Buffer::Iterator i = buf.Begin ();
+  // Read the array into the Buffer class
+  i.Read(namebuf, len);
+
+  // Deserialize the information
+  Ptr<NNNAddress> tmp = wire::NnnSim::DeserializeName(i);
+
+  return NNNAddress(tmp->toDotHex());
 }
 
 int
@@ -354,65 +410,10 @@ NNNAddress::distance (const NNNAddress &name) const
     }
 }
 
-inline size_t
-NNNAddress::size () const
+bool
+NNNAddress::canAppendComponent()
 {
-  return m_address_comp.size ();
-}
-
-uint8_t
-NNNAddress::GetType (void)
-{
-  static uint8_t type = Address::Register () ;
-  return type;
-}
-
-Address
-NNNAddress::ConvertTo (void) const
-{
-  // We use the functions existing in Wire to Serialize and pass to Address
-  Buffer buf;
-  size_t nameBytes = wire::NnnSim::SerializedSizeName(*this);
-  buf.AddAtStart(nameBytes);
-  // Create a uint8_t array, required by Address
-  uint8_t namebuf[nameBytes];
-  // Begin the buffer iterator
-  Buffer::Iterator i = buf.Begin ();
-
-  // Serialize it to our buffer
-  wire::NnnSim::SerializeName (i, *this);
-
-  i.Write (namebuf, nameBytes);
-
-  return Address(GetType (), namebuf, nameBytes);
-}
-
-NNNAddress
-NNNAddress::ConvertFrom (const Address &address)
-{
-
-  // Get the length of the address
-  uint8_t len = address.GetLength ();
-
-  // Create a 8 bit array of the length obtained
-  uint8_t namebuf[len];
-
-  // Copy the address information to the array
-  address.CopyTo(namebuf);
-
-
-  // Create a Buffer class
-  Buffer buf;
-  buf.AddAtStart(len);
-
-  Buffer::Iterator i = buf.Begin ();
-  // Read the array into the Buffer class
-  i.Read(namebuf, len);
-
-  // Deserialize the information
-  Ptr<NNNAddress> tmp = wire::NnnSim::DeserializeName(i);
-
-  return NNNAddress(tmp->toDotHex());
+  return (size() < MAXCOMP);
 }
 
 NNN_NAMESPACE_END

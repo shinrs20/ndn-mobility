@@ -148,6 +148,11 @@ int main (int argc, char *argv[])
 
 	NNNAddress higherSub ("ae.35");
 
+	NNNAddress maxTest = maxd + lowerStart;
+
+	cout << "Max append test: " << maxd << " + " << lowerStart << endl;
+	cout << "Max append test result: " << maxTest << endl;
+
 	cout << "Working address is: " << working << endl;
 
 	NNNAddress workingSector = working.getSectorName();

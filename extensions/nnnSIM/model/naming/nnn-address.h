@@ -34,6 +34,7 @@
 #include "name-component.h"
 
 #define SEP '.'
+#define MAXCOMP 16
 
 NNN_NAMESPACE_BEGIN
 
@@ -362,6 +363,10 @@ public:
   const static uint64_t nversion = static_cast<uint64_t> (-1);
 
 private:
+
+  bool
+  canAppendComponent();
+
   std::vector<name::Component> m_address_comp;
 };
 
@@ -449,7 +454,8 @@ inline NNNAddress &
 NNNAddress::append (const name::Component &comp)
 {
   if (comp.size () != 0)
-    m_address_comp.push_back (comp);
+    if (canAppendComponent())
+      m_address_comp.push_back (comp);
   return *this;
 }
 
@@ -457,10 +463,11 @@ inline NNNAddress &
 NNNAddress::appendBySwap (name::Component &comp)
 {
   if (comp.size () != 0)
-    {
-      NNNAddress::iterator newComp = m_address_comp.insert (end (), name::Component ());
-      newComp->swap (comp);
-    }
+    if (canAppendComponent())
+      {
+	NNNAddress::iterator newComp = m_address_comp.insert (end (), name::Component ());
+	newComp->swap (comp);
+      }
   return *this;
 }
 
@@ -478,12 +485,23 @@ NNNAddress::append (Iterator begin, Iterator end)
 NNNAddress &
 NNNAddress::append (const NNNAddress &comp)
 {
-  if (this == &comp)
+  if (size() + comp.size() < MAXCOMP)
     {
-      // have to double-copy if the object is self, otherwise results very frustrating (because we use vector...)
-      return append (NNNAddress (comp.begin (), comp.end ()));
+      if (this == &comp)
+	{
+	  // have to double-copy if the object is self, otherwise results very frustrating (because we use vector...)
+	  return append (NNNAddress (comp.begin (), comp.end ()));
+	}
+      return append (comp.begin (), comp.end ());
     }
-  return append (comp.begin (), comp.end ());
+  else
+    return *this;
+}
+
+inline size_t
+NNNAddress::size () const
+{
+  return m_address_comp.size ();
 }
 
 NNNAddress &
