@@ -72,9 +72,13 @@ namespace ns3 {
     NamesContainer::deleteEntry (Ptr<NNNAddress> name)
     {
       NS_LOG_FUNCTION (this << name);
-      NamesContainerEntry tmp = findEntry (name);
 
-      container.erase(tmp);
+      if (!isEmpty())
+	{
+	  NamesContainerEntry tmp = findEntry (name);
+
+	  container.erase(tmp);
+	}
     }
 
     bool
@@ -114,9 +118,15 @@ namespace ns3 {
       names_set_by_name& names_index = container.get<address> ();
       names_set_by_name::iterator it = names_index.end();
 
-      it--;
-
-      return it->m_name;
+      if (!isEmpty())
+	{
+	  it--;
+	  return it->m_name;
+	}
+      else
+	{
+	  return Create<NNNAddress> ();
+	}
     }
 
     Time
@@ -201,6 +211,21 @@ namespace ns3 {
 	      break;
 	    }
 
+	  ++it;
+	}
+    }
+
+    void
+    NamesContainer::clear()
+    {
+      NS_LOG_FUNCTION (this);
+
+      names_set_by_lease& lease_index = container.get<lease> ();
+      names_set_by_lease::iterator it = lease_index.begin();
+
+      while (! isEmpty())
+	{
+	  deleteEntry(*it);
 	  ++it;
 	}
     }

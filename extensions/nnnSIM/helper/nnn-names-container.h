@@ -115,6 +115,9 @@ namespace ns3 {
       cleanExpired ();
 
       void
+      clear ();
+
+      void
       printByAddress ();
 
       void
