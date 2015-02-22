@@ -67,9 +67,11 @@ namespace ns3 {
 
       NNPTEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire, Time renew);
 
-      virtual ~NNPTEntry ();
+      virtual
+      ~NNPTEntry ();
 
-      bool operator< (const NNPTEntry e) const { return m_lease_expire < e.m_lease_expire; }
+      bool
+      operator< (const NNPTEntry e) const { return m_lease_expire < e.m_lease_expire; }
 
       Ptr<NNNAddress> m_oldName;
       Ptr<NNNAddress> m_newName;
@@ -80,7 +82,7 @@ namespace ns3 {
     inline std::ostream &
     operator<< (std::ostream &os, const NNPTEntry &nnpt)
     {
-      os << nnpt.m_oldName << "\t" << nnpt.m_newName  << "\t" << nnpt.m_lease_expire << "\t" << nnpt.m_renew << std::endl;
+      os << *nnpt.m_oldName << "\t" << *nnpt.m_newName  << "\t" << nnpt.m_lease_expire << "\t" << nnpt.m_renew << std::endl;
       return os;
     }
 

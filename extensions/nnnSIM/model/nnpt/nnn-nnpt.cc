@@ -47,27 +47,52 @@ namespace ns3 {
     NNPT::addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire)
     {
       NS_LOG_FUNCTION (this);
-      container.insert(NNPTEntry(oldName, newName, lease_expire));
 
-      Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
+      if (!foundOldName(oldName) && !foundOldName(newName))
+        {
+          container.insert(NNPTEntry(oldName, newName, lease_expire));
+
+          Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
+        }
+      else
+        {
+          NS_LOG_INFO("Found either " << *oldName << " or " << *newName << " already in NNPT");
+        }
     }
 
     void
     NNPT::addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire, Time renew)
     {
       NS_LOG_FUNCTION (this);
-      container.insert(NNPTEntry(oldName, newName, lease_expire, renew));
 
-      Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
+      if (!foundOldName(oldName) && !foundOldName(newName))
+        {
+          container.insert(NNPTEntry(oldName, newName, lease_expire, renew));
+
+          Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
+        }
+      else
+        {
+          NS_LOG_INFO("Found either " << *oldName << " or " << *newName << " already in NNPT");
+        }
+
     }
 
     void
     NNPT::addEntry (NNPTEntry nnptEntry)
     {
       NS_LOG_FUNCTION (this);
-      container.insert(nnptEntry);
 
-      Simulator::Schedule(nnptEntry.m_lease_expire, &NNPT::cleanExpired, this);
+      if (!foundOldName(nnptEntry.m_oldName) && !foundOldName(nnptEntry.m_newName))
+        {
+          container.insert(nnptEntry);
+
+          Simulator::Schedule(nnptEntry.m_lease_expire, &NNPT::cleanExpired, this);
+        }
+      else
+        {
+          NS_LOG_INFO("Found either " << *nnptEntry.m_oldName << " or " << *nnptEntry.m_newName << " already in NNPT");
+        }
     }
 
     void
@@ -89,8 +114,21 @@ namespace ns3 {
     NNPT::foundOldName (Ptr<NNNAddress> name)
     {
       NS_LOG_FUNCTION (this);
-      pair_set_by_name& names_index = container.get<pair> ();
-      pair_set_by_name::iterator it = names_index.find(name);
+      pair_set_by_oldname& names_index = container.get<oldname> ();
+      pair_set_by_oldname::iterator it = names_index.find(name);
+
+      if (it == names_index.end())
+	return false;
+      else
+	return true;
+    }
+
+    bool
+    NNPT::foundNewName (Ptr<NNNAddress> name)
+    {
+      NS_LOG_FUNCTION (this);
+      pair_set_by_newname& names_index = container.get<newname> ();
+      pair_set_by_newname::iterator it = names_index.find(name);
 
       if (it == names_index.end())
 	return false;
@@ -102,14 +140,22 @@ namespace ns3 {
     NNPT::findPairedName (Ptr<NNNAddress> oldName)
     {
       NS_LOG_FUNCTION (this);
-      pair_set_by_name& pair_index = container.get<pair> ();
-      pair_set_by_name::iterator it = pair_index.find(oldName);
+      pair_set_by_oldname& pair_index = container.get<oldname> ();
+      pair_set_by_oldname::iterator it = pair_index.find(oldName);
 
       if (it != pair_index.end())
 	{
-	  NNPTEntry tmp = *it;
-	  return tmp.m_newName;
-	}
+	  NNPTEntry tmp;
+          // Check if there is a newer entry
+          while (true) 
+            {
+              tmp = *it;
+              it = pair_index.find(tmp.m_newName);
+              if (it == pair_index.end())
+                  break;
+            }
+          return tmp.m_newName;
+        }
       else
 	{
 	  return oldName;
@@ -120,8 +166,8 @@ namespace ns3 {
     NNPT::findEntry (Ptr<NNNAddress> name)
     {
       NS_LOG_FUNCTION (this);
-      pair_set_by_name& pair_index = container.get<pair> ();
-      pair_set_by_name::iterator it = pair_index.find(name);
+      pair_set_by_oldname& pair_index = container.get<oldname> ();
+      pair_set_by_oldname::iterator it = pair_index.find(name);
 
       if (it != pair_index.end())
 	{
@@ -133,30 +179,12 @@ namespace ns3 {
 	}
     }
 
-    Ptr<NNNAddress>
-    NNPT::findNewestName ()
-    {
-      NS_LOG_FUNCTION (this);
-      pair_set_by_name& pair_index = container.get<pair> ();
-      pair_set_by_name::iterator it = pair_index.end();
-
-      if (!isEmpty())
-	{
-	  it--;
-	  return it->m_oldName;
-	}
-      else
-	{
-	  return Create<NNNAddress> ();
-	}
-    }
-
     void
     NNPT::updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire)
     {
       NS_LOG_FUNCTION (this);
-      pair_set_by_name& pair_index = container.get<pair> ();
-      pair_set_by_name::iterator it = pair_index.find(oldName);
+      pair_set_by_oldname& pair_index = container.get<oldname> ();
+      pair_set_by_oldname::iterator it = pair_index.find(oldName);
 
       if (it != pair_index.end())
 	{
@@ -176,8 +204,8 @@ namespace ns3 {
     NNPT::updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire, Time renew)
     {
       NS_LOG_FUNCTION (this);
-      pair_set_by_name& pair_index = container.get<pair> ();
-      pair_set_by_name::iterator it = pair_index.find(oldName);
+      pair_set_by_oldname& pair_index = container.get<oldname> ();
+      pair_set_by_oldname::iterator it = pair_index.find(oldName);
 
       if (it != pair_index.end())
 	{
@@ -248,8 +276,8 @@ namespace ns3 {
     void
     NNPT::printByAddress ()
     {
-      pair_set_by_name& pair_index = container.get<pair> ();
-      pair_set_by_name::iterator it = pair_index.begin();
+      pair_set_by_oldname& pair_index = container.get<oldname> ();
+      pair_set_by_oldname::iterator it = pair_index.begin();
 
       std::cout << "Old Address\t| New Address\t| Lease Expire\t| Renew" << std::endl;
       std::cout << "--------------------------------------------------------" << std::endl;

@@ -41,30 +41,36 @@
 using boost::multi_index_container;
 using namespace ::boost::multi_index;
 
-
 namespace ns3 {
   namespace nnn {
 
-    struct pair {};
+    struct oldname {};
+    struct newname {};
     struct st_lease {};
 
     typedef multi_index_container<
 	NNPTEntry,
 	indexed_by<
-	ordered_unique<
-	tag<st_lease>,
-	identity<NNPTEntry>
-    >,
+          ordered_unique<
+              tag<st_lease>,
+	      identity<NNPTEntry>
+          >,
 
-    // sort by less<string> on NNNAddress
-    ordered_unique<
-    tag<pair>,
-    member<NNPTEntry,Ptr<NNNAddress>,&NNPTEntry::m_oldName>
-    >
-    >
+          // sort by less<string> on NNNAddress
+          ordered_unique<
+              tag<oldname>,
+              member<NNPTEntry,Ptr<NNNAddress>,&NNPTEntry::m_oldName>
+          >,
+
+          ordered_unique<
+              tag<newname>,
+              member<NNPTEntry,Ptr<NNNAddress>,&NNPTEntry::m_newName>
+          >
+        >
     > pair_set;
 
-    typedef pair_set::index<pair>::type pair_set_by_name;
+    typedef pair_set::index<oldname>::type pair_set_by_oldname;
+    typedef pair_set::index<newname>::type pair_set_by_newname;
     typedef pair_set::index<st_lease>::type pair_set_by_lease;
 
     class NNPT : public Object
@@ -108,9 +114,6 @@ namespace ns3 {
       NNPTEntry
       findEntry (Ptr<NNNAddress> name);
 
-      Ptr<NNNAddress>
-      findNewestName ();
-
       void
       updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire);
 
@@ -138,11 +141,7 @@ namespace ns3 {
       void
       printByLease ();
 
-      void
-      informEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire);
-
       pair_set container;
-
     };
 
   } /* namespace nnn */
