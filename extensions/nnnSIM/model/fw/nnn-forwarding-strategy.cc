@@ -222,6 +222,13 @@ namespace ns3 {
       return *m_node_names->findNewestName();
     }
 
+    Ptr<const NNNAddress>
+    ForwardingStrategy::GetNode3NNamePtr ()
+    {
+      NS_LOG_FUNCTION (this);
+      return m_node_names->findNewestName();
+    }
+
     Ptr<NNNAddress>
     ForwardingStrategy::produce3NName ()
     {
@@ -282,7 +289,14 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      //m_nnpt->addEntry(inf_p->GetOldNamePtr(), inf_p->GetNewNamePtr(), inf_p->GetRemainLease());
+      m_nnpt->addEntry(inf_p->GetOldNamePtr(), inf_p->GetNewNamePtr(), inf_p->GetRemainLease());
+
+      NNNAddress endSector = inf_p->GetOldNamePtr()->getSectorName();
+
+      if (GetNode3NName() != endSector)
+	{
+	  NS_LOG_INFO("We have not yet reached the delegated Sector " << endSector);
+	}
     }
 
     void

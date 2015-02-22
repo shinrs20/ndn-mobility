@@ -115,6 +115,9 @@ namespace ns3 {
       virtual const NNNAddress&
       GetNode3NName ();
 
+      virtual Ptr<const NNNAddress>
+      GetNode3NNamePtr ();
+
       // Produces a random 3N name under the delegated name space
       virtual Ptr<NNNAddress>
       produce3NName ();
