@@ -215,11 +215,11 @@ namespace ns3 {
       m_node_names->addEntry(name, lease);
     }
 
-    Ptr<NNNAddress>
+    const NNNAddress&
     ForwardingStrategy::GetNode3NName ()
     {
       NS_LOG_FUNCTION (this);
-      return m_node_names->findNewestName();
+      return *m_node_names->findNewestName();
     }
 
     Ptr<NNNAddress>
@@ -228,12 +228,9 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
       bool produced = false;
 
-      // Get this nodes currently functioning 3N name
-      Ptr<NNNAddress> tmp2 = GetNode3NName ();
-
       Ptr<NNNAddress> ret;
-      // Copy it to a new variable
-      NNNAddress base = *tmp2;
+      // Get this nodes currently functioning 3N name and copy it to a new variable
+      NNNAddress base = GetNode3NName ();
 
       while (!produced)
 	{

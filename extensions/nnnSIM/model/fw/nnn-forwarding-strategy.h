@@ -112,7 +112,7 @@ namespace ns3 {
       virtual void
       SetNode3NName (Ptr<NNNAddress> name, Time lease);
 
-      virtual Ptr<NNNAddress>
+      virtual const NNNAddress&
       GetNode3NName ();
 
       // Produces a random 3N name under the delegated name space

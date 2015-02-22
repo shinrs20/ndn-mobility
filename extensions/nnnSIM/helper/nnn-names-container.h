@@ -55,7 +55,7 @@ namespace ns3 {
             // sort by less<string> on NNNAddress
 	    ordered_unique<
 	        tag<address>,
-		member<NamesContainerEntry,Ptr<NNNAddress>,&NamesContainerEntry::m_name>
+		member<NamesContainerEntry,Ptr<const NNNAddress>,&NamesContainerEntry::m_name>
             >
         >
     > names_set;
@@ -76,31 +76,31 @@ namespace ns3 {
       addEntry (NamesContainerEntry nameEntry);
 
       void
-      addEntry (Ptr<NNNAddress> name, Time lease_expire);
+      addEntry (Ptr<const NNNAddress> name, Time lease_expire);
 
       void
-      addEntry (Ptr<NNNAddress> name, Time lease_expire, Time renew);
+      addEntry (Ptr<const NNNAddress> name, Time lease_expire, Time renew);
 
       void
       deleteEntry (NamesContainerEntry nameEntry);
 
       void
-      deleteEntry (Ptr<NNNAddress> name);
+      deleteEntry (Ptr<const NNNAddress> name);
 
       bool
-      foundName (Ptr<NNNAddress> name);
+      foundName (Ptr<const NNNAddress> name);
 
       NamesContainerEntry
-      findEntry (Ptr<NNNAddress> name);
+      findEntry (Ptr<const NNNAddress> name);
 
-      Ptr<NNNAddress>
+      Ptr<const NNNAddress>
       findNewestName ();
 
       void
-      updateLeaseTime (Ptr<NNNAddress> name, Time lease_expire);
+      updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire);
 
       void
-      updateLeaseTime (Ptr<NNNAddress> name, Time lease_expire, Time renew);
+      updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire, Time renew);
 
       uint32_t
       size ();
@@ -109,7 +109,7 @@ namespace ns3 {
       isEmpty ();
 
       Time
-      findNameExpireTime (Ptr<NNNAddress> name);
+      findNameExpireTime (Ptr<const NNNAddress> name);
 
       void
       cleanExpired ();

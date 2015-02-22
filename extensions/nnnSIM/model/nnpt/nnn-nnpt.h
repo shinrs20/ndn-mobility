@@ -59,12 +59,12 @@ namespace ns3 {
           // sort by less<string> on NNNAddress
           ordered_unique<
               tag<oldname>,
-              member<NNPTEntry,Ptr<NNNAddress>,&NNPTEntry::m_oldName>
+              member<NNPTEntry,Ptr<const NNNAddress>,&NNPTEntry::m_oldName>
           >,
 
           ordered_unique<
               tag<newname>,
-              member<NNPTEntry,Ptr<NNNAddress>,&NNPTEntry::m_newName>
+              member<NNPTEntry,Ptr<const NNNAddress>,&NNPTEntry::m_newName>
           >
         >
     > pair_set;
@@ -85,40 +85,43 @@ namespace ns3 {
       ~NNPT();
 
       void
-      addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire);
+      addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire);
 
       void
-      addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire, Time renew);
+      addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew);
 
       void
       addEntry (NNPTEntry nnptEntry);
 
       void
-      deleteEntry (Ptr<NNNAddress> oldName);
+      deleteEntry (Ptr<const NNNAddress> oldName);
 
       void
       deleteEntry (NNPTEntry nnptEntry);
 
       void
-      deleteEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName);
+      deleteEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName);
 
       bool
-      foundOldName (Ptr<NNNAddress> name);
+      foundOldName (Ptr<const NNNAddress> name);
 
       bool
-      foundNewName (Ptr<NNNAddress> name);
+      foundNewName (Ptr<const NNNAddress> name);
 
-      Ptr<NNNAddress>
-      findPairedName (Ptr<NNNAddress> oldName);
+      const NNNAddress&
+      findPairedName (Ptr<const NNNAddress> oldName);
+
+      Ptr<const NNNAddress>
+      findPairedNamePtr (Ptr<const NNNAddress> oldName);
 
       NNPTEntry
-      findEntry (Ptr<NNNAddress> name);
+      findEntry (Ptr<const NNNAddress> name);
 
       void
-      updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire);
+      updateLeaseTime (Ptr<const NNNAddress> oldName, Time lease_expire);
 
       void
-      updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire, Time renew);
+      updateLeaseTime (Ptr<const NNNAddress> oldName, Time lease_expire, Time renew);
 
       uint32_t
       size ();
@@ -127,7 +130,7 @@ namespace ns3 {
       isEmpty ();
 
       Time
-      findNameExpireTime (Ptr<NNNAddress> name);
+      findNameExpireTime (Ptr<const NNNAddress> name);
 
       Time
       findNameExpireTime (NNPTEntry nnptEntry);

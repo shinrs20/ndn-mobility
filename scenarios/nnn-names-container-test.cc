@@ -31,9 +31,9 @@ int main (int argc, char *argv[])
 {
 	NamesContainer test1;
 
-	Ptr<NNNAddress> nn_test1 = Create<NNNAddress> ("be.54.32");
-	Ptr<NNNAddress> nn_test2 = Create<NNNAddress> ("af.67.31");
-	Ptr<NNNAddress> nn_test3 = Create<NNNAddress> ("ae.34.26");
+	Ptr<const NNNAddress> nn_test1 = Create<NNNAddress> ("be.54.32");
+	Ptr<const NNNAddress> nn_test2 = Create<NNNAddress> ("af.67.31");
+	Ptr<const NNNAddress> nn_test3 = Create<NNNAddress> ("ae.34.26");
 
 	Time t_test1 = Seconds (20);
 	Time t_test2 = Seconds (60);
@@ -79,7 +79,7 @@ int main (int argc, char *argv[])
 
 	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
-	Ptr<NNNAddress> tmp = test1.findNewestName();
+	Ptr<const NNNAddress> tmp = test1.findNewestName();
 
 	std::cout << "Last address to die will be " << *tmp << " at " << test1.findNameExpireTime(tmp) << std::endl;
 	std::cout << "Printing ordering by address" << std::endl;

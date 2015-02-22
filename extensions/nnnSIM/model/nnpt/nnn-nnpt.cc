@@ -44,7 +44,7 @@ namespace ns3 {
     }
 
     void
-    NNPT::addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire)
+    NNPT::addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire)
     {
       NS_LOG_FUNCTION (this);
 
@@ -61,7 +61,7 @@ namespace ns3 {
     }
 
     void
-    NNPT::addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire, Time renew)
+    NNPT::addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew)
     {
       NS_LOG_FUNCTION (this);
 
@@ -96,7 +96,7 @@ namespace ns3 {
     }
 
     void
-    NNPT::deleteEntry (Ptr<NNNAddress> oldName)
+    NNPT::deleteEntry (Ptr<const NNNAddress> oldName)
     {
       NS_LOG_FUNCTION (this);
       NNPTEntry tmp = findEntry (oldName);
@@ -111,7 +111,7 @@ namespace ns3 {
     }
 
     bool
-    NNPT::foundOldName (Ptr<NNNAddress> name)
+    NNPT::foundOldName (Ptr<const NNNAddress> name)
     {
       NS_LOG_FUNCTION (this);
       pair_set_by_oldname& names_index = container.get<oldname> ();
@@ -124,7 +124,7 @@ namespace ns3 {
     }
 
     bool
-    NNPT::foundNewName (Ptr<NNNAddress> name)
+    NNPT::foundNewName (Ptr<const NNNAddress> name)
     {
       NS_LOG_FUNCTION (this);
       pair_set_by_newname& names_index = container.get<newname> ();
@@ -136,8 +136,36 @@ namespace ns3 {
 	return true;
     }
 
-    Ptr<NNNAddress>
-    NNPT::findPairedName (Ptr<NNNAddress> oldName)
+    const NNNAddress&
+    NNPT::findPairedName (Ptr<const NNNAddress> oldName)
+    {
+      NS_LOG_FUNCTION (this);
+//      pair_set_by_oldname& pair_index = container.get<oldname> ();
+//      pair_set_by_oldname::iterator it = pair_index.find(oldName);
+//
+//      if (it != pair_index.end())
+//	{
+//	  NNPTEntry tmp;
+//	  // Check if there is a newer entry
+//	  while (true)
+//	    {
+//	      tmp = *it;
+//	      it = pair_index.find(tmp.m_newName);
+//	      if (it == pair_index.end())
+//		break;
+//	    }
+//	  return *tmp.m_newName;
+//	}
+//      else
+//	{
+//	  return *oldName;
+//	}
+
+      return *findPairedNamePtr(oldName);
+    }
+
+    Ptr<const NNNAddress>
+    NNPT::findPairedNamePtr (Ptr<const NNNAddress> oldName)
     {
       NS_LOG_FUNCTION (this);
       pair_set_by_oldname& pair_index = container.get<oldname> ();
@@ -147,7 +175,7 @@ namespace ns3 {
 	{
 	  NNPTEntry tmp;
           // Check if there is a newer entry
-          while (true) 
+          while (true)
             {
               tmp = *it;
               it = pair_index.find(tmp.m_newName);
@@ -163,7 +191,7 @@ namespace ns3 {
     }
 
     NNPTEntry
-    NNPT::findEntry (Ptr<NNNAddress> name)
+    NNPT::findEntry (Ptr<const NNNAddress> name)
     {
       NS_LOG_FUNCTION (this);
       pair_set_by_oldname& pair_index = container.get<oldname> ();
@@ -180,7 +208,7 @@ namespace ns3 {
     }
 
     void
-    NNPT::updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire)
+    NNPT::updateLeaseTime (Ptr<const NNNAddress> oldName, Time lease_expire)
     {
       NS_LOG_FUNCTION (this);
       pair_set_by_oldname& pair_index = container.get<oldname> ();
@@ -201,7 +229,7 @@ namespace ns3 {
     }
 
     void
-    NNPT::updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire, Time renew)
+    NNPT::updateLeaseTime (Ptr<const NNNAddress> oldName, Time lease_expire, Time renew)
     {
       NS_LOG_FUNCTION (this);
       pair_set_by_oldname& pair_index = container.get<oldname> ();
@@ -236,7 +264,7 @@ namespace ns3 {
     }
 
     Time
-    NNPT::findNameExpireTime (Ptr<NNNAddress> name)
+    NNPT::findNameExpireTime (Ptr<const NNNAddress> name)
     {
       NS_LOG_FUNCTION (this);
       NNPTEntry tmp = findEntry(name);

@@ -45,15 +45,15 @@ namespace ns3 {
 
       NamesContainerEntry();
 
-      NamesContainerEntry(Ptr<NNNAddress> name, Time lease_expire);
+      NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire);
 
-      NamesContainerEntry(Ptr<NNNAddress> name, Time lease_expire, Time renew);
+      NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire, Time renew);
 
       virtual ~NamesContainerEntry();
 
       bool operator< (const NamesContainerEntry e) const { return m_lease_expire < e.m_lease_expire; }
 
-      Ptr<NNNAddress> m_name;
+      Ptr<const NNNAddress> m_name;
       Time m_lease_expire;
       Time m_renew;
     };
