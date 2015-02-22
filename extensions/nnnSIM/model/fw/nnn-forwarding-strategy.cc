@@ -197,6 +197,7 @@ namespace ns3 {
     uint64_t
     ForwardingStrategy::obtain_Num(uint64_t min, uint64_t max)
     {
+      NS_LOG_FUNCTION (this);
       // Make sure to seed our random
       Time now = Simulator::Now();
 
@@ -210,18 +211,21 @@ namespace ns3 {
     void
     ForwardingStrategy::SetNode3NName (Ptr<NNNAddress> name, Time lease)
     {
+      NS_LOG_FUNCTION (this);
       m_node_names->addEntry(name, lease);
     }
 
     Ptr<NNNAddress>
     ForwardingStrategy::GetNode3NName ()
     {
+      NS_LOG_FUNCTION (this);
       return m_node_names->findNewestName();
     }
 
     Ptr<NNNAddress>
     ForwardingStrategy::produce3NName ()
     {
+      NS_LOG_FUNCTION (this);
       bool produced = false;
 
       // Get this nodes currently functioning 3N name
@@ -262,7 +266,6 @@ namespace ns3 {
     ForwardingStrategy::OnAEN (Ptr<Face> face, Ptr<AEN> aen_p)
     {
       NS_LOG_FUNCTION (this);
-
     }
 
     void
@@ -278,9 +281,11 @@ namespace ns3 {
     }
 
     void
-    ForwardingStrategy::OnINF (Ptr<Face> face, Ptr<INF> do_p)
+    ForwardingStrategy::OnINF (Ptr<Face> face, Ptr<INF> inf_p)
     {
       NS_LOG_FUNCTION (this);
+
+      //m_nnpt->addEntry(inf_p->GetOldNamePtr(), inf_p->GetNewNamePtr(), inf_p->GetRemainLease());
     }
 
     void
@@ -316,17 +321,30 @@ namespace ns3 {
     void
     ForwardingStrategy::WillEraseTimedOutPendingInterest (Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
+      NS_LOG_DEBUG ("WillEraseTimedOutPendingInterest for " << pitEntry->GetPrefix ());
+
+      for (pit::Entry::out_container::iterator face = pitEntry->GetOutgoing ().begin ();
+	  face != pitEntry->GetOutgoing ().end ();
+	  face ++)
+	{
+	  // NS_LOG_DEBUG ("Face: " << face->m_face);
+	  pitEntry->GetFibEntry ()->UpdateStatus (face->m_face, fib::FaceMetric::NDN_FIB_YELLOW);
+	}
+
       m_timedOutInterests (pitEntry);
     }
 
     void
     ForwardingStrategy::AddFace (Ptr<Face> face)
     {
+      NS_LOG_FUNCTION (this);
     }
 
     void
     ForwardingStrategy::RemoveFace (Ptr<Face> face)
     {
+      NS_LOG_FUNCTION (this);
     }
 
     void
@@ -339,7 +357,6 @@ namespace ns3 {
     ForwardingStrategy::WillRemoveNNSTEntry (Ptr<nnst::Entry> NNSTEntry)
     {
       NS_LOG_FUNCTION (this);
-
     }
 
     void
@@ -369,12 +386,14 @@ namespace ns3 {
                                            Ptr<const ndn::Interest> interest,
                                            Ptr<pit::Entry> pitEntrypitEntry)
     {
+      NS_LOG_FUNCTION (this);
     }
 
     void
     ForwardingStrategy::FailedToCreatePitEntry (Ptr<Face> inFace,
                                                 Ptr<const ndn::Interest> interest)
     {
+      NS_LOG_FUNCTION (this);
       m_dropInterests (interest, inFace);
     }
 
@@ -383,6 +402,7 @@ namespace ns3 {
                                                      Ptr<const ndn::Interest> interest,
                                                      Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
       /////////////////////////////////////////////////////////////////////////////////////////
       //                                                                                     //
       // !!!! IMPORTANT CHANGE !!!! Duplicate interests will create incoming face entry !!!! //
@@ -397,6 +417,7 @@ namespace ns3 {
                                                     Ptr<const ndn::Interest> interest,
                                                     Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
     }
 
     void
@@ -404,6 +425,7 @@ namespace ns3 {
                                                    Ptr<const ndn::Interest> interest,
                                                    Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
     }
 
     void
@@ -432,6 +454,7 @@ namespace ns3 {
                                                      Ptr<const ndn::Interest> interest,
                                                      Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
       pit::Entry::in_iterator existingInFace = pitEntry->GetIncoming ().find (inFace);
 
       bool isRetransmitted = false;
@@ -449,6 +472,13 @@ namespace ns3 {
     ForwardingStrategy::WillSatisfyPendingInterest (Ptr<Face> inFace,
                                                     Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
+      if (inFace != 0)
+	{
+	  // Update metric status for the incoming interface in the corresponding FIB entry
+	  pitEntry->GetFibEntry ()->UpdateStatus (inFace, fib::FaceMetric::NDN_FIB_GREEN);
+	}
+
       pit::Entry::out_iterator out = pitEntry->GetOutgoing ().find (inFace);
 
       // If we have sent interest for this data via this face, then update stats.
@@ -465,6 +495,7 @@ namespace ns3 {
                                                 Ptr<const ndn::Data> data,
                                                 Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
       if (inFace != 0)
 	pitEntry->RemoveIncoming (inFace);
 
@@ -500,6 +531,7 @@ namespace ns3 {
                                         Ptr<const ndn::Data> data,
                                         Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
       m_outData (data, inFace == 0, outFace);
     }
 
@@ -508,6 +540,7 @@ namespace ns3 {
                                                  Ptr<const ndn::Data> data,
                                                  bool didCreateCacheEntry)
     {
+      NS_LOG_FUNCTION (this);
     }
 
     void
@@ -515,6 +548,7 @@ namespace ns3 {
                                                    Ptr<const ndn::Data> data,
                                                    bool didCreateCacheEntry)
     {
+      NS_LOG_FUNCTION (this);
     }
 
     bool
@@ -522,6 +556,7 @@ namespace ns3 {
                                                         Ptr<const ndn::Interest> interest,
                                                         Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
       bool isNew = pitEntry->GetIncoming ().size () == 0 && pitEntry->GetOutgoing ().size () == 0;
 
       if (isNew) return false; // never suppress new interests
@@ -557,6 +592,7 @@ namespace ns3 {
                                             Ptr<const ndn::Interest> interest,
                                             Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
       if (outFace == inFace)
 	{
 	  // NS_LOG_DEBUG ("Same as incoming");
@@ -586,6 +622,7 @@ namespace ns3 {
                                             Ptr<const ndn::Interest> interest,
                                             Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
       if (!CanSendOutInterest (inFace, outFace, interest, pitEntry))
 	{
 	  return false;
@@ -612,14 +649,48 @@ namespace ns3 {
                                             Ptr<const ndn::Interest> interest,
                                             Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
       m_outInterests (interest, outFace);
     }
 
     void
     ForwardingStrategy::PropagateInterest (Ptr<Face> inFace,
-                       Ptr<const ndn::Interest> interest,
-                       Ptr<pit::Entry> pitEntry)
+                                           Ptr<const ndn::Interest> interest,
+                                           Ptr<pit::Entry> pitEntry)
     {
+      NS_LOG_FUNCTION (this);
+      bool isRetransmitted = m_detectRetransmissions && // a small guard
+	  DetectRetransmittedInterest (inFace, interest, pitEntry);
+
+      pitEntry->AddIncoming (inFace/*, interest->GetInterestLifetime ()*/);
+      /// @todo Make lifetime per incoming interface
+      pitEntry->UpdateLifetime (interest->GetInterestLifetime ());
+
+      bool propagated = DoPropagateInterest (inFace, interest, pitEntry);
+
+      if (!propagated && isRetransmitted) //give another chance if retransmitted
+	{
+	  // increase max number of allowed retransmissions
+	  pitEntry->IncreaseAllowedRetxCount ();
+
+	  // try again
+	  propagated = DoPropagateInterest (inFace, interest, pitEntry);
+	}
+
+      // if (!propagated)
+      //   {
+      //     NS_LOG_DEBUG ("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+      //     NS_LOG_DEBUG ("+++ Not propagated ["<< interest->GetName () <<"], but number of outgoing faces: " << pitEntry->GetOutgoing ().size ());
+      //     NS_LOG_DEBUG ("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+      //   }
+
+      // ForwardingStrategy will try its best to forward packet to at least one interface.
+      // If no interests was propagated, then there is not other option for forwarding or
+      // ForwardingStrategy failed to find it.
+      if (!propagated && pitEntry->AreAllOutgoingInVain ())
+	{
+	  DidExhaustForwardingOptions (inFace, interest, pitEntry);
+	}
     }
 
     bool
@@ -627,24 +698,75 @@ namespace ns3 {
                          Ptr<const ndn::Interest> interest,
                          Ptr<pit::Entry> pitEntry)
     {
-      return true;
+      NS_LOG_FUNCTION (this);
+      NS_ASSERT_MSG (m_pit != 0, "PIT should be aggregated with forwarding strategy");
+
+      int propagatedCount = 0;
+
+      BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())
+      {
+	if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED ||
+	    metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_YELLOW)
+	  break; //propagate only to green faces
+
+	if (!TrySendOutInterest (inFace, metricFace.GetFace (), interest, pitEntry))
+	  {
+	    continue;
+	  }
+
+	propagatedCount++;
+	break; // propagate only one interest
+      }
+
+      bool greenOk = propagatedCount > 0;
+
+      if (greenOk)
+	return true;
+
+      propagatedCount = 0;
+
+      BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())
+      {
+	NS_LOG_DEBUG ("Trying " << boost::cref(metricFace));
+	if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED) // all non-read faces are in the front of the list
+	  break;
+
+	if (!TrySendOutInterest (inFace, metricFace.GetFace (), interest, pitEntry))
+	  {
+	    continue;
+	  }
+
+	propagatedCount++;
+      }
+
+      NS_LOG_INFO ("Propagated to " << propagatedCount << " faces");
+      return propagatedCount > 0;
     }
 
     void
     ForwardingStrategy::NotifyNewAggregate ()
     {
-      /*  if (m_pit == 0)
-       {
-         m_pit = GetObject<Pit> ();
-       }*/
+      if (m_nnpt == 0)
+	{
+	  m_nnpt = GetObject<NNPT> ();
+	}
       if (m_nnst == 0)
 	{
 	  m_nnst = GetObject<NNST> ();
 	}
-      /*  if (m_contentStore == 0)
-       {
-         m_contentStore = GetObject<ContentStore> ();
-       }*/
+      if (m_pit == 0)
+	{
+	  m_pit = GetObject<Pit> ();
+	}
+      if (m_fib == 0)
+	{
+	  m_fib = GetObject<Fib> ();
+	}
+
+      if (m_contentStore == 0)
+	{
+	  m_contentStore = GetObject<ndn::ContentStore> ();
+	}
 
       Object::NotifyNewAggregate ();
     }
@@ -652,9 +774,12 @@ namespace ns3 {
     void
     ForwardingStrategy::DoDispose ()
     {
-      //  m_pit = 0;
-      //  m_contentStore = 0;
+      m_nnpt = 0;
       m_nnst = 0;
+
+      m_pit = 0;
+      m_fib = 0;
+      m_contentStore = 0;
 
       Object::DoDispose ();
     }

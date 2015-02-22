@@ -169,7 +169,6 @@ namespace ns3 {
       virtual void
       OnINF (Ptr<Face> face, Ptr<INF> inf_p);
 
-
       /**
        * \brief Actual processing of incoming Nnn NULLps.
        *

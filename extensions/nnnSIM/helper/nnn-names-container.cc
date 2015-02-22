@@ -97,7 +97,7 @@ namespace ns3 {
     NamesContainerEntry
     NamesContainer::findEntry (Ptr<NNNAddress> name)
     {
-      NS_LOG_FUNCTION (this << name);
+      NS_LOG_FUNCTION (this << *name);
       names_set_by_name& names_index = container.get<address> ();
       names_set_by_name::iterator it = names_index.find(name);
 
