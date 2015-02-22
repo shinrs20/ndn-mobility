@@ -63,16 +63,16 @@ namespace ns3 {
        */
       NNPTEntry ();
 
-      NNPTEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire);
+      NNPTEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire);
 
-      NNPTEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire, Time renew);
+      NNPTEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire, Time renew);
 
       virtual ~NNPTEntry ();
 
       bool operator< (const NNPTEntry e) const { return m_lease_expire < e.m_lease_expire; }
 
-      NNNAddress m_oldName;
-      NNNAddress m_newName;
+      Ptr<NNNAddress> m_oldName;
+      Ptr<NNNAddress> m_newName;
       Time m_lease_expire;
       Time m_renew;
     };

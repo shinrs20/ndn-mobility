@@ -32,9 +32,9 @@ int main (int argc, char *argv[])
 {
   NNPT test1;
 
-  NNNAddress nn_test1 ("be.54.32");
-  NNNAddress nn_test2 ("af.67.31");
-  NNNAddress nn_test3 ("ae.34.26");
+  Ptr<NNNAddress> nn_test1 = Create<NNNAddress> ("be.54.32");
+  Ptr<NNNAddress> nn_test2 = Create<NNNAddress> ("af.67.31");
+  Ptr<NNNAddress> nn_test3 = Create<NNNAddress> ("ae.34.26");
 
   Time t_test1 = Seconds (20);
   Time t_test2 = Seconds (60);
@@ -55,21 +55,21 @@ int main (int argc, char *argv[])
   std::cout << "Printing ordering by address" << std::endl;
   test1.printByAddress();
 
-  std::cout << "\"" << nn_test1 <<"\"'s New address is \"" << test1.findPairedName(nn_test1) << "\"" << std::endl;
+  std::cout << "\"" << nn_test1 <<"\"'s New address is \"" << *test1.findPairedName(nn_test1) << "\"" << std::endl;
 
   std::cout << "Printing ordering by lease expire time" << std::endl;
   test1.printByLease();
 
-  std::cout << "Expire time for " << nn_test2 << " is " << test1.findNameExpireTime(nn_test2) << std::endl;
-  std::cout << "Updating expire time for " << nn_test2 << " to " << updateTime << std::endl;
+  std::cout << "Expire time for " << *nn_test2 << " is " << test1.findNameExpireTime(nn_test2) << std::endl;
+  std::cout << "Updating expire time for " << *nn_test2 << " to " << updateTime << std::endl;
 
   test1.updateLeaseTime(nn_test2, updateTime);
 
-  std::cout << "Deleting " << nn_test3 << " from container..." << std::endl;
+  std::cout << "Deleting " << *nn_test3 << " from container..." << std::endl;
 
   test1.deleteEntry(nn_test3);
 
-  NNNAddress tmp = test1.findNewestName();
+  Ptr<NNNAddress> tmp = test1.findNewestName();
 
   std::cout << "Last address to die will be " << tmp << " at " << test1.findNameExpireTime(tmp) << std::endl;
 
@@ -84,7 +84,7 @@ int main (int argc, char *argv[])
   std::cout << "Printing ordering by address" << std::endl;
   test1.printByAddress();
 
-  std::cout << "\"" << nn_test1 <<"\"'s New address is \"" << test1.findPairedName(nn_test1) << "\"" << std::endl;
+  std::cout << "\"" << *nn_test1 <<"\"'s New address is \"" << *(test1.findPairedName(nn_test1)) << "\"" << std::endl;
 
 }
 

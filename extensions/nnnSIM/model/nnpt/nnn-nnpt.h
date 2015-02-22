@@ -59,7 +59,7 @@ namespace ns3 {
     // sort by less<string> on NNNAddress
     ordered_unique<
     tag<pair>,
-    member<NNPTEntry,NNNAddress,&NNPTEntry::m_oldName>
+    member<NNPTEntry,Ptr<NNNAddress>,&NNPTEntry::m_oldName>
     >
     >
     > pair_set;
@@ -79,40 +79,43 @@ namespace ns3 {
       ~NNPT();
 
       void
-      addEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire);
+      addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire);
 
       void
-      addEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire, Time renew);
+      addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire, Time renew);
 
       void
       addEntry (NNPTEntry nnptEntry);
 
       void
-      deleteEntry (NNNAddress oldName);
+      deleteEntry (Ptr<NNNAddress> oldName);
 
       void
       deleteEntry (NNPTEntry nnptEntry);
 
       void
-      deleteEntry (NNNAddress oldName, NNNAddress newName);
+      deleteEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName);
 
       bool
-      foundName (NNNAddress name);
+      foundOldName (Ptr<NNNAddress> name);
 
-      NNNAddress
-      findPairedName (NNNAddress oldName);
+      bool
+      foundNewName (Ptr<NNNAddress> name);
+
+      Ptr<NNNAddress>
+      findPairedName (Ptr<NNNAddress> oldName);
 
       NNPTEntry
-      findEntry (NNNAddress name);
+      findEntry (Ptr<NNNAddress> name);
 
-      NNNAddress
+      Ptr<NNNAddress>
       findNewestName ();
 
       void
-      updateLeaseTime (NNNAddress oldName, Time lease_expire);
+      updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire);
 
       void
-      updateLeaseTime (NNNAddress oldName, Time lease_expire, Time renew);
+      updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire, Time renew);
 
       uint32_t
       size ();
@@ -121,7 +124,7 @@ namespace ns3 {
       isEmpty ();
 
       Time
-      findNameExpireTime (NNNAddress name);
+      findNameExpireTime (Ptr<NNNAddress> name);
 
       Time
       findNameExpireTime (NNPTEntry nnptEntry);
@@ -136,7 +139,7 @@ namespace ns3 {
       printByLease ();
 
       void
-      informEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire);
+      informEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire);
 
       pair_set container;
 

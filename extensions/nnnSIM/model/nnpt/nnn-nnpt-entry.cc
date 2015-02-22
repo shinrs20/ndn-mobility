@@ -24,8 +24,8 @@ namespace ns3 {
   namespace nnn {
 
     NNPTEntry::NNPTEntry()
-    :m_oldName			(NNNAddress ())
-    ,m_newName			(NNNAddress ())
+    :m_oldName			(Create<NNNAddress> ())
+    ,m_newName			(Create<NNNAddress> ())
     ,m_lease_expire	(Seconds (-1))
     ,m_renew			(Seconds (-1))
     {
@@ -34,7 +34,7 @@ namespace ns3 {
     NNPTEntry::~NNPTEntry() {
     }
 
-    NNPTEntry::NNPTEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire)
+    NNPTEntry::NNPTEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire)
     :m_oldName			(oldName)
     ,m_newName			(newName)
     ,m_lease_expire		(lease_expire)
@@ -42,7 +42,7 @@ namespace ns3 {
     {
     }
 
-    NNPTEntry::NNPTEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire, Time renew)
+    NNPTEntry::NNPTEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire, Time renew)
     :m_oldName			(oldName)
     ,m_newName			(newName)
     ,m_lease_expire		(lease_expire)

@@ -18,7 +18,11 @@
  *  along with nnn-nnpt.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ns3-dev/ns3/log.h>
+
 #include "nnn-nnpt.h"
+
+NS_LOG_COMPONENT_DEFINE ("nnn.NNPT");
 
 namespace ns3 {
   namespace nnn {
@@ -40,16 +44,18 @@ namespace ns3 {
     }
 
     void
-    NNPT::addEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire)
+    NNPT::addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire)
     {
+      NS_LOG_FUNCTION (this);
       container.insert(NNPTEntry(oldName, newName, lease_expire));
 
       Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
     }
 
     void
-    NNPT::addEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire, Time renew)
+    NNPT::addEntry (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName, Time lease_expire, Time renew)
     {
+      NS_LOG_FUNCTION (this);
       container.insert(NNPTEntry(oldName, newName, lease_expire, renew));
 
       Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
@@ -58,14 +64,16 @@ namespace ns3 {
     void
     NNPT::addEntry (NNPTEntry nnptEntry)
     {
+      NS_LOG_FUNCTION (this);
       container.insert(nnptEntry);
 
       Simulator::Schedule(nnptEntry.m_lease_expire, &NNPT::cleanExpired, this);
     }
 
     void
-    NNPT::deleteEntry (NNNAddress oldName)
+    NNPT::deleteEntry (Ptr<NNNAddress> oldName)
     {
+      NS_LOG_FUNCTION (this);
       NNPTEntry tmp = findEntry (oldName);
       container.erase(tmp);
     }
@@ -73,12 +81,14 @@ namespace ns3 {
     void
     NNPT::deleteEntry (NNPTEntry nnptEntry)
     {
+      NS_LOG_FUNCTION (this);
       container.erase(nnptEntry);
     }
 
     bool
-    NNPT::foundName (NNNAddress name)
+    NNPT::foundOldName (Ptr<NNNAddress> name)
     {
+      NS_LOG_FUNCTION (this);
       pair_set_by_name& names_index = container.get<pair> ();
       pair_set_by_name::iterator it = names_index.find(name);
 
@@ -88,17 +98,17 @@ namespace ns3 {
 	return true;
     }
 
-    NNNAddress
-    NNPT::findPairedName (NNNAddress oldName)
+    Ptr<NNNAddress>
+    NNPT::findPairedName (Ptr<NNNAddress> oldName)
     {
+      NS_LOG_FUNCTION (this);
       pair_set_by_name& pair_index = container.get<pair> ();
       pair_set_by_name::iterator it = pair_index.find(oldName);
 
       if (it != pair_index.end())
 	{
 	  NNPTEntry tmp = *it;
-	  NNNAddress newName = tmp.m_newName;
-	  return newName;
+	  return tmp.m_newName;
 	}
       else
 	{
@@ -107,8 +117,9 @@ namespace ns3 {
     }
 
     NNPTEntry
-    NNPT::findEntry (NNNAddress name)
+    NNPT::findEntry (Ptr<NNNAddress> name)
     {
+      NS_LOG_FUNCTION (this);
       pair_set_by_name& pair_index = container.get<pair> ();
       pair_set_by_name::iterator it = pair_index.find(name);
 
@@ -119,24 +130,31 @@ namespace ns3 {
       else
 	{
 	  return NNPTEntry ();
-
 	}
     }
 
-    NNNAddress
+    Ptr<NNNAddress>
     NNPT::findNewestName ()
     {
+      NS_LOG_FUNCTION (this);
       pair_set_by_name& pair_index = container.get<pair> ();
       pair_set_by_name::iterator it = pair_index.end();
 
-      it--;
-
-      return it->m_oldName;
+      if (!isEmpty())
+	{
+	  it--;
+	  return it->m_oldName;
+	}
+      else
+	{
+	  return Create<NNNAddress> ();
+	}
     }
 
     void
-    NNPT::updateLeaseTime (NNNAddress oldName, Time lease_expire)
+    NNPT::updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire)
     {
+      NS_LOG_FUNCTION (this);
       pair_set_by_name& pair_index = container.get<pair> ();
       pair_set_by_name::iterator it = pair_index.find(oldName);
 
@@ -155,8 +173,9 @@ namespace ns3 {
     }
 
     void
-    NNPT::updateLeaseTime (NNNAddress oldName, Time lease_expire, Time renew)
+    NNPT::updateLeaseTime (Ptr<NNNAddress> oldName, Time lease_expire, Time renew)
     {
+      NS_LOG_FUNCTION (this);
       pair_set_by_name& pair_index = container.get<pair> ();
       pair_set_by_name::iterator it = pair_index.find(oldName);
 
@@ -177,18 +196,21 @@ namespace ns3 {
     uint32_t
     NNPT::size ()
     {
+      NS_LOG_FUNCTION (this);
       return container.size();
     }
 
     bool
     NNPT::isEmpty ()
     {
+      NS_LOG_FUNCTION (this);
       return (container.size() == 0);
     }
 
     Time
-    NNPT::findNameExpireTime (NNNAddress name)
+    NNPT::findNameExpireTime (Ptr<NNNAddress> name)
     {
+      NS_LOG_FUNCTION (this);
       NNPTEntry tmp = findEntry(name);
 
       return tmp.m_lease_expire;
@@ -197,12 +219,14 @@ namespace ns3 {
     Time
     NNPT::findNameExpireTime (NNPTEntry nnptEntry)
     {
+      NS_LOG_FUNCTION (this);
       return nnptEntry.m_lease_expire;
     }
 
     void
     NNPT::cleanExpired ()
     {
+      NS_LOG_FUNCTION (this);
       pair_set_by_lease& lease_index = container.get<st_lease> ();
       Time now = Simulator::Now();
 
