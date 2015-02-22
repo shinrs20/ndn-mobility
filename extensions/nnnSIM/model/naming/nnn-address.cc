@@ -220,6 +220,36 @@ NNNAddress::compare (const NNNAddress &name) const
   return (i == this->end ()) ? -1 : +1;
 }
 
+int
+NNNAddress::compareLabels(const NNNAddress & name) const
+{
+  NNNAddress::const_iterator i = this->begin ();
+  NNNAddress::const_iterator j = name.begin ();
+
+  for (; i != this->end () && j != name.end (); i++, j++)
+    {
+      if (i->toNumber () == j->toNumber ())
+	continue;
+      else
+	return (i->toNumber() > j->toNumber ()) ? +1 : -1;
+    }
+
+  // The prefixes are the same, test the final label
+  if (i == this->end () && j == name.end ())
+    {
+      i--;
+      j--;
+      if (i->toNumber() == j->toNumber())
+	{
+	  return 0;
+	}
+      else
+	return (i->toNumber() > j->toNumber ()) ? +1 : -1;
+    }
+
+  return (i == this->end ()) ? +1 : -1;
+}
+
 bool
 NNNAddress::isSameSector (const NNNAddress &name) const
 {

@@ -255,6 +255,9 @@ public:
   int
   compare (const NNNAddress &name) const;
 
+  int
+  compareLabels (const NNNAddress &name) const;
+
   /**
    * @brief Find out if two NNN addresses belong to the same sector
    * @return True or False
@@ -514,37 +517,37 @@ NNNAddress::append (const void *buf, size_t size)
 inline bool
 NNNAddress::operator ==(const NNNAddress &name) const
 {
-  return (compare (name) == 0);
+  return (compareLabels (name) == 0);
 }
 
 inline bool
 NNNAddress::operator !=(const NNNAddress &name) const
 {
-  return (compare (name) != 0);
+  return (compareLabels (name) != 0);
 }
 
 inline bool
 NNNAddress::operator <= (const NNNAddress &name) const
 {
-  return (compare (name) <= 0);
+  return (compareLabels (name) <= 0);
 }
 
 inline bool
 NNNAddress::operator < (const NNNAddress &name) const
 {
-  return (compare (name) < 0);
+  return (compareLabels (name) < 0);
 }
 
 inline bool
 NNNAddress::operator >= (const NNNAddress &name) const
 {
-  return (compare (name) >= 0);
+  return (compareLabels (name) >= 0);
 }
 
 inline bool
 NNNAddress::operator > (const NNNAddress &name) const
 {
-  return (compare (name) > 0);
+  return (compareLabels (name) > 0);
 }
 
 inline name::Component &

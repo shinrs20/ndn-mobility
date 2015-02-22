@@ -217,6 +217,8 @@ int main (int argc, char *argv[])
 	NNNAddress test4 ("b");
 	NNNAddress test5 ("b.1");
 	NNNAddress test6 ("b.1.1");
+	NNNAddress test7 ("1");
+	NNNAddress test8 ("a.2");
 
 	cout << "Closest working sector between " << start << " and " << test0 << " is " <<  start.getClosestSector(test0) << endl;
 	cout << "Closest working sector between " << start << " and " << test1 << " is " <<  start.getClosestSector(test1) << endl;
@@ -255,6 +257,26 @@ int main (int argc, char *argv[])
 	Buffer::Iterator i = buf.Begin();
 
 	wire::NnnSim::SerializeName(i, working);
+
+	cout << "Testing ordering of 3N names " << endl;
+
+	cout << "By operators" << endl;
+	cout << start << " and " << start << ": " << (start > start) << endl;
+	cout << start << " and " << test0 << ": " << (start > test0) << endl;
+	cout << start << " and " << test4 << ": " << (start > test4) << endl;
+	cout << start << " and " << test7 << ": " << (start > test7) << endl;
+	cout << start << " and " << test1 << ": " << (start > test1) << endl;
+	cout << start << " and " << test2 << ": " << (start > test2) << endl;
+	cout << start << " and " << test8 << ": " << (start > test8) << endl;
+
+	cout << "By compareLabels" << endl;
+	cout << start << " and " << start << ": " << (start.compareLabels(start)) << endl;
+	cout << start << " and " << test0 << ": " << (start.compareLabels(test0)) << endl;
+	cout << start << " and " << test4 << ": " << (start.compareLabels(test4)) << endl;
+	cout << start << " and " << test7 << ": " << (start.compareLabels(test7)) << endl;
+	cout << start << " and " << test1 << ": " << (start.compareLabels(test1)) << endl;
+	cout << start << " and " << test2 << ": " << (start.compareLabels(test2)) << endl;
+	cout << start << " and " << test8 << ": " << (start.compareLabels(test8)) << endl;
 
 	Simulator::Stop (Seconds (1.0));
 	Simulator::Run ();
