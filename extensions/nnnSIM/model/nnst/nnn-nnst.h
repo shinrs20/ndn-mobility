@@ -100,6 +100,12 @@ namespace ns3 {
 
       Ptr<nnst::Entry>
       ClosestSector (const NNNAddress &prefix);
+      
+      std::pair<Ptr<Face>, Address>
+      ClosestSectorFaceInfo (const NNNAddress &prefix);
+
+      std::pair<Ptr<Face>, Address>
+      ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix);
 
       // Possibly unnecessary
       //Ptr<nnst::Entry>

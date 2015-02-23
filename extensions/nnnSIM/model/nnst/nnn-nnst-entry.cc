@@ -191,6 +191,16 @@ namespace ns3 {
 	return m_faces.get<i_nth> () [skip];
       }
 
+      std::pair<Ptr<Face>, Address>
+      Entry::FindBestCandidateFaceInfo (uint32_t skip/* = 0*/) const
+      {
+        FaceMetric tmp = FindBestCandidate(skip);
+
+        std::pair<Ptr<Face>, Address> ret = std::make_pair(tmp.GetFace (), tmp.GetAddress ());
+
+        return ret;
+      }
+
       void
       Entry::RemoveFace (const Ptr<Face> &face)
       {

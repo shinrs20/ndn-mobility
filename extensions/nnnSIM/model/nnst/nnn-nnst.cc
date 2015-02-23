@@ -61,6 +61,23 @@ namespace ns3 {
 	return item->payload ();
     }
 
+    std::pair<Ptr<Face>, Address>
+    NNST::ClosestSectorFaceInfo (const NNNAddress &prefix)
+    {
+        NS_LOG_FUNCTION (this << prefix);
+        // Find the closest entry to prefix.
+        Ptr<nnst::Entry> tmp = ClosestSector(prefix);
+
+        return tmp->FindBestCandidateFaceInfo(0);        
+    }
+
+    std::pair<Ptr<Face>, Address>
+    NNST::ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix)
+    {
+        NS_LOG_FUNCTION (this << *prefix);
+        return ClosestSectorFaceInfo(*prefix);
+    }
+
     Ptr<nnst::Entry>
     NNST::Find (const NNNAddress &prefix)
     {
