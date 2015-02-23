@@ -602,6 +602,7 @@ namespace ns3 {
       bool m_produce3Nnames;
 
       Time m_3n_lease_time;
+      int32_t m_standardMetric;
 
       ////////////////////////////////////////////////////////////////////
 

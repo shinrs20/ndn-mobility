@@ -28,6 +28,7 @@
 
 #include <ns3-dev/ns3/assert.h>
 #include <ns3-dev/ns3/boolean.h>
+#include <ns3-dev/ns3/integer.h>
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/nstime.h>
@@ -180,6 +181,11 @@ namespace ns3 {
 	                 MakeTimeAccessor (&ForwardingStrategy::m_3n_lease_time),
 	                 MakeTimeChecker ())
 
+	  .AddAttribute ("StandardMetric", "Standard Metric in NNST for new entries (Only in use if Produce3NNames is used)",
+	                 IntegerValue (6),
+	                 MakeIntegerAccessor (&ForwardingStrategy::m_standardMetric),
+	                 MakeIntegerChecker<int32_t>())
+
 	  // Required for testing at this moment
 	  .AddConstructor <ForwardingStrategy> ()
 	  ;
@@ -264,24 +270,68 @@ namespace ns3 {
     ForwardingStrategy::OnEN (Ptr<Face> face, Ptr<EN> en_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inENs(en_p, face);
+
+      // Find if we can produce 3N names
+      if (m_produce3Nnames)
+	{
+	  NNNAddress myAddr = GetNode3NName ();
+	  NS_LOG_INFO("We are in " << myAddr << " producing 3N names");
+
+	  // Get the first Address from the EN packet
+	  Address destAddr = en_p->GetOnePoa(0);
+
+	  // Get all the PoA Address in the EN packet to fill the NNST
+	  std::vector<Address> poaAddrs = en_p->GetPoas();
+
+	  // Produce a 3N name
+	  Ptr<NNNAddress> produced3Nname = produce3NName ();
+
+	  // Add the new information to the NNST
+	  m_nnst->Add(produced3Nname, face, poaAddrs, m_3n_lease_time, m_standardMetric);
+
+	  // Add the information the the leased NodeNameContainer
+	  m_leased_names->addEntry(produced3Nname, m_3n_lease_time);
+
+	  // Now create the AEN packet to respond
+	  Ptr<AEN> aen_p = Create<AEN> (produced3Nname);
+	  // Ensure that the lease time is set right
+	  aen_p->SetLeasetime(m_3n_lease_time);
+
+	  // Send the created AEN packet out the way it came
+	  face->SendAEN(aen_p, destAddr);
+
+	  m_outAENs(aen_p, face);
+	}
+      else
+	{
+	  m_dropENs(en_p, face);
+	}
     }
 
     void
     ForwardingStrategy::OnAEN (Ptr<Face> face, Ptr<AEN> aen_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inAENs(aen_p, face);
     }
 
     void
     ForwardingStrategy::OnREN (Ptr<Face> face, Ptr<REN> ren_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inRENs(ren_p, face);
     }
 
     void
     ForwardingStrategy::OnDEN (Ptr<Face> face, Ptr<DEN> den_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inDENs(den_p, face);
     }
 
     void
@@ -315,30 +365,40 @@ namespace ns3 {
     ForwardingStrategy::OnNULLp (Ptr<Face> face, Ptr<NULLp> null_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inNULLps(null_p, face);
     }
 
     void
     ForwardingStrategy::OnSO (Ptr<Face> face, Ptr<SO> so_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inSOs(so_p, face);
     }
 
     void
     ForwardingStrategy::OnDO (Ptr<Face> face, Ptr<DO> do_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inDOs(do_p, face);
     }
 
     void
     ForwardingStrategy::OnDU (Ptr<Face> face, Ptr<DU> du_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inDUs(du_p, face);
     }
 
     void
     ForwardingStrategy::OnMDO (Ptr<Face> face, Ptr<MDO> mdo_p)
     {
       NS_LOG_FUNCTION (this);
+
+      m_inMDOs(mdo_p, face);
     }
 
     void
