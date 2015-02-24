@@ -260,6 +260,56 @@ NNNAddress::isSameSector (const NNNAddress &name) const
 
   return (res == 0);
 }
+bool
+NNNAddress::isSubSector (const NNNAddress &name) const
+{
+
+  if (name.size () <= this->size ())
+    {
+      NNNAddress::const_iterator i = this->begin ();
+      NNNAddress::const_iterator j = name.begin ();
+
+      bool ret = true;
+
+      for (; i != this->end () && j != name.end (); i++, j++)
+	{
+	  if (j->toNumber () != i->toNumber ())
+	    {
+	      ret = false;
+	      break;
+	    }
+	}
+
+      return ret;
+    }
+  else
+    return false;
+}
+
+bool
+NNNAddress::isParentSector (const NNNAddress &name) const
+{
+  if (name.size () > this->size ())
+    {
+      NNNAddress::const_iterator i = this->begin ();
+      NNNAddress::const_iterator j = name.begin ();
+
+      bool ret = true;
+
+      for (; i != this->end () && j != name.end (); i++, j++)
+	{
+	  if (j->toNumber () != i->toNumber ())
+	    {
+	      ret = false;
+	      break;
+	    }
+	}
+
+      return ret;
+    }
+  else
+    return false;
+}
 
 bool
 NNNAddress::isToplvlSector () const
@@ -384,7 +434,7 @@ NNNAddress::ConvertFrom (const Address &address)
 int
 NNNAddress::distance (const NNNAddress &name) const
 {
-  std::cout << "Comparing " << *this << " with " << name << std::endl;
+  //std::cout << "Comparing " << *this << " with " << name << std::endl;
   int res = compare(name);
 
   if (res == 0)

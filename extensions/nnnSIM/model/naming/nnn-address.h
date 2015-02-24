@@ -265,6 +265,12 @@ public:
   bool
   isSameSector (const NNNAddress &name) const;
 
+  bool
+  isSubSector (const NNNAddress &name) const;
+
+  bool
+  isParentSector (const NNNAddress &name) const;
+
   /**
    * @brief Find out if NNN address is a top level address
    * @return True or False
