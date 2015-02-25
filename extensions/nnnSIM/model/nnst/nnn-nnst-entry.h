@@ -145,16 +145,16 @@ namespace ns3 {
 	  return m_nnst;
 	}
 
-	Ptr<const NNNAddress>
-	GetPtrAddress ()
-	{
-	  return m_address;
-	}
-
 	const NNNAddress&
 	GetAddress () const
 	{
 	  return *m_address;
+	}
+
+	Ptr<const NNNAddress>
+	GetAddressPtr ()
+	{
+	  return m_address;
 	}
 
 	void

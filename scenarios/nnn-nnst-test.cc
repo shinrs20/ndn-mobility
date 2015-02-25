@@ -42,6 +42,17 @@ printNNST(Ptr<NNST> nnst)
   std::cout << *nnst << std::endl;
 }
 
+void
+printAddrs (std::vector<Ptr<const NNNAddress> > ret)
+{
+  std::vector<Ptr<const NNNAddress> >::iterator it;
+
+  for (it = ret.begin () ; it != ret.end(); ++it)
+    {
+      std::cout << **it << endl;
+    }
+}
+
 int main (int argc, char *argv[])
 {
   // Create 48 bit MAC addresses
@@ -59,6 +70,9 @@ int main (int argc, char *argv[])
   Mac48Address n3_mac04 = Mac48Address ("01:1E:03:04:05:06");
 
   Mac48Address n4_mac01 = Mac48Address ("20:1E:03:04:05:06");
+
+  Mac48Address n5_mac00 = Mac48Address ("20:1E:03:04:FF:06");
+  Mac48Address n5_mac01 = Mac48Address ("20:1E:03:04:05:F6");
 
   // Expire times
   Time n1_expire = Seconds (5);
@@ -81,6 +95,11 @@ int main (int argc, char *argv[])
   n3_poas_1.push_back(n3_mac02.operator ns3::Address());
   n3_poas_1.push_back(n3_mac03.operator ns3::Address());
 
+  std::vector<Address> n5_poas_1;
+
+  n5_poas_1.push_back(n5_mac00.operator ns3::Address());
+  n5_poas_1.push_back(n5_mac01.operator ns3::Address());
+
   // Routing cost
   int32_t cost = 5;
 
@@ -102,10 +121,12 @@ int main (int argc, char *argv[])
   std::cout << n1_test01 << std::endl;
 
   // Create our NNN Addresses
-  Ptr<NNNAddress> n1_test = Create<NNNAddress> ("be.54.32");
-  Ptr<NNNAddress> n2_test = Create<NNNAddress> ("af.67.31");
-  Ptr<NNNAddress> n3_test = Create<NNNAddress> ("ae.34.26");
-  Ptr<NNNAddress> n4_test = Create<NNNAddress> ("b1.34.26");
+  Ptr<NNNAddress> n1_test = Create<NNNAddress> ("be");
+  Ptr<NNNAddress> n2_test = Create<NNNAddress> ("be.34");
+  Ptr<NNNAddress> n3_test = Create<NNNAddress> ("be.34.25");
+  Ptr<NNNAddress> n4_test = Create<NNNAddress> ("be.34.26");
+
+  Ptr<NNNAddress> prefixTest = Create<NNNAddress> ("be.34");
 
   Ptr<NNST> ptrn1_nnst = CreateObject<NNST> ();
   Ptr<ForwardingStrategy> fw = CreateObject<ForwardingStrategy> ();
@@ -206,12 +227,34 @@ int main (int argc, char *argv[])
 
   ptrn1_nnst->Add(n2_test, ptrFace00, n2_mac00.operator ns3::Address(), n2_expire, cost);
   ptrn1_nnst->Add(n2_test, ptrFace01, n1_poas, n2_expire, cost);
-
   ptrn1_nnst->Add(n3_test, ptrFace00, n3_mac00.operator ns3::Address(), n3_expire, cost);
   ptrn1_nnst->Add(n3_test, ptrFace01, n3_poas_1, n3_expire, cost);
   ptrn1_nnst->Add(n3_test, ptrFace02, n3_mac04.operator ns3::Address(), n3_expire, cost);
-
   ptrn1_nnst->Add(n4_test, ptrFace00, n4_mac01.operator ns3::Address(), n3_expire, cost);
+
+  std::cout << "###########################################" << std::endl;
+
+  std::cout << "Testing sector info" << std::endl;
+  std::vector<Ptr<const NNNAddress> > addrs;
+
+  std::cout << "Closest sector info with: " << *prefixTest << std::endl;
+
+  std::cout << *ptrn1_nnst->ClosestSectorNameInfo(prefixTest) << std::endl;
+
+  std::cout << "One hop sector info with: " << *prefixTest << std::endl;
+
+  addrs = ptrn1_nnst->OneHopNameInfo(prefixTest);
+  printAddrs(addrs);
+
+  std::cout << "One hop sub-sector info with: " << *prefixTest << std::endl;
+  addrs = ptrn1_nnst->OneHopSubSectorNameInfo(prefixTest);
+  printAddrs(addrs);
+
+  std::cout << "One hop parent sector info with: " << *prefixTest << std::endl;
+  addrs = ptrn1_nnst->OneHopParentSectorNameInfo(prefixTest);
+  printAddrs(addrs);
+
+  std::cout << "###########################################" << std::endl;
 
   std::cout << "Begin testing of NNST at " <<  Simulator::Now() << std::endl;
 

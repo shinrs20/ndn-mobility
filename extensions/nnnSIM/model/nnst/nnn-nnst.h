@@ -101,15 +101,53 @@ namespace ns3 {
       Ptr<nnst::Entry>
       ClosestSector (const NNNAddress &prefix);
       
+      Ptr<const NNNAddress>
+      ClosestSectorNameInfo (const NNNAddress &prefix);
+
+      Ptr<const NNNAddress>
+      ClosestSectorNameInfo (Ptr<const NNNAddress> prefix);
+
       std::pair<Ptr<Face>, Address>
       ClosestSectorFaceInfo (const NNNAddress &prefix);
 
       std::pair<Ptr<Face>, Address>
       ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix);
 
-      // Possibly unnecessary
-      //Ptr<nnst::Entry>
-      //SignatureMatch (Address poa);
+      std::vector<Ptr<const NNNAddress> >
+      OneHopNameInfo (const NNNAddress &prefix);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopNameInfo (Ptr<const NNNAddress> prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopFaceInfo (const NNNAddress &prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopFaceInfo (Ptr<const NNNAddress> prefix);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopSubSectorNameInfo (const NNNAddress &prefix);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopSubSectorNameInfo (Ptr<const NNNAddress> prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopSubSectorFaceInfo (const NNNAddress &prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopSubSectorFaceInfo (Ptr<const NNNAddress> prefix);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopParentSectorNameInfo (const NNNAddress &prefix);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopParentSectorNameInfo (Ptr<const NNNAddress> prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopParentSectorFaceInfo (const NNNAddress &prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopParentSectorFaceInfo (Ptr<const NNNAddress> prefix);
 
       Ptr<nnst::Entry>
       Find (const NNNAddress &prefix);
