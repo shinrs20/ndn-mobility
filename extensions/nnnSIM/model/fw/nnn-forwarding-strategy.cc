@@ -215,9 +215,10 @@ namespace ns3 {
     }
 
     void
-    ForwardingStrategy::SetNode3NName (Ptr<NNNAddress> name, Time lease)
+    ForwardingStrategy::SetNode3NName (Ptr<const NNNAddress> name, Time lease)
     {
       NS_LOG_FUNCTION (this);
+      NS_LOG_INFO("Adding 3N name " << *name << " to node");
       m_node_names->addEntry(name, lease);
     }
 
@@ -242,28 +243,39 @@ namespace ns3 {
       bool produced = false;
 
       Ptr<NNNAddress> ret;
-      // Get this nodes currently functioning 3N name and copy it to a new variable
-      NNNAddress base = GetNode3NName ();
 
-      while (!produced)
+      if (Has3NName ())
 	{
-	  // Create a random numerical component
-	  name::Component tmp = tmp.fromNumber(obtain_Num(1, MAX3NLABEL));
+	  // Get this nodes currently functioning 3N name and copy it to a new variable
+	  NNNAddress base = GetNode3NName ();
 
-	  // Append the randomly created number to our 3N name
-	  NNNAddress tmp3 = base.append(tmp);
-
-	  ret = Create<NNNAddress> (tmp3.toDotHex());
-
-	  // Check if the random has by unfortunate circumstances created a name
-	  // that has already been leased
-	  if (! m_leased_names->foundName(ret))
+	  while (!produced)
 	    {
-	      produced = true;
-	    }
-	}
+	      // Create a random numerical component
+	      name::Component tmp = tmp.fromNumber(obtain_Num(1, MAX3NLABEL));
 
+	      // Append the randomly created number to our 3N name
+	      NNNAddress tmp3 = base.append(tmp);
+
+	      ret = Create<NNNAddress> (tmp3.toDotHex());
+
+	      // Check if the random has by unfortunate circumstances created a name
+	      // that has already been leased
+	      if (! m_leased_names->foundName(ret))
+		{
+		  produced = true;
+		}
+	    }
+
+	  NS_LOG_INFO("Produce 3N name " << *ret);
+	}
       return ret;
+    }
+
+    bool
+    ForwardingStrategy::Has3NName ()
+    {
+      return (!m_node_names->isEmpty());
     }
 
     void
@@ -316,6 +328,29 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
 
       m_inAENs(aen_p, face);
+
+      // Check if we have a 3N name
+      if (Has3NName ())
+	{
+	  Ptr<const NNNAddress> obtainedName = aen_p->GetNamePtr();
+
+	  NS_LOG_INFO("Obtained AEN with " << *obtainedName);
+
+	  // Check if the name we have is from the same sector
+	  if (! GetNode3NNamePtr()->isSameSector(*obtainedName))
+	    {
+	      SetNode3NName(obtainedName, aen_p->GetLeasetime());
+	    }
+	  // As long as the name is not the same, we can use the name
+	  else if (*GetNode3NNamePtr() != *obtainedName)
+	    {
+	      SetNode3NName(obtainedName, aen_p->GetLeasetime());
+	    }
+	}
+      else
+	{
+	  SetNode3NName(aen_p->GetNamePtr(), aen_p->GetLeasetime());
+	}
     }
 
     void

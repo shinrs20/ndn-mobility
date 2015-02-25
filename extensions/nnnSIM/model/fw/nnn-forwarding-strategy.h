@@ -110,7 +110,7 @@ namespace ns3 {
       obtain_Num(uint64_t min, uint64_t max);
 
       virtual void
-      SetNode3NName (Ptr<NNNAddress> name, Time lease);
+      SetNode3NName (Ptr<const NNNAddress> name, Time lease);
 
       virtual const NNNAddress&
       GetNode3NName ();
@@ -121,6 +121,9 @@ namespace ns3 {
       // Produces a random 3N name under the delegated name space
       virtual Ptr<NNNAddress>
       produce3NName ();
+
+      virtual bool
+      Has3NName ();
 
       /**
        * \brief Actual processing of incoming Nnn content objects
