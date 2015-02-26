@@ -277,6 +277,8 @@ int main (int argc, char *argv[])
 	cout << "Is " << test9 << " sub-sector of " << test10 << ": " << (test9.isSubSector(test10)) << endl;
 	cout << "Is " << test9 << " sub-sector of " << test4 << ": " << (test9.isSubSector(test4)) << endl;
 	cout << "Is " << test9 << " sub-sector of " << test5 << ": " << (test9.isSubSector(test5)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test0 << ": " << (test9.isSubSector(test0)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test8 << ": " << (test9.isSubSector(test8)) << endl;
 
 	cout << "--------------------" << endl;
 
