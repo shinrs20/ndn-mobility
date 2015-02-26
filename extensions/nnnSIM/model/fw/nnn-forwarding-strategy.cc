@@ -286,15 +286,15 @@ namespace ns3 {
       m_inENs(en_p, face);
 
       // Find if we can produce 3N names
-      if (m_produce3Nnames)
+      if (m_produce3Nnames && Has3NName ())
 	{
 	  NNNAddress myAddr = GetNode3NName ();
-	  NS_LOG_INFO("We are in " << myAddr << " producing 3N names");
+	  NS_LOG_INFO("We are in " << myAddr << " producing 3N name for new node");
 
-	  // Get the first Address from the EN packet
+	  // Get the first Address from the EN PDU
 	  Address destAddr = en_p->GetOnePoa(0);
 
-	  // Get all the PoA Address in the EN packet to fill the NNST
+	  // Get all the PoA Address in the EN PDU to fill the NNST
 	  std::vector<Address> poaAddrs = en_p->GetPoas();
 
 	  // Produce a 3N name
@@ -306,12 +306,12 @@ namespace ns3 {
 	  // Add the information the the leased NodeNameContainer
 	  m_leased_names->addEntry(produced3Nname, m_3n_lease_time);
 
-	  // Now create the AEN packet to respond
+	  // Now create the AEN PDU to respond
 	  Ptr<AEN> aen_p = Create<AEN> (produced3Nname);
 	  // Ensure that the lease time is set right
 	  aen_p->SetLeasetime(m_3n_lease_time);
 
-	  // Send the created AEN packet out the way it came
+	  // Send the created AEN PDU out the way it came
 	  face->SendAEN(aen_p, destAddr);
 
 	  m_outAENs(aen_p, face);
@@ -329,27 +329,24 @@ namespace ns3 {
 
       m_inAENs(aen_p, face);
 
+      Ptr<const NNNAddress> obtainedName = aen_p->GetNamePtr();
+
+      NS_LOG_INFO("Obtained AEN with " << *obtainedName);
+
       // Check if we have a 3N name
       if (Has3NName ())
 	{
-	  Ptr<const NNNAddress> obtainedName = aen_p->GetNamePtr();
-
-	  NS_LOG_INFO("Obtained AEN with " << *obtainedName);
-
-	  // Check if the name we have is from the same sector
-	  if (! GetNode3NNamePtr()->isSameSector(*obtainedName))
-	    {
-	      SetNode3NName(obtainedName, aen_p->GetLeasetime());
-	    }
 	  // As long as the name is not the same, we can use the name
-	  else if (*GetNode3NNamePtr() != *obtainedName)
+	  if (*GetNode3NNamePtr() != *obtainedName)
 	    {
+	      NS_LOG_INFO("Node had " << GetNode3NName () << " now taking " << *obtainedName);
 	      SetNode3NName(obtainedName, aen_p->GetLeasetime());
 	    }
 	}
       else
 	{
-	  SetNode3NName(aen_p->GetNamePtr(), aen_p->GetLeasetime());
+	  NS_LOG_INFO("Node has no name, taking " << *obtainedName);
+	  SetNode3NName(obtainedName, aen_p->GetLeasetime());
 	}
     }
 
@@ -359,6 +356,73 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
 
       m_inRENs(ren_p, face);
+
+      // Check we can actually produce 3N names
+      if(m_produce3Nnames && Has3NName ())
+	{
+	  NNNAddress myAddr = GetNode3NName ();
+
+	  // Get the 3N name that the node was using
+	  Ptr<NNNAddress> reenroll = Create<NNNAddress> (ren_p->GetName ());
+
+	  NS_LOG_INFO("We are in " << myAddr << " producing 3N name for " << *reenroll);
+
+	  // Get the first Address from the REN PDU
+	  Address destAddr = ren_p->GetOnePoa(0);
+
+	  // Get all the PoA Address in the REN PDU to fill the NNST
+	  std::vector<Address> poaAddrs = ren_p->GetPoas ();
+
+	  // Produce a new 3N name
+	  Ptr<NNNAddress> produced3Nname = produce3NName ();
+
+	  // Add the new information to the NNST
+	  m_nnst->Add(produced3Nname, face, poaAddrs, m_3n_lease_time, m_standardMetric);
+
+	  // Add the information the the leased NodeNameContainer
+	  m_leased_names->addEntry(produced3Nname, m_3n_lease_time);
+
+	  // Now create the AEN PDU to respond
+	  Ptr<AEN> aen_p = Create<AEN> (produced3Nname);
+	  // Ensure that the lease time is set right
+	  aen_p->SetLeasetime(m_3n_lease_time);
+
+	  // Send the created AEN PDU out the way it came
+	  face->SendAEN(aen_p, destAddr);
+
+	  // Log that the AEN was sent
+	  m_outAENs(aen_p, face);
+
+	  Time remaining = ren_p->GetRemainLease();
+
+	  // Regardless of the name, we need to update the NNPT
+	  m_nnpt->addEntry(reenroll, produced3Nname, remaining);
+
+	  // Check if the Node was in our subsector
+	  if (! reenroll->isSubSector(myAddr))
+	    {
+	      // If node was not originally in our sector, create a INF PDU
+	      NS_LOG_INFO("Creating INF PDU");
+	      Ptr<INF> inf_o = Create<INF> ();
+
+	      // Fill the necessary information
+	      inf_o->SetOldName(reenroll);
+	      inf_o->SetNewName(produced3Nname);
+	      inf_o->SetRemainLease(remaining);
+
+	      // Find where to send the INF
+	      std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo(reenroll->getSectorName());
+
+	      Ptr<Face> outFace = tmp.first;
+	      Address destAddr = tmp.second;
+
+	      // Send the created INF PDU
+	      outFace->SendINF(inf_o, destAddr);
+
+	      // Log that the INF PDU was sent
+	      m_outINFs(inf_o, outFace);
+	    }
+	}
     }
 
     void
@@ -383,8 +447,9 @@ namespace ns3 {
 
       if (myAddr != endSector)
 	{
-	  NS_LOG_INFO("We are in " << myAddr << " have not yet reached the delegated Sector " << endSector);
+	  NS_LOG_INFO("We are in " << myAddr << " receiving an INF. Have not yet reached the delegated Sector " << endSector);
 
+	  // Roughly pick the next hop that would bring us closer to the endSector
           std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo(endSector);
 
           Ptr<Face> outFace = tmp.first;
@@ -802,7 +867,7 @@ namespace ns3 {
       //     NS_LOG_DEBUG ("++++++++++++++++++++++++++++++++++++++++++++++++++++++");
       //   }
 
-      // ForwardingStrategy will try its best to forward packet to at least one interface.
+      // ForwardingStrategy will try its best to forward PDU to at least one interface.
       // If no interests was propagated, then there is not other option for forwarding or
       // ForwardingStrategy failed to find it.
       if (!propagated && pitEntry->AreAllOutgoingInVain ())
