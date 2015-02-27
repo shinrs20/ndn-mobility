@@ -72,14 +72,6 @@ NNNAddress::NNNAddress (const string &name)
       BOOST_THROW_EXCEPTION(error::NNNAddress () << error::msg("NNN address should not have more than 15 '.'"));
     }
 
-  int namesize = name.size () - dotcount;
-
-  // Check that the total size of the string is lower than 16
-  if (namesize > 16)
-    {
-      BOOST_THROW_EXCEPTION(error::NNNAddress () << error::msg("NNN address is of maximum 16 hexadecimal characters!"));
-    }
-
   // With all the basic checks done, now attempt to get the components in order
   while (i != end)
     {
