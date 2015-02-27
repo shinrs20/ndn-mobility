@@ -45,6 +45,8 @@
 #include "../nnpt/nnn-nnpt.h"
 #include "../nnpt/nnn-nnpt-entry.h"
 #include "../../helper/nnn-names-container.h"
+#include "../buffers/nnn-pdu-buffer.h"
+#include "../buffers/nnn-pdu-buffer-queue.h"
 
 namespace ll = boost::lambda;
 
