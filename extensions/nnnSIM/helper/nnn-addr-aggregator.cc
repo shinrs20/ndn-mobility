@@ -194,6 +194,32 @@ namespace ns3
 	}
     }
 
+    bool
+    NNNAddrAggregator::DestinationExists(Ptr<NNNAddress> addr)
+    {
+      Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
+      Ptr<NNNAddress> lastLabel = Create<NNNAddress> (addr->getLastLabel());
+
+      super::iterator item = super::find_exact(*sector);
+
+      if (item != super::end())
+	{
+	  Ptr<NNNAddrEntry> tmp = item->payload();
+	  if (tmp != 0)
+	    {
+	      return tmp->CompleteAddressExists(addr);
+	    }
+	  else
+	    {
+	      return false;
+	    }
+	}
+      else
+	{
+	  return false;
+	}
+    }
+
     void
     NNNAddrAggregator::Print (std::ostream &os) const
     {

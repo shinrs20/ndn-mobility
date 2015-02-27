@@ -77,6 +77,12 @@ namespace ns3
       void
       RemoveAddress (Ptr<NNNAddress> addr);
 
+      bool
+      CompleteAddressExists (Ptr<NNNAddress> addr);
+
+      bool
+      LastLabelExists (Ptr<NNNAddress> addr);
+
       trie::iterator
       to_iterator () { return item_; }
 

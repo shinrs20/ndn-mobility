@@ -77,6 +77,9 @@ namespace ns3
       void
       RemoveDestination (Ptr<NNNAddress> addr);
 
+      bool
+      DestinationExists (Ptr<NNNAddress> addr);
+
       void
       Print (std::ostream &os) const;
 

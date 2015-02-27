@@ -115,6 +115,26 @@ namespace ns3
 	}
     }
 
+    bool
+    NNNAddrEntry::CompleteAddressExists (Ptr<NNNAddress> addr)
+    {
+      Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
+      Ptr<NNNAddress> lastLabel = Create<NNNAddress> (addr->getLastLabel());
+
+      if (*m_sector == *sector)
+	{
+	  return LastLabelExists(lastLabel);
+	}
+      else
+	return false;
+    }
+
+    bool
+    NNNAddrEntry::LastLabelExists (Ptr<NNNAddress> addr)
+    {
+      return (m_addresses.find(addr) != m_addresses.end());
+    }
+
     std::ostream& operator<< (std::ostream& os, const NNNAddrEntry &entry)
     {
 
