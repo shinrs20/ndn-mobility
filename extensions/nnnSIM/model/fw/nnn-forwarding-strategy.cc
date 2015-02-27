@@ -423,6 +423,10 @@ namespace ns3 {
 	      m_outINFs(inf_o, outFace);
 	    }
 	}
+      else
+	{
+	  m_dropRENs(ren_p, face);
+	}
     }
 
     void
@@ -439,7 +443,7 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
 
       m_inINFs(inf_p, face);
-
+      // Update our NNPT with the information in the INF PDU
       m_nnpt->addEntry(inf_p->GetOldNamePtr(), inf_p->GetNewNamePtr(), inf_p->GetRemainLease());
 
       NNNAddress endSector = inf_p->GetOldNamePtr()->getSectorName();
@@ -457,6 +461,7 @@ namespace ns3 {
 
           outFace->SendINF(inf_p, destAddr);
 
+          // Log that the INF PDU was sent
           m_outINFs(inf_p, outFace);
 	}
     }
