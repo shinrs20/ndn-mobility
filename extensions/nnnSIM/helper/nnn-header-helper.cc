@@ -63,16 +63,18 @@ namespace ns3 {
 	case 2:
 	  return DO_NNN;
 	case 3:
-	  return EN_NNN;
+	  return DU_NNN;
 	case 4:
-	  return AEN_NNN;
+	  return EN_NNN;
 	case 5:
-	  return REN_NNN;
+	  return AEN_NNN;
 	case 6:
-	  return DEN_NNN;
+	  return REN_NNN;
 	case 7:
-	  return INF_NNN;
+	  return DEN_NNN;
 	case 8:
+	  return INF_NNN;
+	case 9:
 	  return MDO_NNN;
       }
 
