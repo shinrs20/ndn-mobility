@@ -44,13 +44,13 @@ namespace ns3 {
 
       // Convert the bytes to a 32 bit unsigned integer
       uint32_t retval = 0;
-      retval |= type[0];
-      retval <<= 8;
-      retval |= type[1];
+      retval |= type[3];
       retval <<= 8;
       retval |= type[2];
       retval <<= 8;
-      retval |= type[3];
+      retval |= type[1];
+      retval <<= 8;
+      retval |= type[0];
 
       NS_LOG_DEBUG (*packet);
 
