@@ -54,6 +54,16 @@ namespace ns3
       NS_LOG_INFO("Inserting " << *addr);
 
       std::pair< super::iterator, bool> result = super::insert(*addr, 0);
+
+      if (result.first != super::end ())
+	{
+	  if (result.second)
+	    {
+	      NS_LOG_INFO("New buffer for : " << *addr);
+
+	      result.first->set_payload(Create<PDUQueue> ());
+	    }
+	}
     }
 
     void
@@ -81,14 +91,17 @@ namespace ns3
     }
 
     void
-    PDUBuffer::PushPDU (Ptr<NNNAddress> addr, Ptr<SO> so_p)
+    PDUBuffer::PushSO (Ptr<NNNAddress> addr, Ptr<const SO> so_p)
     {
       NS_LOG_FUNCTION(this << *addr);
+
+      NS_LOG_INFO ("PushPDU SO Looking for " << *addr);
 
       super::iterator item = super::find_exact(*addr);
 
       if (item != super::end ())
 	{
+	  NS_LOG_INFO("PushPDU SO, found " << *addr << " inserting");
 	  Ptr<PDUQueue> tmp = item->payload();
 
 	  tmp->push(Wire::FromSO(so_p, Wire::WIRE_FORMAT_NNNSIM));
@@ -96,14 +109,17 @@ namespace ns3
     }
 
     void
-    PDUBuffer::PushPDU (Ptr<NNNAddress> addr, Ptr<DO> do_p)
+    PDUBuffer::PushDO (Ptr<NNNAddress> addr, Ptr<const DO> do_p)
     {
       NS_LOG_FUNCTION(this << *addr);
+
+      NS_LOG_INFO ("PushPDU DO Looking for " << *addr);
 
       super::iterator item = super::find_exact(*addr);
 
       if (item != super::end ())
 	{
+	  NS_LOG_INFO("PushPDU DO, found " << *addr << " inserting");
 	  Ptr<PDUQueue> tmp = item->payload();
 
 	  tmp->push(Wire::FromDO(do_p, Wire::WIRE_FORMAT_NNNSIM));
@@ -111,14 +127,17 @@ namespace ns3
     }
 
     void
-    PDUBuffer::PushPDU (Ptr<NNNAddress> addr, Ptr<DU> du_p)
+    PDUBuffer::PushDU (Ptr<NNNAddress> addr, Ptr<const DU> du_p)
     {
       NS_LOG_FUNCTION(this << *addr);
+
+      NS_LOG_INFO ("PushPDU DU Looking for " << *addr);
 
       super::iterator item = super::find_exact(*addr);
 
       if (item != super::end ())
 	{
+	  NS_LOG_INFO("PushPDU DU, found " << *addr << " inserting ToWire " << *du_p);
 	  Ptr<PDUQueue> tmp = item->payload();
 
 	  tmp->push(Wire::FromDU(du_p, Wire::WIRE_FORMAT_NNNSIM));
@@ -130,6 +149,8 @@ namespace ns3
     {
       NS_LOG_FUNCTION(this << *addr);
 
+      NS_LOG_INFO ("Looking for " << *addr);
+
       super::iterator item = super::find_exact(*addr);
 
       std::queue<Ptr<Packet> > empty;
@@ -138,10 +159,44 @@ namespace ns3
 	return empty;
       else
 	{
+	  NS_LOG_INFO("Found 3N name " << *addr);
 	  if (item->payload() == 0)
-	    return empty;
+	    {
+	      NS_LOG_INFO("No info found");
+	      return empty;
+	    }
 	  else
-	    return item->payload()->popQueue ();
+	    {
+	      NS_LOG_INFO("Found info, obtaining queue");
+	      return item->payload()->popQueue();
+	    }
+	}
+    }
+
+    uint
+    PDUBuffer::QueueSize (Ptr<NNNAddress> addr)
+    {
+      NS_LOG_FUNCTION(this << *addr);
+
+      NS_LOG_INFO ("Looking for " << *addr);
+
+      super::iterator item = super::find_exact(*addr);
+
+      if (item == super::end ())
+	return 0;
+      else
+	{
+	  NS_LOG_INFO("Found 3N name " << *addr);
+	  if (item->payload() == 0)
+	    {
+	      NS_LOG_INFO("No info found");
+	      return 0;
+	    }
+	  else
+	    {
+	      NS_LOG_INFO("Found info, obtaining queue");
+	      return item->payload()->size ();
+	    }
 	}
     }
   } /* namespace nnn */

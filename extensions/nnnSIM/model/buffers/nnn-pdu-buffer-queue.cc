@@ -68,5 +68,11 @@ namespace ns3
       return buffer;
     }
 
+    uint
+    PDUQueue::size ()
+    {
+      return buffer.size();
+    }
+
   } /* namespace nnn */
 } /* namespace ns3 */

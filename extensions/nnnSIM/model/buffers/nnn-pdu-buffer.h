@@ -68,16 +68,19 @@ namespace ns3
       DestinationExists (Ptr<NNNAddress> addr);
 
       void
-      PushPDU (Ptr<NNNAddress> addr, Ptr<SO> so_p);
+      PushSO (Ptr<NNNAddress> addr, Ptr<const SO> so_p);
 
       void
-      PushPDU (Ptr<NNNAddress> addr, Ptr<DO> do_p);
+      PushDO (Ptr<NNNAddress> addr, Ptr<const DO> do_p);
 
       void
-      PushPDU (Ptr<NNNAddress> addr, Ptr<DU> du_p);
+      PushDU (Ptr<NNNAddress> addr, Ptr<const DU> du_p);
 
       std::queue<Ptr<Packet> >
       PopQueue (Ptr<NNNAddress> addr);
+
+      uint
+      QueueSize (Ptr<NNNAddress> addr);
     };
 
     std::ostream& operator<< (std::ostream& os, const PDUBuffer &buffer);

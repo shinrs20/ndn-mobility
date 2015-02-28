@@ -81,37 +81,6 @@ int main (int argc, char *argv[])
 
   std::cout << std::endl << "Before" << std::endl << *source2 << std::endl;
 
-  packet = wire::nnnSIM::DO::ToWire(source2);
-
-  // Test EN packet serialization
-  Ptr<nnn::EN> source3 = Create<nnn::EN> ();
-
-  source3->AddPoa(n1_mac00.operator ns3::Address());
-  source3->SetLifetime(ttl);
-
-  packet = wire::nnnSIM::EN::ToWire(source3);
-
-  // Test INF packet serialization
-  Ptr<nnn::INF> source4 = Create<nnn::INF> ();
-
-  source4->SetLifetime(ttl);
-  source4->SetOldName(addr);
-  source4->SetNewName(addr2);
-  source4->SetRemainLease(release);
-
-  packet = wire::nnnSIM::INF::ToWire(source4);
-
-  // Test REN packet serialization
-  Ptr<nnn::REN> source5 = Create<nnn::REN> ();
-
-  source5->SetLifetime(ttl);
-  source5->SetName(addr);
-  source5->SetRemainLease(release);
-  source5->AddPoa(n1_mac00.operator ns3::Address());
-  source5->AddPoa(n1_mac01.operator ns3::Address());
-
-  packet = wire::nnnSIM::REN::ToWire(source5);
-
   // Test SO packet serialization
   Ptr<nnn::SO> source6 = Create<nnn::SO> ();
 
@@ -123,7 +92,6 @@ int main (int argc, char *argv[])
   std::cout << std::endl << "Before" << std::endl << *source6 << std::endl;
 
   packet = wire::nnnSIM::SO::ToWire(source6);
-
 
   // Test DU packet serialization
   Ptr<nnn::DU> source8 = Create<nnn::DU> ();
@@ -140,23 +108,51 @@ int main (int argc, char *argv[])
 
   Ptr<PDUBuffer> buf= Create<PDUBuffer> ();
 
+  std::cout << "Queue size for " << *addr << ": " << buf->QueueSize(addr) << std::endl;
+
   std::cout << "############################ QUEUE ########################" << std::endl;
 
   buf->AddDestination(addr);
+  buf->AddDestination(addr2);
+  buf->AddDestination(addr3);
 
-  buf->PushPDU(addr, source8);
-  buf->PushPDU(addr, source6);
-  buf->PushPDU(addr, source2);
+  std::cout << "Push DU" << std::endl;
+  buf->PushDU(addr, source8);
+  buf->PushDU(addr2, source8);
+  std::cout << "Push DO" << std::endl;
+  buf->PushDO(addr, source2);
+  buf->PushDO(addr3, source2);
+  std::cout << "Push SO" << std::endl;
+  buf->PushSO(addr, source6);
+  buf->PushSO(addr3, source6);
+
+  std::cout << "Queue size for " << *addr << " after pushes : " << buf->QueueSize(addr) << std::endl;
+  std::cout << "Queue size for " << *addr2 << " after pushes : " << buf->QueueSize(addr2) << std::endl;
+  std::cout << "Queue size for " << *addr3 << " after pushes : " << buf->QueueSize(addr3) << std::endl;
+
+  buf->RemoveDestination(addr3);
+
+  if (!buf->DestinationExists(addr3))
+    std::cout << "Queue for " << *addr3 << " doesn't exist!" << std::endl;
 
   std::queue<Ptr<Packet> > tmp = buf->PopQueue(addr);
+  std::cout << "Queue size for " << *addr << " received " << tmp.size () << std::endl;
+
+  std::queue<Ptr<Packet> > tmp4 = buf->PopQueue(addr2);
+  std::cout << "Queue size for " << *addr2 << " received " << tmp4.size () << std::endl;
+
+  std::queue<Ptr<Packet> > tmp3 = buf->PopQueue(addr3);
+  std::cout << "Queue size for " << *addr3 << " received " << tmp3.size () << std::endl;
 
   Ptr<nnn::SO> target6;
   Ptr<nnn::DO> target2;
   Ptr<nnn::DU> target8;
 
-  while (! tmp.empty())
+  std::cout << "---- Dealing with queue for " << *addr << std::endl;
+  while (!tmp.empty())
     {
       Ptr<Packet> tmp2 = tmp.front ();
+
       switch (HeaderHelper::GetNNNHeaderType(tmp2))
       {
 	case SO_NNN:
@@ -176,4 +172,29 @@ int main (int argc, char *argv[])
       }
       tmp.pop ();
     }
+
+  std::cout << "---- Dealing with queue for " << *addr2 << std::endl;
+    while (!tmp4.empty())
+      {
+        Ptr<Packet> tmp2 = tmp4.front ();
+
+        switch (HeaderHelper::GetNNNHeaderType(tmp2))
+        {
+  	case SO_NNN:
+  	  target6 = wire::nnnSIM::SO::FromWire(tmp2);
+  	  std::cout << std::endl << "After " << std::endl << *target6 << std::endl;
+  	  break;
+  	case DO_NNN:
+  	  target2 = wire::nnnSIM::DO::FromWire(tmp2);
+  	  std::cout << std::endl << "After " << std::endl << *target2 << std::endl;
+  	  break;
+  	case DU_NNN:
+  	  target8 = wire::nnnSIM::DU::FromWire(tmp2);
+  	  std::cout << std::endl << "After " << std::endl << *target8 << std::endl;
+  	  break;
+  	default:
+  	  std::cout << "Something unexpected happened" << std::endl;
+        }
+        tmp4.pop ();
+      }
 }

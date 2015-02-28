@@ -51,6 +51,9 @@ namespace ns3
       std::queue<Ptr<Packet> >
       popQueue ();
 
+      uint
+      size ();
+
     private:
       std::queue<Ptr<Packet> > buffer;
     };
