@@ -24,6 +24,7 @@
 #define TRIE_WITH_POLICY_H_
 
 #include "trie.h"
+#include "../../model/nnn-naming.h"
 
 namespace ns3 {
   namespace nnn {

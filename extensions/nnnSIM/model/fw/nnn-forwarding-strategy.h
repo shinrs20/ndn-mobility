@@ -37,6 +37,10 @@
 #include "../fib/nnn-fib.h"
 #include "../pit/nnn-pit.h"
 
+#include "../../utils/trie/trie.h"
+#include "../../utils/trie/counting-policy.h"
+#include "../../utils/trie/trie-with-policy.h"
+
 namespace ns3 {
   namespace nnn {
 
@@ -83,6 +87,8 @@ namespace ns3 {
 
     class NNNAddress;
 
+    class PDUBuffer;
+
     //class NNSTFaceMetric;
 
     /**
@@ -124,6 +130,9 @@ namespace ns3 {
 
       virtual bool
       Has3NName ();
+
+      virtual void
+      flushBuffer (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName);
 
       /**
        * \brief Actual processing of incoming Nnn content objects
@@ -594,6 +603,8 @@ namespace ns3 {
 
       Ptr<NamesContainer> m_node_names; ///< \brief 3N names container for personal names
       Ptr<NamesContainer> m_leased_names; ///< \brief 3N names container for node leased names
+
+      Ptr<PDUBuffer> m_node_pdu_buffer; /// <\brief Buffer for Node using forwarding strategy
 
       Ptr<Pit> m_pit; ///< \brief Reference to PIT to which this forwarding strategy is associated
       Ptr<Fib> m_fib; ///< \brief Reference to FIB to which this forwarding strategy is associated

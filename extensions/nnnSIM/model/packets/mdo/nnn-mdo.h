@@ -24,11 +24,11 @@
 #include <ns3-dev/ns3/simple-ref-count.h>
 
 #include "../nnn-packet.h"
-#include "../utils/nnn-addr-entry.h"
 #include "../../naming/nnn-address.h"
 #include "../../../utils/trie/trie.h"
 #include "../../../utils/trie/counting-policy.h"
 #include "../../../utils/trie/trie-with-policy.h"
+#include "../utils/nnn-addr-entry.h"
 
 namespace ns3
 {

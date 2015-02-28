@@ -223,6 +223,9 @@ public:
   ///// Static helpers to convert name component to appropriate value
   /////
 
+  NNNAddress
+  getName () const;
+
   /*
    * @brief Obtain an address minus the ending component
    */

@@ -42,10 +42,10 @@ namespace ns3
         }
       };
 
-      typedef nnnSIM::trie_with_policy<
+      typedef ns3::nnn::nnnSIM::trie_with_policy<
 	  NNNAddress,
-	  nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
-	  nnnSIM::counting_policy_traits
+	  ns3::nnn::nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
+	  ns3::nnn::nnnSIM::counting_policy_traits
       > trie;
 
       NNNAddrEntry ();

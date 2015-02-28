@@ -152,6 +152,20 @@ NNNAddress::operator= (const NNNAddress &other)
 }
 
 NNNAddress
+NNNAddress::getName () const
+{
+  if (isEmpty()) {
+      return NNNAddress ();
+  } else
+    {
+      // Copy the old name
+      std::vector<name::Component> sectorName (m_address_comp);
+
+      return NNNAddress (sectorName);
+    }
+}
+
+NNNAddress
 NNNAddress::getSectorName () const
 {
   if (isEmpty()) {

@@ -48,6 +48,8 @@
 #include "../buffers/nnn-pdu-buffer.h"
 #include "../buffers/nnn-pdu-buffer-queue.h"
 
+#include "../../helper/nnn-header-helper.h"
+
 namespace ll = boost::lambda;
 
 // Max label, which is a really the maximum unsigned int
@@ -281,6 +283,103 @@ namespace ns3 {
     }
 
     void
+    ForwardingStrategy::flushBuffer(Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName)
+    {
+      NS_LOG_FUNCTION (this << *oldName << " to " << *newName);
+      if (m_node_pdu_buffer->DestinationExists(oldName))
+	{
+	  // The actual queue
+	  std::queue<Ptr<Packet> > addrQueue = m_node_pdu_buffer->PopQueue(oldName);
+
+	  // Dummy Pointers to the PDU types
+	  Ptr<DO> do_o_orig;
+	  Ptr<SO> so_o_orig;
+	  Ptr<DU> du_o_orig;
+
+	  std::pair<Ptr<Face>, Address> closestSector;
+
+	  Ptr<Face> outFace;
+	  Address destAddr;
+
+	  while (!addrQueue.empty())
+	    {
+	      // Get the PDU at the front of the queue
+	      Ptr<Packet> queuePDU = addrQueue.front();
+
+	      switch(HeaderHelper::GetNNNHeaderType(queuePDU))
+	      {
+		case SO_NNN:
+		  // Convert the Packet back to a SO for manipulation
+		  so_o_orig = wire::nnnSIM::SO::FromWire(queuePDU);
+
+		  // Renew the SO lifetime
+		  so_o_orig->SetLifetime(Seconds(2));
+		  // Change the SO 3N name to the new name
+		  so_o_orig->SetName(newName);
+
+		  //
+		  // I will have to define a particular routing method for SO PDUs
+		  // in this area.
+		  //
+		  break;
+		case DO_NNN:
+		  // Convert the Packet back to a DO for manipulation
+		  do_o_orig = wire::nnnSIM::DO::FromWire(queuePDU);
+
+		  // Renew the DO lifetime
+		  do_o_orig->SetLifetime(Seconds(2));
+		  // Change the DO 3N name to the new name
+		  do_o_orig->SetName(newName);
+
+		  // Find where to send the SO
+		  closestSector = m_nnst->ClosestSectorFaceInfo(newName);
+
+		  outFace = closestSector.first;
+		  destAddr = closestSector.second;
+
+		  // Send the created DO PDU
+		  outFace->SendDO(do_o_orig, destAddr);
+		  // Log the DO sending
+		  m_outDOs(do_o_orig, outFace);
+		  break;
+		case DU_NNN:
+		  // Convert the Packet back to a DU for manipulation
+		  du_o_orig = wire::nnnSIM::DU::FromWire(queuePDU);
+
+		  // Renew the DU lifetime
+		  du_o_orig->SetLifetime(Seconds(2));
+
+		  // Change the DU 3N names to the new names if necessary
+		  if (du_o_orig->GetDstName() == *oldName)
+		    du_o_orig->SetDstName(newName);
+
+		  if (du_o_orig->GetSrcName() == *oldName)
+		    du_o_orig->SetSrcName(newName);
+
+		  // Find where to send the DU
+		  closestSector = m_nnst->ClosestSectorFaceInfo(du_o_orig->GetDstNamePtr());
+
+		  outFace = closestSector.first;
+		  destAddr = closestSector.second;
+
+		  // Send the created DU PDU
+		  outFace->SendDU(du_o_orig, destAddr);
+		  // Log the DU sending
+		  m_outDUs(du_o_orig, outFace);
+		  break;
+		default:
+		  NS_LOG_INFO("flushBuffer obtained unknown PDU");
+	      }
+	      // Pop the queue and continue
+	      addrQueue.pop ();
+	    }
+
+	  // Make sure we delete the entry for oldName in the buffer
+	  m_node_pdu_buffer->RemoveDestination(oldName);
+	}
+    }
+
+    void
     ForwardingStrategy::OnEN (Ptr<Face> face, Ptr<EN> en_p)
     {
       NS_LOG_FUNCTION (this);
@@ -445,11 +544,18 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
 
       m_inINFs(inf_p, face);
+
       // Update our NNPT with the information in the INF PDU
       m_nnpt->addEntry(inf_p->GetOldNamePtr(), inf_p->GetNewNamePtr(), inf_p->GetRemainLease());
 
       NNNAddress endSector = inf_p->GetOldNamePtr()->getSectorName();
       NNNAddress myAddr = GetNode3NName ();
+
+      Ptr<NNNAddress> oldName = Create<NNNAddress> (inf_p->GetOldName());
+      Ptr<NNNAddress> newName = Create<NNNAddress> (inf_p->GetNewName());
+
+      // We have inserted the INF information. Now flush the relevant buffer
+      flushBuffer(oldName, newName);
 
       if (myAddr != endSector)
 	{
