@@ -18,7 +18,11 @@
  *
  */
 
+#include <ns3-dev/ns3/log.h>
+
 #include "nnn-addr-entry.h"
+
+NS_LOG_COMPONENT_DEFINE("nnn.AddrEntry");
 
 namespace ns3
 {
@@ -64,6 +68,7 @@ namespace ns3
     std::vector<Ptr<NNNAddress> >
     NNNAddrEntry::GetAddresses () const
     {
+      NS_LOG_FUNCTION(this);
       std::vector<Ptr<NNNAddress> > addr;
 
       std::set<Ptr<NNNAddress>, PtrNNNComp>::iterator it;
@@ -79,6 +84,7 @@ namespace ns3
     std::vector<Ptr<NNNAddress> >
     NNNAddrEntry::GetCompleteAddresses () const
     {
+      NS_LOG_FUNCTION(this);
       std::vector<Ptr<NNNAddress> > compAddr;
 
       std::set<Ptr<NNNAddress>, PtrNNNComp>::iterator it;
@@ -95,6 +101,7 @@ namespace ns3
     void
     NNNAddrEntry::AddAddress (Ptr<NNNAddress> addr)
     {
+      NS_LOG_FUNCTION(this);
       if (addr->isOneLabel ())
 	{
 	  m_addresses.insert(addr);
@@ -105,11 +112,16 @@ namespace ns3
     void
     NNNAddrEntry::RemoveAddress (Ptr<NNNAddress> addr)
     {
+      NS_LOG_FUNCTION(this << *addr);
       Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
       Ptr<NNNAddress> lastlabel = Create<NNNAddress> (addr->getLastLabel());
 
-      if (*m_sector == *sector)
+      NS_LOG_INFO("Removing " << *addr << " sector: " << *sector << " last label: " << *lastlabel);
+      NS_LOG_INFO("Comparing \"" << *m_sector << "\" and \"" << *sector << "\"");
+
+      if (m_sector->getName() == sector->getName())
 	{
+	  NS_LOG_INFO ("Sectors coincide, executing deletion of " << *lastlabel);
 	  m_addresses.erase(lastlabel);
 	  m_totaladdr--;
 	}
@@ -118,10 +130,11 @@ namespace ns3
     bool
     NNNAddrEntry::CompleteAddressExists (Ptr<NNNAddress> addr)
     {
+      NS_LOG_FUNCTION(this);
       Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
       Ptr<NNNAddress> lastLabel = Create<NNNAddress> (addr->getLastLabel());
 
-      if (*m_sector == *sector)
+      if (m_sector->getName() == sector->getName())
 	{
 	  return LastLabelExists(lastLabel);
 	}
@@ -132,6 +145,7 @@ namespace ns3
     bool
     NNNAddrEntry::LastLabelExists (Ptr<NNNAddress> addr)
     {
+      NS_LOG_FUNCTION(this);
       return (m_addresses.find(addr) != m_addresses.end());
     }
 

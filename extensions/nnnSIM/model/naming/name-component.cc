@@ -112,10 +112,17 @@ namespace name {
   Component &
   Component::fromNumber (uint64_t number)
   {
-    while (number > 0)
+    if (number == 0)
       {
-	this->push_back (static_cast<unsigned char> (number & 0xFF));
-	number >>= 8;
+	this->push_back(static_cast<unsigned char> (number &0xFF));
+      }
+    else
+      {
+	while (number > 0)
+	  {
+	    this->push_back (static_cast<unsigned char> (number & 0xFF));
+	    number >>= 8;
+	  }
       }
     std::reverse (this->begin (), this->end ());
     return *this;

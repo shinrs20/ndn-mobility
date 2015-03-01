@@ -149,9 +149,13 @@ int main (int argc, char *argv[])
 	NNNAddress higherSub ("ae.35");
 
 	NNNAddress maxTest = maxd + lowerStart;
+	NNNAddress maxTest2 = lowerStart + maxd;
 
 	cout << "Max append test: " << maxd << " + " << lowerStart << endl;
 	cout << "Max append test result: " << maxTest << endl;
+
+	cout << "Max append test: " << lowerStart << " + " << maxd << endl;
+	cout << "Max append test result: " << maxTest2 << endl;
 
 	cout << "Working address is: " << working << endl;
 

@@ -229,6 +229,14 @@ NNNAddress::compare (const NNNAddress &name) const
 int
 NNNAddress::compareLabels(const NNNAddress & name) const
 {
+  // Extreme case of empty labels
+  if (this->isEmpty() && name.isEmpty())
+    return 0;
+  else if (this->isEmpty() && !name.isEmpty())
+    return -1;
+  else if (!this->isEmpty() && name.isEmpty ())
+    return 1;
+
   NNNAddress::const_iterator i = this->begin ();
   NNNAddress::const_iterator j = name.begin ();
 

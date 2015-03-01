@@ -497,7 +497,7 @@ NNNAddress::append (Iterator begin, Iterator end)
 NNNAddress &
 NNNAddress::append (const NNNAddress &comp)
 {
-  if (size() + comp.size() < MAXCOMP)
+  if (size() + comp.size() <= MAXCOMP)
     {
       if (this == &comp)
 	{

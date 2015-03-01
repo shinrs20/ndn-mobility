@@ -69,6 +69,7 @@ namespace ns3
     std::vector<Ptr<NNNAddress> >
     NNNAddrAggregator::GetDestinations (Ptr<NNNAddress> sector)
     {
+      NS_LOG_FUNCTION(this << *sector);
       super::iterator item = super::find_exact(*sector);
 
       if (item == super::end ())
@@ -85,6 +86,7 @@ namespace ns3
     std::vector<Ptr<NNNAddress> >
     NNNAddrAggregator::GetCompleteDestinations (Ptr<NNNAddress> sector)
     {
+      NS_LOG_FUNCTION(this << *sector);
       super::iterator item = super::find_exact(*sector);
 
       if (item == super::end ())
@@ -101,6 +103,7 @@ namespace ns3
     std::vector<Ptr<NNNAddress> >
     NNNAddrAggregator::GetDistinctDestinations() const
     {
+      NS_LOG_FUNCTION(this);
       std::vector<Ptr<NNNAddress> > distinct;
       Ptr<const NNNAddrEntry> tmp;
 
@@ -115,6 +118,7 @@ namespace ns3
     std::vector<Ptr<NNNAddress> >
     NNNAddrAggregator::GetTotalDestinations () const
     {
+      NS_LOG_FUNCTION(this);
       std::vector<Ptr<NNNAddress> > distinct;
       Ptr<const NNNAddrEntry> tmp;
 
@@ -143,7 +147,7 @@ namespace ns3
 	{
 	  if (result.second)
 	    {
-	      NS_LOG_INFO("New position sector: " << *sector << " lastlabel: " << *lastlabel);
+	      NS_LOG_INFO("New position sector: " << *sector << " Adding label: " << *lastlabel);
 	      Ptr<NNNAddrEntry> newEntry = Create<NNNAddrEntry> ();
 
 	      newEntry->SetSector(sector);
@@ -157,7 +161,7 @@ namespace ns3
 	    }
 	  else
 	    {
-	      NS_LOG_INFO("Sector already present: " << *sector << " lastlabel: " << *lastlabel);
+	      NS_LOG_INFO("Sector already present: " << *sector << " Adding label: " << *lastlabel);
 	      Ptr<NNNAddress> apparent = result.first->payload()->GetSector();
 	      NS_LOG_INFO("Testing against sector: " << *apparent);
 
@@ -174,8 +178,14 @@ namespace ns3
     void
     NNNAddrAggregator::RemoveDestination(Ptr<NNNAddress> addr)
     {
+      NS_LOG_FUNCTION(this << *addr);
+
+      NS_LOG_INFO("Removing " << *addr);
+
       Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
       Ptr<NNNAddress> lastlabel = Create<NNNAddress> (addr->getLastLabel());
+
+      NS_LOG_INFO("Looking for sector: " << *sector << " label: " << *lastlabel);
 
       super::iterator item = super::find_exact(*sector);
 
@@ -184,11 +194,15 @@ namespace ns3
 	  Ptr<NNNAddrEntry> tmp = item->payload();
 	  if (tmp != 0)
 	    {
+	      NS_LOG_INFO("First removing the address: " << *addr);
 	      tmp->RemoveAddress(addr);
 	    }
 
+	  NS_LOG_INFO("Testing to see if we need to delete the branch for " << *addr);
+
 	  if (tmp->GetNumAddresses () < 1)
 	    {
+	      NS_LOG_INFO("Leaf for: " << *addr << " has been left with no entries, deleting");
 	      super::erase(item);
 	    }
 	}
@@ -197,6 +211,7 @@ namespace ns3
     bool
     NNNAddrAggregator::DestinationExists(Ptr<NNNAddress> addr)
     {
+      NS_LOG_FUNCTION(this << *addr);
       Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
       Ptr<NNNAddress> lastLabel = Create<NNNAddress> (addr->getLastLabel());
 
