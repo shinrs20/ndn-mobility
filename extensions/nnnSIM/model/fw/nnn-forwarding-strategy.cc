@@ -499,6 +499,10 @@ namespace ns3 {
 	  // Regardless of the name, we need to update the NNPT
 	  m_nnpt->addEntry(reenroll, produced3Nname, remaining);
 
+	  // If we happen to be in the same subsector, the buffer will have something
+	  // the check is good practice
+	  flushBuffer(reenroll, produced3Nname);
+
 	  // Check if the Node was in our subsector
 	  if (! reenroll->isSubSector(myAddr))
 	    {
@@ -536,6 +540,38 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
 
       m_inDENs(den_p, face);
+
+      NNNAddress myAddr = GetNode3NName ();
+      Ptr<NNNAddress> leavingAddr = Create<NNNAddress> (den_p->GetNamePtr()->getName());
+
+      NS_LOG_INFO("We are in " << myAddr << ", " << *leavingAddr << " is leaving");
+
+      // We know the node sending the DEN is moving. His lease time will be maintained
+      // All we need to do is tell the buffer to keep the packets to that destination
+      m_node_pdu_buffer->AddDestination(leavingAddr);
+
+      // If the DEN packet arrives at a node that is less than 2 hops away, then we
+      // forward the DEN packet to the parent of this node
+      if (leavingAddr->distance(myAddr) <= 2 && leavingAddr->isSubSector(myAddr))
+	{
+	  // Now we forward the DEN information to the higher hierarchical nodes
+	  std::vector<std::pair<Ptr<Face>, Address> > hierarchicalFaces = m_nnst->OneHopParentSectorFaceInfo(myAddr);
+	  std::vector<std::pair<Ptr<Face>, Address> >::iterator it;
+
+	  Ptr<Face> outFace;
+	  Address destAddr;
+
+	  for (it = hierarchicalFaces.begin(); it != hierarchicalFaces.end (); ++it)
+	    {
+	      outFace = it->first;
+	      destAddr = it->second;
+
+	      outFace->SendDEN(den_p, destAddr);
+
+	      // Log that the DEN PDU was sent
+	      m_outDENs(den_p, outFace);
+	    }
+	}
     }
 
     void
