@@ -234,6 +234,12 @@ namespace ns3 {
       virtual void
       OnMDO (Ptr<Face> face, Ptr<MDO> mdo_p);
 
+      virtual Ptr<pit::Entry>
+      ProcessInterest (Ptr<Face> face, Ptr<ndn::Interest> interest, Ptr<NNNAddress> addr);
+
+      virtual Ptr<pit::Entry>
+      ProcessData (Ptr<Face> face, Ptr<ndn::Data> data);
+
       /**
        * @brief Event fired just before PIT entry is removed by timeout
        * @param pitEntry PIT entry to be removed

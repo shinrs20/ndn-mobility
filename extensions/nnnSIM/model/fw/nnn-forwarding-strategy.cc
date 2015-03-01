@@ -35,6 +35,14 @@
 #include <ns3-dev/ns3/simulator.h>
 #include <ns3-dev/ns3/string.h>
 
+// ndnSIM - NDN data
+#include <ns3-dev/ns3/name.h>
+#include <ns3-dev/ns3/ndn-data.h>
+#include <ns3-dev/ns3/ndn-interest.h>
+#include <ns3-dev/ns3/ndn-wire.h>
+#include <ns3-dev/ns3/ndn-header-helper.h>
+
+// nnnSIM - 3N data
 #include "nnn-forwarding-strategy.h"
 #include "../nnn-face.h"
 #include "../nnn-naming.h"
@@ -616,6 +624,125 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
 
       m_inNULLps(null_p, face);
+
+      // This PDU doesn't involve any 3N mechanisms, thus will act like ICN
+      // Must separate Interests from Data.
+
+      //Give us a rw copy of the packet
+      Ptr<Packet> icn_pdu = null_p->GetPayload ()->Copy ();
+
+      bool receivedInterest =false;
+      bool receivedData = false;
+      Ptr<ndn::Interest> interest;
+      Ptr<ndn::Data> data;
+      Ptr<ndn::Data> contentObject;
+
+      try {
+	  ndn::HeaderHelper::Type ndnType = ndn::HeaderHelper::GetNdnHeaderType(icn_pdu);
+	  switch (ndnType)
+	  {
+	    case ndn::HeaderHelper::INTEREST_NDNSIM:
+	      interest = ndn::Wire::ToInterest (icn_pdu, ndn::Wire::WIRE_FORMAT_NDNSIM);
+	      receivedInterest = true;
+	      break;
+	    case ndn::HeaderHelper::INTEREST_CCNB:
+	      interest = ndn::Wire::ToInterest (icn_pdu, ndn::Wire::WIRE_FORMAT_CCNB);
+	      receivedInterest = true;
+	      break;
+	    case ndn::HeaderHelper::CONTENT_OBJECT_NDNSIM:
+	      data = ndn::Wire::ToData (icn_pdu, ndn::Wire::WIRE_FORMAT_NDNSIM);
+	      receivedData = true;
+	      break;
+	    case ndn::HeaderHelper::CONTENT_OBJECT_CCNB:
+	      data = ndn::Wire::ToData (icn_pdu, ndn::Wire::WIRE_FORMAT_CCNB);
+	      receivedData = true;
+	      break;
+	    default:
+	      NS_FATAL_ERROR ("Not supported NDN header");
+	  }
+      }
+      catch (ndn::UnknownHeaderException)
+      {
+	  NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
+      }
+
+      Ptr<pit::Entry> pitEntry;
+
+      // If the PDU is an Interest
+      if (receivedInterest)
+	{
+	  bool similarInterest = true;
+	   pitEntry = ProcessInterest(face, interest, Create<NNNAddress> ());
+	   if (pitEntry == 0)
+	     {
+	       similarInterest = false;
+	     }
+
+	   bool isDuplicated = true;
+	   if (!pitEntry->IsNonceSeen (interest->GetNonce ()))
+	     {
+	       pitEntry->AddSeenNonce (interest->GetNonce ());
+	       isDuplicated = false;
+	     }
+
+	   if (isDuplicated)
+	     {
+	       DidReceiveDuplicateInterest (face, interest, pitEntry);
+	       return;
+	     }
+
+	   contentObject = m_contentStore->Lookup (interest);
+	   if (contentObject != 0)
+	     {
+	       pitEntry->AddIncoming (face/*, Seconds (1.0)*/);
+
+	       // Do data plane performance measurements
+	       WillSatisfyPendingInterest (0, pitEntry);
+
+	       // Actually satisfy pending interest
+	       SatisfyPendingInterest (0, contentObject, pitEntry);
+	       return;
+	     }
+
+	   if (similarInterest && ShouldSuppressIncomingInterest (face, interest, pitEntry))
+	     {
+	       pitEntry->AddIncoming (face/*, interest->GetInterestLifetime ()*/);
+	       // update PIT entry lifetime
+	       pitEntry->UpdateLifetime (interest->GetInterestLifetime ());
+
+	       // Suppress this interest if we're still expecting data from some other face
+	       NS_LOG_DEBUG ("Suppress interests");
+	       m_dropInterests (interest, face);
+
+	       DidSuppressSimilarInterest (face, interest, pitEntry);
+	       return;
+	     }
+
+	   if (similarInterest)
+	     {
+	       DidForwardSimilarInterest (face, interest, pitEntry);
+	     }
+
+	   PropagateInterest (face, interest, pitEntry);
+	}
+
+      // If the PDU is Data
+      if (receivedData)
+	{
+	  pitEntry = ProcessData(face, data);
+
+	  while (pitEntry != 0)
+	    {
+	      // Do data plane performance measurements
+	      WillSatisfyPendingInterest (face, pitEntry);
+
+	      // Actually satisfy pending interest
+	      SatisfyPendingInterest (face, data, pitEntry);
+
+	      // Lookup another PIT entry
+	      pitEntry = m_pit->Lookup (*data);
+	    }
+	}
     }
 
     void
@@ -648,6 +775,67 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
 
       m_inMDOs(mdo_p, face);
+    }
+
+    Ptr<pit::Entry>
+    ForwardingStrategy::ProcessInterest (Ptr<Face> face, Ptr<ndn::Interest> interest, Ptr<NNNAddress> addr)
+    {
+      NS_LOG_FUNCTION (face << interest->GetName () << addr->getName ());
+      // Log the Interest PDU
+      m_inInterests (interest, face);
+
+      // Search for the PIT with the interest
+      Ptr<pit::Entry> pitEntry = m_pit->Lookup (*interest);
+      if (pitEntry == 0)
+	{
+	  // Check if the 3N name is empty (distinguishes NULL PDUs from the rest)
+	  if (addr->isEmpty())
+	    pitEntry = m_pit->Create (interest);
+	  else
+	    pitEntry = 0;
+
+	  // Call the relevant functions to do other things if necessary
+	  if (pitEntry != 0)
+	    {
+	      DidCreatePitEntry (face, interest, pitEntry);
+	    }
+	  else
+	    {
+	      FailedToCreatePitEntry (face, interest);
+	      return 0;
+	    }
+	}
+
+      return pitEntry;
+    }
+
+    Ptr<pit::Entry>
+    ForwardingStrategy::ProcessData (Ptr<Face> face, Ptr<ndn::Data> data)
+    {
+      NS_LOG_FUNCTION (face << data->GetName ());
+      // Log the Interest PDU
+      m_inData (data, face);
+
+      // Lookup PIT entry
+      Ptr<pit::Entry> pitEntry = m_pit->Lookup (*data);
+
+      // Using 3N, we allow all data to be cached - will probably need to be discussed
+      if (pitEntry != 0)
+	{
+	  // Add to content store
+	  m_contentStore->Add (data);
+	  // Log that this node actually asked for this data
+	  DidReceiveSolicitedData (face, data, true);
+	}
+      else
+	{
+	  // Add to content store
+	  m_contentStore->Add (data);
+	  // Log that this node is proactively caching this data
+	  DidReceiveUnsolicitedData (face, data, true);
+	}
+
+      return pitEntry;
     }
 
     void
