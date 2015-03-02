@@ -80,6 +80,9 @@ namespace ns3
       bool
       DestinationExists (Ptr<NNNAddress> addr);
 
+      bool
+      isEmpty ();
+
       void
       Print (std::ostream &os) const;
 

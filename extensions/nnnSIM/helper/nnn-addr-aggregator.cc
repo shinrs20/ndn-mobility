@@ -235,6 +235,12 @@ namespace ns3
 	}
     }
 
+    bool
+    NNNAddrAggregator::isEmpty()
+    {
+      return (m_totaladdr == 0);
+    }
+
     void
     NNNAddrAggregator::Print (std::ostream &os) const
     {

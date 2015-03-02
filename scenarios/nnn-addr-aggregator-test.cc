@@ -41,6 +41,9 @@ int main (int argc, char *argv[])
 
   Ptr<NNNAddrAggregator> aggregation = Create<NNNAddrAggregator> ();
 
+  if (aggregation->isEmpty())
+    std::cout << "Aggregation is currently empty!" << std::endl;
+
   std::cout << "--Testing aggregator " << std::endl;
   std::cout << "Aggregator reports total addresses: " << aggregation->GetNumTotalDestinations() << std::endl;
   std::cout << "Aggregator report total addresses destinations: " << aggregation->GetNumDistinctDestinations()<< std::endl;
@@ -84,6 +87,9 @@ int main (int argc, char *argv[])
   aggregation->RemoveDestination(addr04);
   std::cout << "Trying to remove " << *addr05 << std::endl;
   aggregation->RemoveDestination(addr05);
+
+  if (!aggregation->isEmpty())
+     std::cout << "Aggregation is currently not empty!" << std::endl;
 
   std::cout << "--Printing resulting aggregator" << std::endl;
   std::cout << "Aggregator reports total addresses: " << aggregation->GetNumTotalDestinations() << std::endl;
