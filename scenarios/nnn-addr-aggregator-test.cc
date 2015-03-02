@@ -34,6 +34,10 @@ int main (int argc, char *argv[])
   Ptr<NNNAddress> addr04 = Create<NNNAddress> ("ae.4");
   Ptr<NNNAddress> addr05 = Create<NNNAddress> ("ae.0.7");
   Ptr<NNNAddress> addr06 = Create<NNNAddress> ("ae.4.15");
+  Ptr<NNNAddress> addr07 = Create<NNNAddress> ("ae.4.16");
+  Ptr<NNNAddress> addr08 = Create<NNNAddress> ("ae.4.17");
+  Ptr<NNNAddress> addr09 = Create<NNNAddress> ("ae.4.18");
+  Ptr<NNNAddress> addr10 = Create<NNNAddress> ("ae.4.19");
 
   Ptr<NNNAddrAggregator> aggregation = Create<NNNAddrAggregator> ();
 
@@ -55,6 +59,14 @@ int main (int argc, char *argv[])
   aggregation->AddDestination(addr05);
   std::cout << "Adding " << *addr06 << std::endl;
   aggregation->AddDestination(addr06);
+  std::cout << "Adding " << *addr07 << std::endl;
+  aggregation->AddDestination(addr07);
+  std::cout << "Adding " << *addr08 << std::endl;
+  aggregation->AddDestination(addr08);
+  std::cout << "Adding " << *addr09 << std::endl;
+  aggregation->AddDestination(addr09);
+  std::cout << "Adding " << *addr10 << std::endl;
+  aggregation->AddDestination(addr10);
 
   std::cout << "--Printing aggregator" << std::endl;
   std::cout << "Aggregator reports total addresses: " << aggregation->GetNumTotalDestinations() << std::endl;
@@ -62,12 +74,35 @@ int main (int argc, char *argv[])
   std::cout << *aggregation << std::endl;
 
   std::cout << "Removing names" << std::endl;
+  std::cout << "Trying to remove " << *addr01 << std::endl;
+  aggregation->RemoveDestination(addr01);
+  std::cout << "Trying to remove " << *addr02 << std::endl;
+  aggregation->RemoveDestination(addr02);
   std::cout << "Trying to remove " << *addr03 << std::endl;
-
   aggregation->RemoveDestination(addr03);
+  std::cout << "Trying to remove " << *addr04 << std::endl;
+  aggregation->RemoveDestination(addr04);
+  std::cout << "Trying to remove " << *addr05 << std::endl;
+  aggregation->RemoveDestination(addr05);
 
   std::cout << "--Printing resulting aggregator" << std::endl;
   std::cout << "Aggregator reports total addresses: " << aggregation->GetNumTotalDestinations() << std::endl;
   std::cout << "Aggregator report total addresses destinations: " << aggregation->GetNumDistinctDestinations()<< std::endl;
   std::cout << *aggregation << std::endl;
+
+  std::vector<Ptr<NNNAddress> > distinct = aggregation->GetDistinctDestinations();
+  std::vector<Ptr<NNNAddress> >::iterator it;
+
+  std::cout << "Printing aggregation distinct addresses" << std::endl;
+  for (it = distinct.begin() ; it != distinct.end() ; ++it)
+    {
+      std::cout << **it << std::endl;
+    }
+
+  distinct = aggregation->GetTotalDestinations();
+  std::cout << "Printing aggregation total addresses" << std::endl;
+  for (it = distinct.begin() ; it != distinct.end() ; ++it)
+    {
+      std::cout << **it << std::endl;
+    }
 }
