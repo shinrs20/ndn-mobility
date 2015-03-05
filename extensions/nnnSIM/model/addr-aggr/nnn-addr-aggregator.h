@@ -20,12 +20,12 @@
 #ifndef NNN_ADDR_AGGREGATOR_H_
 #define NNN_ADDR_AGGREGATOR_H_
 
-#include "../model/packets/nnn-packet.h"
-#include "../model/packets/utils/nnn-addr-entry.h"
-#include "../model/naming/nnn-address.h"
-#include "../utils/trie/trie.h"
-#include "../utils/trie/counting-policy.h"
-#include "../utils/trie/trie-with-policy.h"
+#include "nnn-addr-entry.h"
+#include "../naming/nnn-address.h"
+
+#include "../../utils/trie/trie.h"
+#include "../../utils/trie/counting-policy.h"
+#include "../../utils/trie/trie-with-policy.h"
 
 namespace ns3
 {

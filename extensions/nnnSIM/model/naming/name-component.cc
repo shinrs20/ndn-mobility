@@ -83,8 +83,6 @@ namespace name {
     return *this;
   }
 
-
-
   int
   Component::compare (const Component &other) const
   {

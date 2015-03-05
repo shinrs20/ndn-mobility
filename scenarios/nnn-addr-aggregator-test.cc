@@ -20,7 +20,7 @@
 
 // Extensions
 #include "nnnSIM/nnnSIM-module.h"
-#include "nnnSIM/helper/nnn-addr-aggregator.h"
+#include "nnnSIM/model/addr-aggr/nnn-addr-aggregator.h"
 
 using namespace ns3;
 using namespace std;
