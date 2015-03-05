@@ -140,12 +140,6 @@ namespace ns3 {
 	  .AddTraceSource ("DropDUs", "DropDUs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropDUs))
 
 	  ////////////////////////////////////////////////////////////////////
-
-	  .AddTraceSource ("OutMDOs",  "OutMDOs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outMDOs))
-	  .AddTraceSource ("InMDOs",   "InMDOs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inMDOs))
-	  .AddTraceSource ("DropMDOs", "DropMDOs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropMDOs))
-
-	  ////////////////////////////////////////////////////////////////////
 	  ////////////////////////////////////////////////////////////////////
 
 	  .AddTraceSource ("OutInterests",  "OutInterests",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outInterests))
@@ -767,14 +761,6 @@ namespace ns3 {
       NS_LOG_FUNCTION (this);
 
       m_inDUs(du_p, face);
-    }
-
-    void
-    ForwardingStrategy::OnMDO (Ptr<Face> face, Ptr<MDO> mdo_p)
-    {
-      NS_LOG_FUNCTION (this);
-
-      m_inMDOs(mdo_p, face);
     }
 
     Ptr<pit::Entry>

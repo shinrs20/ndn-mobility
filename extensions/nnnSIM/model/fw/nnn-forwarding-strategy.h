@@ -37,10 +37,6 @@
 #include "../fib/nnn-fib.h"
 #include "../pit/nnn-pit.h"
 
-#include "../../utils/trie/trie.h"
-#include "../../utils/trie/counting-policy.h"
-#include "../../utils/trie/trie-with-policy.h"
-
 namespace ns3 {
   namespace nnn {
 
@@ -62,13 +58,12 @@ namespace ns3 {
     class NULLp;
     class SO;
     class DO;
+    class DU;
     class EN;
     class AEN;
     class REN;
     class DEN;
     class INF;
-    class DU;
-    class MDO;
 
     class NamesContainer;
     class NamesContainerEntry;
@@ -223,16 +218,6 @@ namespace ns3 {
        */
       virtual void
       OnDU (Ptr<Face> face, Ptr<DU> du_p);
-
-      /**
-       * \brief Actual processing of incoming NNN DU packets
-       *
-       * Processing MDO packets
-       * @param face    incoming face
-       * @param mdo_p    DU packet
-       */
-      virtual void
-      OnMDO (Ptr<Face> face, Ptr<MDO> mdo_p);
 
       virtual Ptr<pit::Entry>
       ProcessInterest (Ptr<Face> face, Ptr<ndn::Interest> interest, Ptr<NNNAddress> addr);
@@ -722,17 +707,6 @@ namespace ns3 {
 
       TracedCallback<Ptr<const DU>,
       Ptr<const Face> > m_dropDUs;  ///< @brief trace of dropped DO
-
-      ////////////////////////////////////////////////////////////////////
-
-      TracedCallback<Ptr<const MDO>,
-      Ptr<const Face> > m_outMDOs; ///< @brief Transmitted SOs trace
-
-      TracedCallback<Ptr<const MDO>,
-      Ptr<const Face> > m_inMDOs; ///< @brief trace of incoming SOs
-
-      TracedCallback<Ptr<const MDO>,
-      Ptr<const Face> > m_dropMDOs; ///< @brief trace of dropped SOs
 
       ////////////////////////////////////////////////////////////////////
       ////////////////////////////////////////////////////////////////////

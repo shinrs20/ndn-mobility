@@ -26,7 +26,7 @@
 #include <iomanip>
 #include "nnn-header-helper.h"
 
-#include "../model/nnn-packets.h"
+#include "../model/packets/nnn-packet.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.HeaderHelper");
 
@@ -74,8 +74,6 @@ namespace ns3 {
 	  return DEN_NNN;
 	case 8:
 	  return INF_NNN;
-	case 9:
-	  return MDO_NNN;
       }
 
       NS_LOG_DEBUG (*packet);

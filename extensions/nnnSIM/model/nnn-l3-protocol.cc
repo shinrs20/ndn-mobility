@@ -134,8 +134,7 @@ namespace ns3 {
 	  MakeCallback (&ForwardingStrategy::OnREN, m_forwardingStrategy),
 	  MakeCallback (&ForwardingStrategy::OnDEN, m_forwardingStrategy),
 	  MakeCallback (&ForwardingStrategy::OnINF, m_forwardingStrategy),
-	  MakeCallback (&ForwardingStrategy::OnDU, m_forwardingStrategy),
-	  MakeCallback (&ForwardingStrategy::OnMDO, m_forwardingStrategy)
+	  MakeCallback (&ForwardingStrategy::OnDU, m_forwardingStrategy)
       );
 
       m_faces.push_back (face);

@@ -189,29 +189,4 @@ int main (int argc, char *argv[])
   Ptr<nnn::DU> target8 = wire::nnnSIM::DU::FromWire(packet);
 
   std::cout << std::endl << "After " << std::endl << *target8 << std::endl;
-
-  // Test MDO packet serialization
-  Ptr<nnn::MDO> source9 = Create<nnn::MDO> ();
-
-  source9->SetLifetime(ttl);
-  source9->SetPayload(packet1);
-  source9->SetPDUPayloadType(NNN_NNN);
-  source9->AddDestination(addr);
-  source9->AddDestination(addr2);
-  source9->AddDestination(addr3);
-  source9->AddDestination(addr4);
-  source9->AddDestination(addr5);
-  source9->AddDestination(addr); /* Tests for multiple entries of same address */
-  source9->AddDestination(addr3);
-  source9->AddDestination(addr6);
-
-  source9->RemoveDestination(addr4); /* Tests for removing address */
-
-  std::cout << std::endl << "Before" << std::endl << *source9 << std::endl;
-
-  packet = wire::nnnSIM::MDO::ToWire(source9);
-
-  Ptr<nnn::MDO> target9 = wire::nnnSIM::MDO::FromWire(packet);
-
-  std::cout << std::endl << "After " << std::endl << *target9 << std::endl;
 }
