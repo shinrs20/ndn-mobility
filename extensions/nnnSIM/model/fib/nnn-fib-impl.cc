@@ -20,22 +20,22 @@
  *  along with nnn-fib-impl.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "nnn-fib-impl.h"
+
+#include "../nnn-face.h"
+#include "../fw/nnn-forwarding-strategy.h"
+
 #include <ns3-dev/ns3/assert.h>
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/names.h>
 #include <ns3-dev/ns3/node.h>
 
-#include <ns3-dev/ns3/ndn-face.h>
 #include <ns3-dev/ns3/ndn-interest.h>
 
 #include <boost/ref.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 namespace ll = boost::lambda;
-
-#include "nnn-fib-impl.h"
-
-#include "../fw/nnn-forwarding-strategy.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.fib.FibImpl");
 

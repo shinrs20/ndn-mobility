@@ -23,6 +23,8 @@
 
 #include "nnn-pit-entry-incoming-face.h"
 
+#include "../addr-aggr/nnn-addr-aggregator.h"
+
 namespace ns3 {
   namespace nnn {
     namespace pit {

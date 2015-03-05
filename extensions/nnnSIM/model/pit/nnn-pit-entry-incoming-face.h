@@ -29,6 +29,9 @@
 
 namespace ns3 {
   namespace nnn {
+
+    class NNNAddrAggregator;
+
     namespace pit {
 
       /**

@@ -23,11 +23,11 @@
 #ifndef _NNN_FIB_IMPL_H_
 #define	_NNN_FIB_IMPL_H_
 
+#include "nnn-fib.h"
+
 #include <ns3-dev/ns3/name.h>
 #include <ns3-dev/ns3/ndnSIM/utils/trie/trie-with-policy.h>
 #include <ns3-dev/ns3/ndnSIM/utils/trie/counting-policy.h>
-
-#include "nnn-fib.h"
 
 namespace ns3 {
   namespace nnn {

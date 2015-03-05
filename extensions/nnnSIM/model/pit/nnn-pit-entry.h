@@ -25,6 +25,10 @@
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/simple-ref-count.h>
 
+#include "../fib/nnn-fib.h"
+#include "nnn-pit-entry-incoming-face.h"
+#include "nnn-pit-entry-outgoing-face.h"
+
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/tag.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -33,14 +37,11 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 
-#include "../fib/nnn-fib.h"
-#include "nnn-pit-entry-incoming-face.h"
-#include "nnn-pit-entry-outgoing-face.h"
-
 namespace ns3 {
   namespace nnn {
 
     class Pit;
+    class NNNAddrAggregator;
 
     namespace fw { class Tag; }
 

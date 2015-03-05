@@ -55,6 +55,8 @@ namespace ns3 {
 
     class Face;
 
+    class NNNAddress;
+
     class NULLp;
     class SO;
     class DO;
@@ -80,8 +82,7 @@ namespace ns3 {
 
     namespace name { class Component; }
 
-    class NNNAddress;
-
+    class NNNAddrAggregator;
     class PDUBuffer;
 
     //class NNSTFaceMetric;

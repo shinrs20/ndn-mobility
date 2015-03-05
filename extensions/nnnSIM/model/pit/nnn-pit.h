@@ -29,6 +29,11 @@
 #include "nnn-pit-entry.h"
 
 namespace ns3 {
+
+  namespace ndn {
+    class Data;
+    class Interest;
+  }
   namespace nnn {
 
     /**
@@ -45,6 +50,7 @@ namespace ns3 {
 
     class L3Protocol;
     class Face;
+    class NNNAddrAggregator;
 
     ////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////

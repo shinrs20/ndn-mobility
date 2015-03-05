@@ -21,6 +21,7 @@
 #include <ns3-dev/ns3/log.h>
 
 #include "nnn-addr-aggregator.h"
+#include "nnn-addr-entry.h"
 
 NS_LOG_COMPONENT_DEFINE("nnn.AddrAggregator");
 

@@ -20,9 +20,7 @@
 #ifndef NNN_ADDR_AGGREGATOR_H_
 #define NNN_ADDR_AGGREGATOR_H_
 
-#include "nnn-addr-entry.h"
 #include "../naming/nnn-address.h"
-
 #include "../../utils/trie/trie.h"
 #include "../../utils/trie/counting-policy.h"
 #include "../../utils/trie/trie-with-policy.h"
@@ -31,19 +29,20 @@ namespace ns3
 {
   namespace nnn
   {
+    class NNNAddrEntry;
 
     class NNNAddrAggregator : public SimpleRefCount<NNNAddrAggregator>,
-    protected ns3::nnn::nnnSIM::trie_with_policy<
+    protected nnnSIM::trie_with_policy<
     NNNAddress,
-    ns3::nnn::nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
-    ns3::nnn::nnnSIM::counting_policy_traits
+    nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
+    nnnSIM::counting_policy_traits
     >
     {
     public:
-      typedef ns3::nnn::nnnSIM::trie_with_policy<
+      typedef nnnSIM::trie_with_policy<
 	  NNNAddress,
-	  ns3::nnn::nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
-	  ns3::nnn::nnnSIM::counting_policy_traits
+	  nnnSIM::smart_pointer_payload_traits<NNNAddrEntry>,
+	  nnnSIM::counting_policy_traits
       > super;
 
       NNNAddrAggregator ();
