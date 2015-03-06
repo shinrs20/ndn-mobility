@@ -20,8 +20,8 @@
  *  along with trie.h.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TRIE_H_
-#define TRIE_H_
+#ifndef TRIE_3N_H_
+#define TRIE_3N_H_
 
 #include <ns3-dev/ns3/ptr.h>
 
@@ -736,4 +736,4 @@ namespace ns3 {
   } // nnn
 } // ns3
 
-#endif // TRIE_H_
+#endif // TRIE_3N_H_

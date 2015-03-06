@@ -20,11 +20,10 @@
  *  along with trie-with-policy.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRIE_WITH_POLICY_H_
-#define TRIE_WITH_POLICY_H_
+#ifndef TRIE_WITH_POLICY_3N_H_
+#define TRIE_WITH_POLICY_3N_H_
 
 #include "trie.h"
-#include "../../model/nnn-naming.h"
 
 namespace ns3 {
   namespace nnn {
@@ -298,4 +297,4 @@ namespace ns3 {
   } // nnn
 } // ns3
 
-#endif // TRIE_WITH_POLICY_H_
+#endif // TRIE_WITH_POLICY_3N_H_

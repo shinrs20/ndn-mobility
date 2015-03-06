@@ -20,8 +20,8 @@
  *  along with counting-policy.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef COUNTING_POLICY_H_
-#define COUNTING_POLICY_H_
+#ifndef COUNTING_POLICY_3N_H_
+#define COUNTING_POLICY_3N_H_
 
 #include <boost/intrusive/options.hpp>
 #include <boost/intrusive/list.hpp>
@@ -112,4 +112,4 @@ namespace ns3 {
   } // nnn
 } // ns3
 
-#endif // COUNTING_POLICY_H_
+#endif // COUNTING_POLICY_3N_H_

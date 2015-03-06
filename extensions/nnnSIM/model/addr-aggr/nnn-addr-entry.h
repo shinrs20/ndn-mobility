@@ -21,9 +21,9 @@
 #ifndef NNN_ADDR_ENTRY_H_
 #define NNN_ADDR_ENTRY_H_
 
-#include "../../utils/trie/trie.h"
-#include "../../utils/trie/counting-policy.h"
+#include "../naming/nnn-address.h"
 #include "../../utils/trie/trie-with-policy.h"
+#include "../../utils/trie/counting-policy.h"
 
 namespace ns3
 {
