@@ -38,6 +38,9 @@
 #include <ns3-dev/ns3/string.h>
 
 #include "nnn-stack-helper.h"
+
+#include <ns3-dev/ns3/ndn-content-store.h>
+
 #include "nnn-names-container.h"
 #include "nnn-face-container.h"
 

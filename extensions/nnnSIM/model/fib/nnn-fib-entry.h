@@ -258,7 +258,7 @@ namespace ns3 {
       };
 
       /**
-       * @ingroup ndn-fib
+       * @ingroup nnn-fib
        * \brief Structure for FIB table entry, holding indexed list of
        *        available faces and their respective metrics
        */

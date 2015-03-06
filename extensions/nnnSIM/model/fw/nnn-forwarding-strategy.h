@@ -20,24 +20,24 @@
 #ifndef NNN_FORWARDING_STRATEGY_H
 #define NNN_FORWARDING_STRATEGY_H
 
+#include <ns3-dev/ns3/nstime.h>
 #include <ns3-dev/ns3/callback.h>
 #include <ns3-dev/ns3/object.h>
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/traced-callback.h>
 
-#include <ns3-dev/ns3/name.h>
-#include <ns3-dev/ns3/ndn-data.h>
-#include <ns3-dev/ns3/ndn-interest.h>
-#include <ns3-dev/ns3/ndn-content-store.h>
-
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "../fib/nnn-fib.h"
-#include "../pit/nnn-pit.h"
-
 namespace ns3 {
+
+  namespace ndn {
+    class Interest;
+    class Data;
+    class ContentStore;
+  }
+
   namespace nnn {
 
     /**
@@ -71,14 +71,20 @@ namespace ns3 {
     class NamesContainerEntry;
 
     class NNST;
-    class NNPT;
-
     namespace nnst {
       class Entry;
       class FaceMetric;
     }
 
+    class NNPT;
     namespace nnpt { class Entry; }
+
+    class Pit;
+    namespace pit { class Entry; }
+    class FibFaceMetric;
+
+    class Fib;
+    namespace fib { class Entry; }
 
     namespace name { class Component; }
 

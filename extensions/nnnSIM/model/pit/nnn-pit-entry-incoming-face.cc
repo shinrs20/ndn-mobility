@@ -23,7 +23,7 @@
 
 #include "nnn-pit-entry-incoming-face.h"
 
-#include "../addr-aggr/nnn-addr-aggregator.h"
+#include "../naming/nnn-address.h"
 
 namespace ns3 {
   namespace nnn {
@@ -35,10 +35,24 @@ namespace ns3 {
       {
       }
 
+      IncomingFace::IncomingFace (Ptr<Face> face, Ptr<NNNAddress> addr)
+      : m_face (face)
+      , m_arrivalTime (Simulator::Now ())
+      , m_addrs (Create<NNNAddrAggregator> ())
+      {
+	m_addrs->AddDestination(addr);
+      }
+
       IncomingFace::IncomingFace ()
       : m_face (0)
       , m_arrivalTime (0)
       {
+      }
+
+      void
+      IncomingFace::AddDestination(Ptr<NNNAddress> addr)
+      {
+	m_addrs->AddDestination(addr);
       }
 
       /**

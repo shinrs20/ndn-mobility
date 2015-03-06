@@ -26,11 +26,12 @@
 #include <ns3-dev/ns3/ptr.h>
 
 #include "../nnn-face.h"
+#include "../addr-aggr/nnn-addr-aggregator.h"
 
 namespace ns3 {
   namespace nnn {
 
-    class NNNAddrAggregator;
+    class NNNAddress;
 
     namespace pit {
 
@@ -40,14 +41,14 @@ namespace ns3 {
        */
       struct IncomingFace
       {
-	Ptr< Face> m_face; ///< \brief face of the incoming Interest
+	Ptr<Face> m_face; ///< \brief face of the incoming Interest
+	Ptr<NNNAddrAggregator> m_addrs; ///< \brief 3N names seen in incoming Interests
 	Time m_arrivalTime;   ///< \brief arrival time of the incoming Interest
 
       public:
 	/**
 	 * \brief Constructor
 	 * \param face face of the incoming interest
-	 * \param lifetime lifetime of the incoming interest
 	 */
 	IncomingFace (Ptr<Face> face);
 
@@ -55,6 +56,21 @@ namespace ns3 {
 	 * @brief Default constructor, necessary for Python bindings, but should not be used anywhere else.
 	 */
 	IncomingFace ();
+
+	/**
+	 * \brief Constructor
+	 * \param face face of the incoming interest
+	 * \param addr 3N name we will aggregate
+	 */
+	IncomingFace (Ptr<Face> face, Ptr<NNNAddress> addr);
+
+	/**
+	 * \brief Add the 3N name to the associated face
+	 * \param addr 3N name we will aggregate
+	 */
+	void
+	AddDestination (Ptr<NNNAddress> addr);
+
 	/**
 	 * @brief Copy operator
 	 */

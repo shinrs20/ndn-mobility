@@ -20,6 +20,32 @@
  *  along with nnn-forwarding-strategy.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// nnnSIM - 3N data
+#include "nnn-forwarding-strategy.h"
+
+#include "../pit/nnn-pit.h"
+#include "../pit/nnn-pit-entry.h"
+#include "../fib/nnn-fib.h"
+#include "../nnn-face.h"
+#include "../nnn-naming.h"
+#include "../nnn-packets.h"
+#include "../nnst/nnn-nnst.h"
+#include "../nnst/nnn-nnst-entry.h"
+#include "../nnst/nnn-nnst-entry-facemetric.h"
+#include "../nnpt/nnn-nnpt.h"
+#include "../../helper/nnn-names-container.h"
+#include "../buffers/nnn-pdu-buffer.h"
+#include "../addr-aggr/nnn-addr-aggregator.h"
+#include "../../helper/nnn-header-helper.h"
+
+// ndnSIM - NDN data
+#include <ns3-dev/ns3/name.h>
+#include <ns3-dev/ns3/ndn-data.h>
+#include <ns3-dev/ns3/ndn-interest.h>
+#include <ns3-dev/ns3/ndn-content-store.h>
+#include <ns3-dev/ns3/ndn-wire.h>
+#include <ns3-dev/ns3/ndn-header-helper.h>
+
 #include <boost/ref.hpp>
 #include <boost/foreach.hpp>
 #include <boost/lambda/lambda.hpp>
@@ -31,32 +57,9 @@
 #include <ns3-dev/ns3/integer.h>
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/ptr.h>
-#include <ns3-dev/ns3/nstime.h>
+
 #include <ns3-dev/ns3/simulator.h>
 #include <ns3-dev/ns3/string.h>
-
-// ndnSIM - NDN data
-#include <ns3-dev/ns3/name.h>
-#include <ns3-dev/ns3/ndn-data.h>
-#include <ns3-dev/ns3/ndn-interest.h>
-#include <ns3-dev/ns3/ndn-wire.h>
-#include <ns3-dev/ns3/ndn-header-helper.h>
-
-// nnnSIM - 3N data
-#include "nnn-forwarding-strategy.h"
-#include "../nnn-face.h"
-#include "../nnn-naming.h"
-#include "../nnn-packets.h"
-#include "../nnst/nnn-nnst.h"
-#include "../nnst/nnn-nnst-entry.h"
-#include "../nnst/nnn-nnst-entry-facemetric.h"
-#include "../nnpt/nnn-nnpt.h"
-#include "../nnpt/nnn-nnpt-entry.h"
-#include "../../helper/nnn-names-container.h"
-#include "../buffers/nnn-pdu-buffer.h"
-#include "../buffers/nnn-pdu-buffer-queue.h"
-
-#include "../../helper/nnn-header-helper.h"
 
 namespace ll = boost::lambda;
 

@@ -22,6 +22,8 @@
 
 #include "nnn-addr-entry.h"
 
+#include "../naming/nnn-address.h"
+
 NS_LOG_COMPONENT_DEFINE("nnn.AddrEntry");
 
 namespace ns3

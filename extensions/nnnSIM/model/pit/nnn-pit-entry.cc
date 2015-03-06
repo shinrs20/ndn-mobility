@@ -19,22 +19,23 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-pit-entry.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "nnn-pit-entry.h"
+
+#include "nnn-pit.h"
+#include "../fib/nnn-fib.h"
+
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/simulator.h>
 
 #include <ns3-dev/ns3/ndn-name.h>
 #include <ns3-dev/ns3/ndn-interest.h>
-#include <ns3-dev/ns3/ndn-data.h>
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 #include <boost/foreach.hpp>
 namespace ll = boost::lambda;
-
-#include "../fib/nnn-fib.h"
-#include "nnn-pit-entry.h"
-#include "nnn-pit.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.pit.Entry");
 

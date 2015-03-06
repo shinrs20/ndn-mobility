@@ -41,7 +41,8 @@ namespace ns3 {
   namespace nnn {
 
     class Pit;
-    class NNNAddrAggregator;
+
+    namespace nnnSIM {}
 
     namespace fw { class Tag; }
 
