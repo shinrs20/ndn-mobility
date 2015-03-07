@@ -55,6 +55,18 @@ namespace ns3 {
 	m_addrs->AddDestination(addr);
       }
 
+      void
+      IncomingFace::RemoveDestination(Ptr<NNNAddress> addr)
+      {
+	m_addrs->RemoveDestination(addr);
+      }
+
+      bool
+      IncomingFace::NoAddresses()
+      {
+	return m_addrs->isEmpty();
+      }
+
       /**
        * @brie Copy operator
        */

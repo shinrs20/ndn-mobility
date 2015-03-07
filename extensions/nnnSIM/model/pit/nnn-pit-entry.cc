@@ -127,10 +127,40 @@ namespace ns3 {
 	return ret.first;
       }
 
+      Entry::in_iterator
+      Entry::AddIncoming(Ptr<Face> face, Ptr<NNNAddress> addr)
+      {
+	std::pair<in_iterator, bool> ret = m_incoming.insert (IncomingFace(face));
+
+	if (!ret.second)
+	  { // Incoming face already exists
+	    const_cast<IncomingFace&>(*ret.first).AddDestination(addr);
+	  }
+
+	return ret.first;
+      }
+
       void
       Entry::RemoveIncoming (Ptr<Face> face)
       {
-	m_incoming.erase (face);
+	std::set<IncomingFace>::iterator it = m_incoming.find(face);
+
+	if (it != m_incoming.end())
+	  {
+	    if (const_cast<IncomingFace&>(*it).NoAddresses())
+	      m_incoming.erase(face);
+	  }
+      }
+
+      void
+      Entry::RemoveIncoming (Ptr<Face> face, Ptr<NNNAddress> addr)
+      {
+	std::set<IncomingFace>::iterator it = m_incoming.find(face);
+
+	if (it != m_incoming.end())
+	  {
+	    const_cast<IncomingFace&>(*it).RemoveDestination(addr);
+	  }
       }
 
       void

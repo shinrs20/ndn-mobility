@@ -72,6 +72,16 @@ namespace ns3 {
 	AddDestination (Ptr<NNNAddress> addr);
 
 	/**
+	 * \brief Add the 3N name to the associated face
+	 * \param addr 3N name we will aggregate
+	 */
+	void
+	RemoveDestination (Ptr<NNNAddress> addr);
+
+	bool
+	NoAddresses ();
+
+	/**
 	 * @brief Copy operator
 	 */
 	IncomingFace &
