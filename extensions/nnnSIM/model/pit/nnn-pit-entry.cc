@@ -50,6 +50,7 @@ namespace ns3 {
       , m_interest (header)
       , m_fibEntry (fibEntry)
       , m_maxRetxCount (0)
+      , m_receivedNULLp (false)
       {
 	NS_LOG_FUNCTION (this);
 
@@ -90,7 +91,6 @@ namespace ns3 {
 	NS_LOG_INFO (this->GetPrefix () << ", Offsetting lifetime to " << m_expireTime.ToDouble (Time::S) << "s, " << (m_expireTime-Simulator::Now ()).ToDouble (Time::S) << "s left");
       }
 
-
       const ndn::Name &
       Entry::GetPrefix () const
       {
@@ -114,7 +114,6 @@ namespace ns3 {
       {
 	m_seenNonces.insert (nonce);
       }
-
 
       Entry::in_iterator
       Entry::AddIncoming (Ptr<Face> face)
@@ -159,7 +158,12 @@ namespace ns3 {
 
 	if (it != m_incoming.end())
 	  {
-	    const_cast<IncomingFace&>(*it).RemoveDestination(addr);
+	    IncomingFace inface = const_cast<IncomingFace&>(*it);
+
+	    inface.RemoveDestination(addr);
+
+	    if (inface.NoAddresses())
+	      m_incoming.erase(face);
 	  }
       }
 
@@ -288,6 +292,18 @@ namespace ns3 {
       Entry::GetOutgoingCount () const
       {
 	return m_outgoing.size ();
+      }
+
+      void
+      Entry::SetReceivedNULLPDU (bool received)
+      {
+	m_receivedNULLp = received;
+      }
+
+      bool
+      Entry::GetReceivedNULLPDU ()
+      {
+	return m_receivedNULLp;
       }
 
       uint32_t
