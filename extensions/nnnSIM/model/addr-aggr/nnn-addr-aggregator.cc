@@ -133,7 +133,7 @@ namespace ns3
     }
 
     void
-    NNNAddrAggregator::AddDestination(Ptr<NNNAddress> addr)
+    NNNAddrAggregator::AddDestination(Ptr<const NNNAddress> addr)
     {
       NS_LOG_FUNCTION(this << *addr);
 
@@ -177,7 +177,7 @@ namespace ns3
     }
 
     void
-    NNNAddrAggregator::RemoveDestination(Ptr<NNNAddress> addr)
+    NNNAddrAggregator::RemoveDestination(Ptr<const NNNAddress> addr)
     {
       NS_LOG_FUNCTION(this << *addr);
 

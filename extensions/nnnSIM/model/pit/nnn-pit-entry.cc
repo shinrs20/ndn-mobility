@@ -127,7 +127,7 @@ namespace ns3 {
       }
 
       Entry::in_iterator
-      Entry::AddIncoming(Ptr<Face> face, Ptr<NNNAddress> addr)
+      Entry::AddIncoming(Ptr<Face> face, Ptr<const NNNAddress> addr)
       {
 	std::pair<in_iterator, bool> ret = m_incoming.insert (IncomingFace(face));
 
@@ -152,7 +152,7 @@ namespace ns3 {
       }
 
       void
-      Entry::RemoveIncoming (Ptr<Face> face, Ptr<NNNAddress> addr)
+      Entry::RemoveIncoming (Ptr<Face> face, Ptr<const NNNAddress> addr)
       {
 	std::set<IncomingFace>::iterator it = m_incoming.find(face);
 

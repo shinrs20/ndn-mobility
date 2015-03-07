@@ -622,17 +622,70 @@ namespace ns3 {
 
       m_inNULLps(null_p, face);
 
-      // This PDU doesn't involve any 3N mechanisms, thus will act like ICN
-      // Must separate Interests from Data.
-
       //Give us a rw copy of the packet
       Ptr<Packet> icn_pdu = null_p->GetPayload ()->Copy ();
 
+      // To be able to simplify code, convert pointer to common type
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(null_p);
+
+      ProcessICNPDU(pdu, face, icn_pdu);
+    }
+
+    void
+    ForwardingStrategy::OnSO (Ptr<Face> face, Ptr<SO> so_p)
+    {
+      NS_LOG_FUNCTION (this);
+
+      m_inSOs(so_p, face);
+
+      //Give us a rw copy of the packet
+      Ptr<Packet> icn_pdu = so_p->GetPayload ()->Copy ();
+
+      // To be able to simplify code, convert pointer to common type
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(so_p);
+
+      ProcessICNPDU(pdu, face, icn_pdu);
+    }
+
+    void
+    ForwardingStrategy::OnDO (Ptr<Face> face, Ptr<DO> do_p)
+    {
+      NS_LOG_FUNCTION (this);
+
+      m_inDOs(do_p, face);
+
+      //Give us a rw copy of the packet
+      Ptr<Packet> icn_pdu = do_p->GetPayload ()->Copy ();
+
+      // To be able to simplify code, convert pointer to common type
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(do_p);
+
+      ProcessICNPDU(pdu, face, icn_pdu);
+    }
+
+    void
+    ForwardingStrategy::OnDU (Ptr<Face> face, Ptr<DU> du_p)
+    {
+      NS_LOG_FUNCTION (this);
+
+      m_inDUs(du_p, face);
+
+      //Give us a rw copy of the packet
+      Ptr<Packet> icn_pdu = du_p->GetPayload ()->Copy ();
+
+      // To be able to simplify code, convert pointer to common type
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(du_p);
+
+      ProcessICNPDU(pdu, face, icn_pdu);
+    }
+
+    void
+    ForwardingStrategy::ProcessICNPDU (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<Packet> icn_pdu)
+    {
       bool receivedInterest =false;
       bool receivedData = false;
       Ptr<ndn::Interest> interest;
       Ptr<ndn::Data> data;
-      Ptr<ndn::Data> contentObject;
 
       try {
 	  ndn::HeaderHelper::Type ndnType = ndn::HeaderHelper::GetNdnHeaderType(icn_pdu);
@@ -663,146 +716,145 @@ namespace ns3 {
 	  NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
       }
 
-      Ptr<pit::Entry> pitEntry;
-
       // If the PDU is an Interest
       if (receivedInterest)
 	{
-	  bool similarInterest = true;
-	   pitEntry = ProcessInterest(face, interest, Create<NNNAddress> ());
-	   if (pitEntry == 0)
-	     {
-	       similarInterest = false;
-	     }
-
-	   bool isDuplicated = true;
-	   if (!pitEntry->IsNonceSeen (interest->GetNonce ()))
-	     {
-	       pitEntry->AddSeenNonce (interest->GetNonce ());
-	       isDuplicated = false;
-	     }
-
-	   if (isDuplicated)
-	     {
-	       DidReceiveDuplicateInterest (face, interest, pitEntry);
-	       return;
-	     }
-
-	   contentObject = m_contentStore->Lookup (interest);
-	   if (contentObject != 0)
-	     {
-	       pitEntry->AddIncoming (face/*, Seconds (1.0)*/);
-
-	       // Do data plane performance measurements
-	       WillSatisfyPendingInterest (0, pitEntry);
-
-	       // Actually satisfy pending interest
-	       SatisfyPendingInterest (0, contentObject, pitEntry);
-	       return;
-	     }
-
-	   if (similarInterest && ShouldSuppressIncomingInterest (face, interest, pitEntry))
-	     {
-	       pitEntry->AddIncoming (face/*, interest->GetInterestLifetime ()*/);
-	       // update PIT entry lifetime
-	       pitEntry->UpdateLifetime (interest->GetInterestLifetime ());
-
-	       // Suppress this interest if we're still expecting data from some other face
-	       NS_LOG_DEBUG ("Suppress interests");
-	       m_dropInterests (interest, face);
-
-	       DidSuppressSimilarInterest (face, interest, pitEntry);
-	       return;
-	     }
-
-	   if (similarInterest)
-	     {
-	       DidForwardSimilarInterest (face, interest, pitEntry);
-	     }
-
-	   PropagateInterest (face, interest, pitEntry);
+	  ProcessInterest (pdu, face, interest);
 	}
 
       // If the PDU is Data
       if (receivedData)
 	{
-	  pitEntry = ProcessData(face, data);
-
-	  while (pitEntry != 0)
-	    {
-	      // Do data plane performance measurements
-	      WillSatisfyPendingInterest (face, pitEntry);
-
-	      // Actually satisfy pending interest
-	      SatisfyPendingInterest (face, data, pitEntry);
-
-	      // Lookup another PIT entry
-	      pitEntry = m_pit->Lookup (*data);
-	    }
+	  ProcessData(pdu, face, data);
 	}
     }
 
     void
-    ForwardingStrategy::OnSO (Ptr<Face> face, Ptr<SO> so_p)
+    ForwardingStrategy::UpdatePITEntry (Ptr<pit::Entry> pitEntry, Ptr<NNNPDU> pdu, Ptr<Face> face, Time lifetime)
     {
-      NS_LOG_FUNCTION (this);
+      // Pointers for PDU types
+      Ptr<SO> so_i;
+      Ptr<DU> du_i;
 
-      m_inSOs(so_p, face);
+      // Find out the type of PDU we are dealing with
+      uint32_t pduid = pdu->GetPacketId();
+      switch(pduid)
+      {
+	case NULL_NNN:
+	  // Add the Face
+	  pitEntry->AddIncoming(face);
+	  // Show that you received a NULL PDU
+	  pitEntry->SetReceivedNULLPDU(true);
+	  break;
+	case SO_NNN:
+	  // Convert pointer to DO
+	  so_i = DynamicCast<SO>(pdu);
+	  // Add the Face
+	  pitEntry->AddIncoming(face, so_i->GetNamePtr());
+	  break;
+	case DU_NNN:
+	  // Convert pointer to DU
+	  du_i = DynamicCast<DU>(pdu);
+	  // Add the Face
+	  pitEntry->AddIncoming(face, du_i->GetSrcNamePtr());
+	  break;
+	default:
+	  break;
+      }
+      // Update PIT entry lifetime
+      pitEntry->UpdateLifetime (lifetime);
     }
 
     void
-    ForwardingStrategy::OnDO (Ptr<Face> face, Ptr<DO> do_p)
+    ForwardingStrategy::ProcessInterest (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<ndn::Interest> interest)
     {
-      NS_LOG_FUNCTION (this);
-
-      m_inDOs(do_p, face);
-    }
-
-    void
-    ForwardingStrategy::OnDU (Ptr<Face> face, Ptr<DU> du_p)
-    {
-      NS_LOG_FUNCTION (this);
-
-      m_inDUs(du_p, face);
-    }
-
-    Ptr<pit::Entry>
-    ForwardingStrategy::ProcessInterest (Ptr<Face> face, Ptr<ndn::Interest> interest, Ptr<NNNAddress> addr)
-    {
-      NS_LOG_FUNCTION (face << interest->GetName () << addr->getName ());
+      NS_LOG_FUNCTION (face << interest->GetName ());
       // Log the Interest PDU
       m_inInterests (interest, face);
 
-      // Search for the PIT with the interest
+      // Search for the PIT with the Interest
       Ptr<pit::Entry> pitEntry = m_pit->Lookup (*interest);
+      bool similarInterest = true;
       if (pitEntry == 0)
 	{
-	  // Check if the 3N name is empty (distinguishes NULL PDUs from the rest)
-	  if (addr->isEmpty())
-	    pitEntry = m_pit->Create (interest);
-	  else
-	    pitEntry = 0;
-
-	  // Call the relevant functions to do other things if necessary
+	  // Flag that we have seen this Interest
+	  similarInterest = false;
+	  pitEntry = m_pit->Create (interest);
 	  if (pitEntry != 0)
 	    {
+	      // Log the creation of a PIT entry
 	      DidCreatePitEntry (face, interest, pitEntry);
 	    }
 	  else
 	    {
+	      // Log the failure to create a PIT entry
 	      FailedToCreatePitEntry (face, interest);
-	      return 0;
+	      // Finish processing
+	      return;
 	    }
 	}
 
-      return pitEntry;
+      bool isDuplicated = true;
+      // Check if the Interest has been seen before
+      if (!pitEntry->IsNonceSeen (interest->GetNonce ()))
+	{
+	  // Not seen, add the Nonce
+	  pitEntry->AddSeenNonce (interest->GetNonce ());
+	  // Flag that we have a duplicated object
+	  isDuplicated = false;
+	}
+
+      if (isDuplicated)
+	{
+	  // Log that we received a duplicate Interest
+	  DidReceiveDuplicateInterest (face, interest, pitEntry);
+	  // Finish processing
+	  return;
+	}
+
+      // Check if we have this particular Interest in the ContentStore
+      Ptr<ndn::Data> contentObject = m_contentStore->Lookup (interest);
+      if (contentObject != 0)
+	{
+	  // Update the PIT
+	  UpdatePITEntry(pitEntry, pdu, face, Seconds(1));
+
+	  // Do data plane performance measurements
+	  WillSatisfyPendingInterest (0, pitEntry);
+
+	  // Actually satisfy pending interest
+	  SatisfyPendingInterest (0, contentObject, pitEntry);
+	  return;
+	}
+
+      // In the case of similar Interest, update the PIT entry
+      if (similarInterest && ShouldSuppressIncomingInterest (face, interest, pitEntry))
+	{
+	  // Update the PIT
+	  UpdatePITEntry(pitEntry, pdu, face, interest->GetInterestLifetime());
+
+	  // Suppress this interest if we're still expecting data from some other face
+	  NS_LOG_DEBUG ("Suppress interests");
+	  m_dropInterests (interest, face);
+
+	  DidSuppressSimilarInterest (face, interest, pitEntry);
+	  return;
+	}
+
+      if (similarInterest)
+	{
+	  // Log that we obtained a similar Interest
+	  DidForwardSimilarInterest (face, interest, pitEntry);
+	}
+
+      PropagateInterest (face, interest, pitEntry);
     }
 
-    Ptr<pit::Entry>
-    ForwardingStrategy::ProcessData (Ptr<Face> face, Ptr<ndn::Data> data)
+    void
+    ForwardingStrategy::ProcessData (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<ndn::Data> data)
     {
       NS_LOG_FUNCTION (face << data->GetName ());
-      // Log the Interest PDU
+      // Log the Data PDU
       m_inData (data, face);
 
       // Lookup PIT entry
@@ -824,7 +876,17 @@ namespace ns3 {
 	  DidReceiveUnsolicitedData (face, data, true);
 	}
 
-      return pitEntry;
+      while (pitEntry != 0)
+	{
+	  // Do data plane performance measurements
+	  WillSatisfyPendingInterest (face, pitEntry);
+
+	  // Actually satisfy pending interest
+	  SatisfyPendingInterest (face, data, pitEntry);
+
+	  // Lookup another PIT entry
+	  pitEntry = m_pit->Lookup (*data);
+	}
     }
 
     void

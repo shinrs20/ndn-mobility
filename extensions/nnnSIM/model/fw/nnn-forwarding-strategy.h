@@ -57,6 +57,7 @@ namespace ns3 {
 
     class NNNAddress;
 
+    class NNNPDU;
     class NULLp;
     class SO;
     class DO;
@@ -139,9 +140,9 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming Nnn content objects
        *
-       * Processing EN packets
+       * Processing EN PDUs
        * @param face    incoming face
-       * @param en_p    EN packet
+       * @param en_p    EN PDU
        */
       virtual void
       OnEN (Ptr<Face> face, Ptr<EN> en_p);
@@ -149,9 +150,9 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming Nnn AENs.
        *
-       * Processing AEN packets
+       * Processing AEN PDUs
        * @param face     incoming face
-       * @param aen_p AEN packet
+       * @param aen_p AEN PDU
        */
       virtual void
       OnAEN (Ptr<Face> face, Ptr<AEN> aen_p);
@@ -159,9 +160,9 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming Nnn RENs
        *
-       * Processing REN packets
+       * Processing REN PDUs
        * @param face    incoming face
-       * @param ren_p    REN packet
+       * @param ren_p    REN PDU
        */
       virtual void
       OnREN (Ptr<Face> face, Ptr<REN> ren_p);
@@ -169,9 +170,9 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming Nnn DENs
        *
-       * Processing DEN packets
+       * Processing DEN PDUs
        * @param face    incoming face
-       * @param den_p    DEN packet
+       * @param den_p    DEN PDU
        */
       virtual void
       OnDEN (Ptr<Face> face, Ptr<DEN> den_p);
@@ -179,9 +180,9 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming Nnn INFs
        *
-       * Processing INF packets
+       * Processing INF PDUs
        * @param face    incoming face
-       * @param inf_p    INF packet
+       * @param inf_p    INF PDU
        */
       virtual void
       OnINF (Ptr<Face> face, Ptr<INF> inf_p);
@@ -189,9 +190,9 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming Nnn NULLps.
        *
-       * Processing NULLp packets
+       * Processing NULLp PDUs
        * @param face incoming face
-       * @param null_p NULLp packet
+       * @param null_p NULLp PDU
        */
       virtual void
       OnNULLp (Ptr<Face> face, Ptr<NULLp> null_p);
@@ -199,9 +200,9 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming Nnn SOs.
        *
-       * Processing SO packets
+       * Processing SO PDUs
        * @param face incoming face
-       * @param so_p SO packet
+       * @param so_p SO PDU
        */
       virtual void
       OnSO (Ptr<Face> face, Ptr<SO> so_p);
@@ -209,9 +210,9 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming Nnn content objects
        *
-       * Processing DO packets
+       * Processing DO PDUs
        * @param face incoming face
-       * @param do_p DO packet
+       * @param do_p DO PDU
        */
       virtual void
       OnDO (Ptr<Face> face, Ptr<DO> do_p);
@@ -219,18 +220,24 @@ namespace ns3 {
       /**
        * \brief Actual processing of incoming NNN DU packets
        *
-       * Processing DU packets
+       * Processing DU PDUs
        * @param face    incoming face
-       * @param du_p    DU packet
+       * @param du_p    DU PDU
        */
       virtual void
       OnDU (Ptr<Face> face, Ptr<DU> du_p);
 
-      virtual Ptr<pit::Entry>
-      ProcessInterest (Ptr<Face> face, Ptr<ndn::Interest> interest, Ptr<NNNAddress> addr);
+      virtual void
+      ProcessICNPDU (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<Packet> icn_pdu);
 
-      virtual Ptr<pit::Entry>
-      ProcessData (Ptr<Face> face, Ptr<ndn::Data> data);
+      void
+      UpdatePITEntry (Ptr<pit::Entry> pitEntry, Ptr<NNNPDU> pdu, Ptr<Face> face, Time lifetime);
+
+      virtual void
+      ProcessInterest (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<ndn::Interest> interest);
+
+      virtual void
+      ProcessData (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<ndn::Data> data);
 
       /**
        * @brief Event fired just before PIT entry is removed by timeout

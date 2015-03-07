@@ -142,7 +142,7 @@ namespace ns3 {
 	AddIncoming (Ptr<Face> face);
 
 	virtual in_iterator
-	AddIncoming (Ptr<Face> face, Ptr<NNNAddress> addr);
+	AddIncoming (Ptr<Face> face, Ptr<const NNNAddress> addr);
 
 	/**
 	 * @brief Remove incoming entry for face `face`
@@ -151,7 +151,7 @@ namespace ns3 {
 	RemoveIncoming (Ptr<Face> face);
 
 	virtual void
-	RemoveIncoming (Ptr<Face> face, Ptr<NNNAddress> addr);
+	RemoveIncoming (Ptr<Face> face, Ptr<const NNNAddress> addr);
 
 	/**
 	 * @brief Clear all incoming faces either after all of them were satisfied or NACKed

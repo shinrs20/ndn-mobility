@@ -119,7 +119,7 @@ namespace ns3
       }
 
       void
-      RemoveAddress (Ptr<NNNAddress> addr)
+      RemoveAddress (Ptr<const NNNAddress> addr)
       {
 	Ptr<NNNAddress> sector = Create<NNNAddress> (addr->getSectorName());
 	Ptr<NNNAddress> lastlabel = Create<NNNAddress> (addr->getLastLabel());
@@ -205,10 +205,10 @@ namespace ns3
       GetTotalDestinations () const;
 
       void
-      AddDestination (Ptr<NNNAddress> addr);
+      AddDestination (Ptr<const NNNAddress> addr);
 
       void
-      RemoveDestination (Ptr<NNNAddress> addr);
+      RemoveDestination (Ptr<const NNNAddress> addr);
 
       bool
       DestinationExists (Ptr<NNNAddress> addr);

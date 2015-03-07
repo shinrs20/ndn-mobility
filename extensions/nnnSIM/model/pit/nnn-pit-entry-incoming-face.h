@@ -62,21 +62,21 @@ namespace ns3 {
 	 * \param face face of the incoming interest
 	 * \param addr 3N name we will aggregate
 	 */
-	IncomingFace (Ptr<Face> face, Ptr<NNNAddress> addr);
+	IncomingFace (Ptr<Face> face, Ptr<const NNNAddress> addr);
 
 	/**
 	 * \brief Add the 3N name to the associated face
 	 * \param addr 3N name we will aggregate
 	 */
 	void
-	AddDestination (Ptr<NNNAddress> addr);
+	AddDestination (Ptr<const NNNAddress> addr);
 
 	/**
 	 * \brief Add the 3N name to the associated face
 	 * \param addr 3N name we will aggregate
 	 */
 	void
-	RemoveDestination (Ptr<NNNAddress> addr);
+	RemoveDestination (Ptr<const NNNAddress> addr);
 
 	bool
 	NoAddresses ();

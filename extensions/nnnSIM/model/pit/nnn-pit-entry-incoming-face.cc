@@ -35,7 +35,7 @@ namespace ns3 {
       {
       }
 
-      IncomingFace::IncomingFace (Ptr<Face> face, Ptr<NNNAddress> addr)
+      IncomingFace::IncomingFace (Ptr<Face> face, Ptr<const NNNAddress> addr)
       : m_face (face)
       , m_arrivalTime (Simulator::Now ())
       , m_addrs (Create<NNNAddrAggregator> ())
@@ -50,13 +50,13 @@ namespace ns3 {
       }
 
       void
-      IncomingFace::AddDestination(Ptr<NNNAddress> addr)
+      IncomingFace::AddDestination(Ptr<const NNNAddress> addr)
       {
 	m_addrs->AddDestination(addr);
       }
 
       void
-      IncomingFace::RemoveDestination(Ptr<NNNAddress> addr)
+      IncomingFace::RemoveDestination(Ptr<const NNNAddress> addr)
       {
 	m_addrs->RemoveDestination(addr);
       }
@@ -74,6 +74,7 @@ namespace ns3 {
       IncomingFace::operator = (const IncomingFace &other)
       {
 	m_face = other.m_face;
+	m_addrs = other.m_addrs;
 	m_arrivalTime = other.m_arrivalTime;
 	return *this;
       }
