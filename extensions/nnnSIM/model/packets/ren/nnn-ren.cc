@@ -29,7 +29,7 @@ namespace ns3 {
   namespace nnn {
 
     REN::REN ()
-    : NNNPacket (REN_NNN, Seconds (0))
+    : NNNPDU (REN_NNN, Seconds (0))
     , m_re_lease (Seconds (0))
     , m_poa_type (POA_MAC48)
     , m_poas     (std::vector<Address> ())
@@ -37,7 +37,7 @@ namespace ns3 {
     }
 
     REN::REN (Ptr<NNNAddress> name)
-    : NNNPacket (REN_NNN, Seconds (0))
+    : NNNPDU (REN_NNN, Seconds (0))
     , m_name     (name)
     , m_re_lease (Seconds (0))
     , m_poa_type (POA_MAC48)
@@ -46,7 +46,7 @@ namespace ns3 {
     }
 
     REN::REN (const NNNAddress &name)
-    : NNNPacket (REN_NNN, Seconds (0))
+    : NNNPDU (REN_NNN, Seconds (0))
     , m_name     (Create<NNNAddress> (name))
     , m_re_lease (Seconds (0))
     , m_poa_type (POA_MAC48)
@@ -55,7 +55,7 @@ namespace ns3 {
     }
 
     REN::REN (const REN &ren_p)
-    : NNNPacket (REN_NNN, ren_p.GetLifetime ())
+    : NNNPDU (REN_NNN, ren_p.GetLifetime ())
     , m_name     (Create<NNNAddress> (ren_p.GetName()))
     , m_re_lease (ren_p.GetRemainLease ())
     , m_poa_type (ren_p.GetPoaType ())

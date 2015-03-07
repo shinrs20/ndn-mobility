@@ -36,7 +36,7 @@ namespace ns3 {
      * @ingroup nnn
      * @brief NNN AEN packet (wire formats are defined in wire)
      **/
-    class AEN : public NNNPacket, public SimpleRefCount<AEN>
+    class AEN : public NNNPDU, public SimpleRefCount<AEN>
     {
     public:
       /**

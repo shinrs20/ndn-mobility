@@ -27,12 +27,12 @@ NS_LOG_COMPONENT_DEFINE ("nnn.INF");
 namespace ns3 {
   namespace nnn {
 
-    INF::INF () : NNNPacket (INF_NNN, Seconds(0))
+    INF::INF () : NNNPDU (INF_NNN, Seconds(0))
     {
     }
 
     INF::INF (Ptr<NNNAddress> oldname,  Ptr<NNNAddress> newname)
-    : NNNPacket (INF_NNN, Seconds(300))
+    : NNNPDU (INF_NNN, Seconds(300))
     , m_old_name (oldname)
     , m_new_name (newname)
     , m_re_lease (Seconds (300))
@@ -40,7 +40,7 @@ namespace ns3 {
     }
 
     INF::INF (const NNNAddress &oldname, const NNNAddress &newname)
-    : NNNPacket (INF_NNN, Seconds(300))
+    : NNNPDU (INF_NNN, Seconds(300))
     , m_old_name (Create<NNNAddress> (oldname))
     , m_new_name (Create<NNNAddress> (newname))
     , m_re_lease (Seconds (300))
@@ -48,7 +48,7 @@ namespace ns3 {
     }
 
     INF::INF (const INF &inf_p)
-    : NNNPacket (INF_NNN, inf_p.GetLifetime ())
+    : NNNPDU (INF_NNN, inf_p.GetLifetime ())
     , m_old_name (Create<NNNAddress> (inf_p.GetOldName ()))
     , m_new_name (Create<NNNAddress> (inf_p.GetNewName ()))
     , m_re_lease (inf_p.GetRemainLease ())

@@ -30,21 +30,21 @@ namespace ns3 {
 
   namespace nnn {
 
-    EN::EN () : NNNPacket (EN_NNN, Seconds(0))
+    EN::EN () : NNNPDU (EN_NNN, Seconds(0))
     , m_poa_type (POA_MAC48)
     , m_poas     (std::vector<Address> ())
     {
     }
 
     EN::EN (std::vector<Address> signatures)
-    : NNNPacket (EN_NNN, Seconds(0))
+    : NNNPDU (EN_NNN, Seconds(0))
     , m_poa_type (POA_MAC48)
     , m_poas     (signatures)
     {
     }
 
     EN::EN (const EN &en_p)
-    : NNNPacket (EN_NNN, en_p.GetLifetime ())
+    : NNNPDU (EN_NNN, en_p.GetLifetime ())
     , m_poa_type  (en_p.GetPoaType ())
     , m_poas      (en_p.GetPoas ())
     {

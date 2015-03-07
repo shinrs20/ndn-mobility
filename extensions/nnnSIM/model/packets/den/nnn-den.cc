@@ -29,14 +29,14 @@ namespace ns3 {
   namespace nnn{
 
     DEN::DEN ()
-    : NNNPacket (DEN_NNN, Seconds(0))
+    : NNNPDU (DEN_NNN, Seconds(0))
     , m_poa_type (POA_MAC48)
     , m_poas     (std::vector<Address> ())
     {
     }
 
     DEN::DEN (Ptr<NNNAddress> name)
-    : NNNPacket (DEN_NNN, Seconds(300))
+    : NNNPDU (DEN_NNN, Seconds(300))
     , m_name     (name)
     , m_poa_type (POA_MAC48)
     , m_poas     (std::vector<Address> ())
@@ -44,7 +44,7 @@ namespace ns3 {
     }
 
     DEN::DEN (const NNNAddress &name)
-    : NNNPacket (DEN_NNN, Seconds(300))
+    : NNNPDU (DEN_NNN, Seconds(300))
     , m_name     (Create<NNNAddress> (name))
     , m_poa_type (POA_MAC48)
     , m_poas     (std::vector<Address> ())
@@ -52,7 +52,7 @@ namespace ns3 {
     }
 
     DEN::DEN (const DEN &den_p)
-    : NNNPacket (DEN_NNN, den_p.GetLifetime ())
+    : NNNPDU (DEN_NNN, den_p.GetLifetime ())
     , m_name     (Create<NNNAddress> (den_p.GetName()))
     , m_poa_type (den_p.GetPoaType())
     , m_poas (den_p.GetPoas())

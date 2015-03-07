@@ -32,7 +32,7 @@ namespace ns3
   namespace nnn
   {
 
-    class DU : public NNNPacket, public SimpleRefCount<DU>
+    class DU : public NNNPDU, public SimpleRefCount<DU>
     {
     public:
       DU ();

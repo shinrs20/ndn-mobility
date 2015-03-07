@@ -23,7 +23,7 @@ namespace ns3
 {
   namespace nnn
   {
-    NNNPacket::NNNPacket(uint32_t pkt_id, Time ttl)
+    NNNPDU::NNNPDU(uint32_t pkt_id, Time ttl)
     : m_packetid    (pkt_id)
     , m_ttl         (ttl)
     , m_version     (A_NNN)
@@ -31,7 +31,7 @@ namespace ns3
     {
     }
 
-    NNNPacket::NNNPacket (uint32_t pkt_id, Time ttl, uint16_t ver)
+    NNNPDU::NNNPDU (uint32_t pkt_id, Time ttl, uint16_t ver)
     : m_packetid    (pkt_id)
     , m_ttl         (ttl)
     , m_version     (ver)
@@ -39,7 +39,7 @@ namespace ns3
     {
     }
 
-    NNNPacket::~NNNPacket ()
+    NNNPDU::~NNNPDU ()
     {
     }
   } /* namespace nnn */

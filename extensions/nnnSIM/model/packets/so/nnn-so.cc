@@ -29,7 +29,7 @@ namespace ns3 {
   namespace nnn {
 
     SO::SO ()
-    : NNNPacket (SO_NNN, Seconds (0))
+    : NNNPDU (SO_NNN, Seconds (0))
     , m_name     (Create<NNNAddress> ())
     , m_payload  (Create<Packet> ())
     , m_PDUdatatype (NDN_NNN)
@@ -37,7 +37,7 @@ namespace ns3 {
     }
 
     SO::SO (Ptr<NNNAddress> name, Ptr<Packet> payload)
-    : NNNPacket (SO_NNN, Seconds (0))
+    : NNNPDU (SO_NNN, Seconds (0))
     , m_name (name)
     , m_PDUdatatype (NDN_NNN)
     {
@@ -51,7 +51,7 @@ namespace ns3 {
     }
 
     SO::SO (const NNNAddress &name, Ptr<Packet> payload)
-    : NNNPacket (SO_NNN, Seconds (0))
+    : NNNPDU (SO_NNN, Seconds (0))
     , m_name     (Create<NNNAddress> (name))
     , m_PDUdatatype (NDN_NNN)
     {
@@ -65,7 +65,7 @@ namespace ns3 {
     }
 
     SO::SO (const SO &so_p)
-    : NNNPacket (SO_NNN, so_p.GetLifetime ())
+    : NNNPDU (SO_NNN, so_p.GetLifetime ())
     , m_name     (Create<NNNAddress> (so_p.GetName()))
     , m_payload  (so_p.GetPayload ()->Copy ())
     , m_PDUdatatype (so_p.GetPDUPayloadType ())

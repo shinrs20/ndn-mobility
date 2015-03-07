@@ -28,14 +28,14 @@ NS_LOG_COMPONENT_DEFINE ("nnn.DO");
 namespace ns3 {
   namespace nnn {
 
-    DO::DO () : NNNPacket (DO_NNN, Seconds (0))
+    DO::DO () : NNNPDU (DO_NNN, Seconds (0))
     , m_payload  (Create<Packet> ())
     , m_PDUdatatype (NDN_NNN)
     {
     }
 
     DO::DO (Ptr<NNNAddress> name, Ptr<Packet> payload)
-    : NNNPacket (DO_NNN, Seconds (0))
+    : NNNPDU (DO_NNN, Seconds (0))
     , m_name     (name)
     , m_PDUdatatype (NDN_NNN)
     {
@@ -49,7 +49,7 @@ namespace ns3 {
     }
 
     DO::DO (const NNNAddress &name, Ptr<Packet> payload)
-    : NNNPacket (DO_NNN, Seconds(0))
+    : NNNPDU (DO_NNN, Seconds(0))
     , m_name     (Create<NNNAddress> (name))
     , m_PDUdatatype (NDN_NNN)
     {
@@ -63,7 +63,7 @@ namespace ns3 {
     }
 
     DO::DO (const DO &do_p)
-    : NNNPacket (DO_NNN, do_p.GetLifetime ())
+    : NNNPDU (DO_NNN, do_p.GetLifetime ())
     , m_name     (Create<NNNAddress> (do_p.GetName()))
     , m_payload  (do_p.GetPayload ()->Copy ())
     , m_PDUdatatype (do_p.GetPDUPayloadType ())

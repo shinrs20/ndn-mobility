@@ -29,14 +29,14 @@ namespace ns3 {
   namespace nnn {
 
     NULLp::NULLp ()
-    : NNNPacket (NULL_NNN, Seconds (0))
+    : NNNPDU (NULL_NNN, Seconds (0))
     , m_payload  (Create<Packet> ())
     , m_PDUdatatype (NDN_NNN)
     {
     }
 
     NULLp::NULLp (Ptr<Packet> payload)
-    : NNNPacket (NULL_NNN, Seconds (0))
+    : NNNPDU (NULL_NNN, Seconds (0))
     , m_PDUdatatype (NDN_NNN)
     {
       if (m_payload == 0)
@@ -49,7 +49,7 @@ namespace ns3 {
     }
 
     NULLp::NULLp (const NULLp &nullp)
-    : NNNPacket (NULL_NNN, nullp.GetLifetime ())
+    : NNNPDU (NULL_NNN, nullp.GetLifetime ())
     , m_payload  (nullp.GetPayload ()->Copy ())
     , m_PDUdatatype (nullp.GetPDUPayloadType ())
     {

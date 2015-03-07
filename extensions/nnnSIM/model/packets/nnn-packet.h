@@ -49,16 +49,16 @@ namespace ns3
      */
     enum POA_TYPES { POA_MAC48 = 0, POA_IP };
 
-    class NNNPacket
+    class NNNPDU
     {
     public:
 
-      NNNPacket (uint32_t pkt_id, Time ttl);
+      NNNPDU (uint32_t pkt_id, Time ttl);
 
-      NNNPacket (uint32_t pkt_id, Time ttl, uint16_t ver);
+      NNNPDU (uint32_t pkt_id, Time ttl, uint16_t ver);
 
       virtual
-      ~NNNPacket ();
+      ~NNNPDU ();
 
       /**
        * \brief Return Id of the packet
@@ -123,44 +123,44 @@ namespace ns3
     };
 
     inline uint32_t
-    NNNPacket::GetPacketId() const
+    NNNPDU::GetPacketId() const
     {
       return m_packetid;
     }
 
     inline uint16_t
-    NNNPacket::GetVersion() const
+    NNNPDU::GetVersion() const
     {
       return m_version;
     }
 
     inline void
-    NNNPacket::SetVersion(uint16_t version)
+    NNNPDU::SetVersion(uint16_t version)
     {
       m_version = version;
     }
 
     inline Time
-    NNNPacket::GetLifetime () const
+    NNNPDU::GetLifetime () const
     {
       return m_ttl;
     }
 
     inline void
-    NNNPacket::SetLifetime (Time ttl)
+    NNNPDU::SetLifetime (Time ttl)
     {
       m_ttl = ttl;
       m_wire = 0;
     }
 
     inline Ptr<const Packet>
-    NNNPacket::GetWire () const
+    NNNPDU::GetWire () const
     {
       return m_wire;
     }
 
     inline void
-    NNNPacket::SetWire (Ptr<const Packet> packet) const
+    NNNPDU::SetWire (Ptr<const Packet> packet) const
     {
       m_wire = packet;
     }

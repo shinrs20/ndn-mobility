@@ -30,24 +30,24 @@ NS_LOG_COMPONENT_DEFINE ("nnn.AEN");
 namespace ns3 {
   namespace nnn {
 
-    AEN::AEN () : NNNPacket (AEN_NNN, Seconds(0))
+    AEN::AEN () : NNNPDU (AEN_NNN, Seconds(0))
     {
     }
 
     AEN::AEN (Ptr<NNNAddress> name)
-    : NNNPacket (AEN_NNN, Seconds (300))
+    : NNNPDU (AEN_NNN, Seconds (300))
     , m_name     (name)
     {
     }
 
     AEN::AEN (const NNNAddress &name)
-    : NNNPacket (AEN_NNN, Seconds (300))
+    : NNNPDU (AEN_NNN, Seconds (300))
     , m_name     (Create<NNNAddress> (name))
     {
     }
 
     AEN::AEN (const AEN &aen_p)
-    : NNNPacket (AEN_NNN, aen_p.GetLifetime())
+    : NNNPDU (AEN_NNN, aen_p.GetLifetime())
     , m_name     (Create<NNNAddress> (aen_p.GetName()))
     {
       NS_LOG_FUNCTION("AEN correct copy constructor");

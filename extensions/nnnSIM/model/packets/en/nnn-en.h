@@ -39,7 +39,7 @@ namespace ns3 {
      * @ingroup nnn
      * @brief NNN EN packet (wire formats are defined in wire)
      **/
-    class EN : public NNNPacket, public SimpleRefCount<EN>
+    class EN : public NNNPDU, public SimpleRefCount<EN>
     {
     public:
       /**
