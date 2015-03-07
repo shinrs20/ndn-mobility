@@ -49,7 +49,7 @@ namespace ns3
      */
     enum POA_TYPES { POA_MAC48 = 0, POA_IP };
 
-    class NNNPDU
+    class NNNPDU : public SimpleRefCount<NNNPDU>
     {
     public:
 

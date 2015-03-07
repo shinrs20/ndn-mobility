@@ -20,8 +20,6 @@
 #ifndef _NNN_DU_HEADER_H_
 #define _NNN_DU_HEADER_H_
 
-#include <ns3-dev/ns3/simple-ref-count.h>
-
 #include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
 
@@ -32,7 +30,7 @@ namespace ns3
   namespace nnn
   {
 
-    class DU : public NNNPDU, public SimpleRefCount<DU>
+    class DU : public NNNPDU
     {
     public:
       DU ();

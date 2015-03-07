@@ -21,8 +21,6 @@
 #ifndef _NNN_AEN_HEADER_H_
 #define _NNN_AEN_HEADER_H_
 
-#include <ns3-dev/ns3/simple-ref-count.h>
-
 #include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
 
@@ -36,7 +34,7 @@ namespace ns3 {
      * @ingroup nnn
      * @brief NNN AEN packet (wire formats are defined in wire)
      **/
-    class AEN : public NNNPDU, public SimpleRefCount<AEN>
+    class AEN : public NNNPDU
     {
     public:
       /**

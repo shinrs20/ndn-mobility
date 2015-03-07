@@ -24,7 +24,6 @@
 #include <vector>
 
 #include <ns3-dev/ns3/address.h>
-#include <ns3-dev/ns3/simple-ref-count.h>
 
 #include "../nnn-packet.h"
 #include "../../naming/nnn-address.h"
@@ -39,7 +38,7 @@ namespace ns3 {
      * @ingroup nnn
      * @brief NNN REN packet (wire formats are defined in wire)
      **/
-    class REN : public NNNPDU, public SimpleRefCount<REN>
+    class REN : public NNNPDU
     {
     public:
       /**

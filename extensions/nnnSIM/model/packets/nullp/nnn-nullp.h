@@ -21,8 +21,6 @@
 #ifndef _NNN_NULLP_HEADER_H_
 #define _NNN_NULLP_HEADER_H_
 
-#include <ns3-dev/ns3/simple-ref-count.h>
-
 #include "../nnn-packet.h"
 
 namespace ns3 {
@@ -35,7 +33,7 @@ namespace ns3 {
      * @ingroup nnn
      * @brief NNN Null packet (wire formats are defined in wire)
      **/
-    class NULLp : public NNNPDU, public SimpleRefCount<NULLp>
+    class NULLp : public NNNPDU
     {
     public:
       /**
