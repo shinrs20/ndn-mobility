@@ -823,7 +823,7 @@ namespace ns3 {
 	  WillSatisfyPendingInterest (0, pitEntry);
 
 	  // Actually satisfy pending interest
-	  SatisfyPendingInterest (0, contentObject, pitEntry);
+	  SatisfyPendingInterest (pdu, 0, contentObject, pitEntry);
 	  return;
 	}
 
@@ -847,7 +847,7 @@ namespace ns3 {
 	  DidForwardSimilarInterest (face, interest, pitEntry);
 	}
 
-      PropagateInterest (face, interest, pitEntry);
+      PropagateInterest (pdu, face, interest, pitEntry);
     }
 
     void
@@ -882,7 +882,7 @@ namespace ns3 {
 	  WillSatisfyPendingInterest (face, pitEntry);
 
 	  // Actually satisfy pending interest
-	  SatisfyPendingInterest (face, data, pitEntry);
+	  SatisfyPendingInterest (pdu, face, data, pitEntry);
 
 	  // Lookup another PIT entry
 	  pitEntry = m_pit->Lookup (*data);
@@ -1062,7 +1062,8 @@ namespace ns3 {
     }
 
     void
-    ForwardingStrategy::SatisfyPendingInterest (Ptr<Face> inFace,
+    ForwardingStrategy::SatisfyPendingInterest (Ptr<NNNPDU> pdu,
+                                                Ptr<Face> inFace,
                                                 Ptr<const ndn::Data> data,
                                                 Ptr<pit::Entry> pitEntry)
     {
@@ -1225,7 +1226,8 @@ namespace ns3 {
     }
 
     void
-    ForwardingStrategy::PropagateInterest (Ptr<Face> inFace,
+    ForwardingStrategy::PropagateInterest (Ptr<NNNPDU> pdu,
+                                           Ptr<Face> inFace,
                                            Ptr<const ndn::Interest> interest,
                                            Ptr<pit::Entry> pitEntry)
     {
@@ -1237,7 +1239,7 @@ namespace ns3 {
       /// @todo Make lifetime per incoming interface
       pitEntry->UpdateLifetime (interest->GetInterestLifetime ());
 
-      bool propagated = DoPropagateInterest (inFace, interest, pitEntry);
+      bool propagated = DoPropagateInterest (pdu, inFace, interest, pitEntry);
 
       if (!propagated && isRetransmitted) //give another chance if retransmitted
 	{
@@ -1245,7 +1247,7 @@ namespace ns3 {
 	  pitEntry->IncreaseAllowedRetxCount ();
 
 	  // try again
-	  propagated = DoPropagateInterest (inFace, interest, pitEntry);
+	  propagated = DoPropagateInterest (pdu, inFace, interest, pitEntry);
 	}
 
       // if (!propagated)
@@ -1265,9 +1267,10 @@ namespace ns3 {
     }
 
     bool
-    ForwardingStrategy::DoPropagateInterest (Ptr<Face> inFace,
-                         Ptr<const ndn::Interest> interest,
-                         Ptr<pit::Entry> pitEntry)
+    ForwardingStrategy::DoPropagateInterest (Ptr<NNNPDU> pdu,
+                                             Ptr<Face> inFace,
+                                             Ptr<const ndn::Interest> interest,
+                                             Ptr<pit::Entry> pitEntry)
     {
       NS_LOG_FUNCTION (this);
       NS_ASSERT_MSG (m_pit != 0, "PIT should be aggregated with forwarding strategy");

@@ -438,12 +438,14 @@ namespace ns3 {
        *
        * Note that when Interest is satisfied from the cache, incoming face will be 0
        *
+       * @param pdu The 3N PDU that created this information
        * @param inFace  incoming face
        * @param data    Data packet
        * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
        */
       virtual void
-      SatisfyPendingInterest (Ptr<Face> inFace, // 0 allowed (from cache)
+      SatisfyPendingInterest (Ptr<NNNPDU> pdu,
+                              Ptr<Face> inFace, // 0 allowed (from cache)
                               Ptr<const ndn::Data> data,
                               Ptr<pit::Entry> pitEntry);
 
@@ -564,6 +566,7 @@ namespace ns3 {
        * General tasks so far are adding face to the list of incoming face, updating
        * PIT entry lifetime, calling DoPropagateInterest, and retransmissions (enabled by default).
        *
+       * @param pdu The 3N PDU that created this information
        * @param inFace     incoming face
        * @param interest   Interest packet
        * @param pitEntry   reference to PIT entry (reference to corresponding FIB entry inside)
@@ -571,7 +574,8 @@ namespace ns3 {
        * @see DoPropagateInterest
        */
       virtual void
-      PropagateInterest (Ptr<Face> inFace,
+      PropagateInterest (Ptr<NNNPDU> pdu,
+                         Ptr<Face> inFace,
                          Ptr<const ndn::Interest> interest,
                          Ptr<pit::Entry> pitEntry);
 
@@ -585,6 +589,7 @@ namespace ns3 {
        * which performs general tasks (adding face to the list of incoming face, updating
        * PIT entry lifetime, calling DoPropagateInterest, as well as perform retransmissions (enabled by default).
        *
+       * @param pdu The 3N PDU that created this information
        * @param inFace     incoming face
        * @param interest   Interest packet
        * @param pitEntry   reference to PIT entry (reference to corresponding FIB entry inside)
@@ -594,7 +599,8 @@ namespace ns3 {
        * @see PropagateInterest
        */
       virtual bool
-      DoPropagateInterest (Ptr<Face> inFace,
+      DoPropagateInterest (Ptr<NNNPDU> pdu,
+                           Ptr<Face> inFace,
                            Ptr<const ndn::Interest> interest,
                            Ptr<pit::Entry> pitEntry);
     protected:
