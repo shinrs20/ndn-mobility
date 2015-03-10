@@ -134,6 +134,9 @@ namespace ns3 {
       virtual bool
       Has3NName ();
 
+      virtual bool
+      GoesBy3NName (Ptr<NNNAddress> addr);
+
       virtual void
       flushBuffer (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName);
 
@@ -627,6 +630,7 @@ namespace ns3 {
       bool m_produce3Nnames;
 
       Time m_3n_lease_time;
+      Time m_3n_lifetime;
       int32_t m_standardMetric;
 
       ////////////////////////////////////////////////////////////////////
