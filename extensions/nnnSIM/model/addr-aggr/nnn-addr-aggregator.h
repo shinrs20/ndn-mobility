@@ -81,12 +81,10 @@ namespace ns3
       {
 	std::vector<Ptr<NNNAddress> > addr;
 
-	std::set<Ptr<NNNAddress>, PtrNNNComp>::iterator it;
-
-	for (it = m_addresses.begin(); it != m_addresses.end(); ++it)
-	  {
-	    addr.push_back(*it);
-	  }
+	BOOST_FOREACH(Ptr<NNNAddress> i, m_addresses)
+	{
+	  addr.push_back(i);
+	}
 
 	return addr;
       }
@@ -97,13 +95,11 @@ namespace ns3
 
 	std::vector<Ptr<NNNAddress> > compAddr;
 
-	std::set<Ptr<NNNAddress>, PtrNNNComp>::iterator it;
-
-	for (it = m_addresses.begin(); it != m_addresses.end(); ++it)
-	  {
-	    NNNAddress tmp = *m_sector + **it;
-	    compAddr.push_back(Create<NNNAddress> (tmp.toDotHex()));
-	  }
+	BOOST_FOREACH(Ptr<NNNAddress> i, m_addresses)
+	{
+	  NNNAddress tmp = *m_sector + *i;
+	  compAddr.push_back(Create<NNNAddress> (tmp));
+	}
 
 	return compAddr;
       }
