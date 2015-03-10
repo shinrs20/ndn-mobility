@@ -1254,6 +1254,9 @@ namespace ns3 {
 		  // Signal that the PDU had an ICN PDU as payload
 		  null_p_o->SetPDUPayloadType (NNN_NNN);
 
+		  // Send out the NULL PDU
+		  ok = incoming.m_face->SendNULLp(null_p_o);
+
 		  // Log that a Data PDU was sent
 		  DidSendOutData (inFace, incoming.m_face, data, pitEntry);
 		  // Log that a DO PDU was sent
@@ -1277,7 +1280,7 @@ namespace ns3 {
 		  {
 		NNNAddress newdst;
 
-		// Only push a new PDU is the 3N name has changed
+		// Only push a new PDU if the 3N name has changed
 		// Check if the NNPT has any information for this particular 3N name
 		if (m_nnpt->foundOldName(i))
 		  {
@@ -1381,6 +1384,9 @@ namespace ns3 {
 		    null_p_o->SetPayload (icn_pdu);
 		    // Signal that the PDU had an ICN PDU as payload
 		    null_p_o->SetPDUPayloadType (NNN_NNN);
+
+		    // Send out the NULL PDU
+		    ok = incoming.m_face->SendNULLp(null_p_o);
 
 		    // Log that a Data PDU was sent
 		    DidSendOutData (inFace, incoming.m_face, data, pitEntry);
@@ -1503,28 +1509,210 @@ namespace ns3 {
     }
 
     bool
-    ForwardingStrategy::TrySendOutInterest (Ptr<Face> inFace,
+    ForwardingStrategy::TrySendOutInterest (Ptr<NNNPDU> pdu,
+                                            Ptr<Face> inFace,
                                             Ptr<Face> outFace,
                                             Ptr<const ndn::Interest> interest,
                                             Ptr<pit::Entry> pitEntry)
     {
       NS_LOG_FUNCTION (this);
-      if (!CanSendOutInterest (inFace, outFace, interest, pitEntry))
+
+      // Convert the Interest PDU into a NS-3 Packet
+      Ptr<Packet> icn_pdu = ndn::Wire::FromInterest (interest);
+
+      // Pointers and flags for PDU types
+      Ptr<NULLp> nullp_i;
+      bool wasNULL = false;
+      Ptr<SO> so_i;
+      bool wasSO = false;
+      Ptr<DO> do_i;
+      bool wasDO = false;
+      Ptr<DU> du_i;
+      bool wasDU = false;
+
+      // Since we are using a combination of ICN/3N, we copy the pointer
+      // and see if 3N gives us a different Face to use. This will be used
+      // specifically when the PDU has a destination, in other words when using
+      // DO and DU PDUs
+      Ptr<Face> foutFace = outFace;
+
+      uint32_t pduid = pdu->GetPacketId();
+      switch(pduid)
+      {
+	case NULL_NNN:
+	  // Convert pointer to NULLp PDU
+	  nullp_i = DynamicCast<NULLp> (pdu);
+	  wasNULL = true;
+	  break;
+	case SO_NNN:
+	  // Convert pointer to SO PDU
+	  so_i = DynamicCast<SO> (pdu);
+	  wasSO = true;
+	  break;
+	case DO_NNN:
+	  // Convert pointer to DO PDU
+	  do_i = DynamicCast<DO> (pdu);
+	  wasDO = true;
+	  break;
+	case DU_NNN:
+	  // Convert pointer to DU PDU
+	  du_i = DynamicCast<DU> (pdu);
+	  wasDU = true;
+	  break;
+	default:
+	  break;
+      }
+
+      // Pointers to use when we have DO or DU PDUs
+      std::pair<Ptr<Face>, Address> tmp;
+      Address destAddr;
+      NNNAddress newdst;
+      Ptr<NNNAddress> newdstPtr;
+      bool nnptRedirect = false;
+      Ptr<DO> do_o_spec;
+      Ptr<DU> du_o_spec;
+
+      // If the incoming PDU is a DO or DU, we need to check where this PDU is
+      // supposed to go
+      if (wasDO || wasDU)
+	{
+	  if (wasDO)
+	    {
+	      newdst = do_i->GetName();
+	    }
+	  else if (wasDU)
+	    {
+	      newdst = du_i->GetDstName();
+	    }
+
+	  // Need to update the NNNAddress Ptr to use the newdst
+	  newdstPtr = Create<NNNAddress> (newdst);
+
+	  // Check if the NNPT has any information for this particular 3N name
+	  if (m_nnpt->foundOldName(newdstPtr))
+	    {
+	      // Retrieve the new 3N name destination and update variable
+	      newdst = m_nnpt->findPairedNamePtr (newdstPtr)->getName ();
+	      // Flag that the NNPT made a change
+	      nnptRedirect = true;
+	    }
+
+	  // Roughly find the next hop
+	  tmp = m_nnst->ClosestSectorFaceInfo (newdst);
+
+	  // Upate the variables for Face and PoA name
+	  foutFace = tmp.first;
+	  destAddr = tmp.second;
+	}
+
+      // Check if we are allowed to retransmit through the selected Face
+      if (!CanSendOutInterest (inFace, foutFace, interest, pitEntry))
 	{
 	  return false;
 	}
 
-      pitEntry->AddOutgoing (outFace);
+      // Update the PIT Entry with the Outgoing selected Face
+      pitEntry->AddOutgoing (foutFace);
 
-      //transmission
+      // Flag to know if what we sent was successful
       bool successSend = false;
-      //bool successSend = outFace->SendInterest (interest);
-      if (!successSend)
+
+      // Depending on the PDU type, send
+      if (wasNULL)
+	successSend = foutFace->SendNULLp(nullp_i);
+      else if (wasSO)
+	successSend = foutFace->SendSO(so_i);
+      else if (wasDO)
 	{
-	  m_dropInterests (interest, outFace);
+	  if (nnptRedirect)
+	    {
+	      do_o_spec = Create<DO> ();
+	      // Set the new 3N name
+	      do_o_spec->SetName (newdst);
+	      // Set the lifetime of the 3N PDU
+	      do_o_spec->SetLifetime (m_3n_lifetime);
+	      // Configure payload for PDU
+	      do_o_spec->SetPayload (icn_pdu);
+	      // Signal that the PDU had an ICN PDU as payload
+	      do_o_spec->SetPDUPayloadType (NNN_NNN);
+
+	      // Send the DO PDU out the selected Face
+	      successSend = outFace->SendDO (do_o_spec, destAddr);
+	    }
+	  else
+	    successSend = foutFace->SendDO (do_i);
+	}
+      else if (wasDU)
+	{
+	  if (nnptRedirect)
+	    {
+	      // Create a new DU PDU to send the data
+	      du_o_spec = Create<DU> ();
+	      // Use the original DU's Src 3N name
+	      du_o_spec->SetSrcName (du_i->GetSrcName ());
+	      // Set the new 3N name destination
+	      du_o_spec->SetDstName (newdst);
+	      // Set the lifetime of the 3N PDU
+	      du_o_spec->SetLifetime (m_3n_lifetime);
+	      // Configure payload for PDU
+	      du_o_spec->SetPayload (icn_pdu);
+	      // Signal that the PDU had an ICN PDU as payload
+	      du_o_spec->SetPDUPayloadType (NNN_NNN);
+
+	      // Send the DU PDU out the selected Face
+	      successSend = outFace->SendDU (du_o_spec, destAddr);
+	    }
+	  else
+	    successSend = foutFace->SendDU (du_i);
 	}
 
-      DidSendOutInterest (inFace, outFace, interest, pitEntry);
+      // Check if our sending was successful
+      if (!successSend)
+	{
+	  // Log that an Interest PDU was dropped
+	  m_dropInterests (interest, foutFace);
+	  // Log the type of 3N Data transfer PDU that was dropped
+	  if (wasNULL)
+	    m_dropNULLps (nullp_i, foutFace);
+	  else if (wasSO)
+	    m_dropSOs (so_i, foutFace);
+	  else if (wasDO)
+	    {
+	      if (nnptRedirect)
+		m_dropDOs (do_o_spec, foutFace);
+	      else
+		m_dropDOs (do_i, foutFace);
+	    }
+	  else if (wasDU)
+	    {
+	      if (nnptRedirect)
+		m_dropDUs (du_o_spec, foutFace);
+	      else
+		m_dropDUs (du_i, foutFace);
+	    }
+	}
+
+      // Log that an Interest PDU was forwarded
+      DidSendOutInterest (inFace, foutFace, interest, pitEntry);
+      // Log the type of 3N Data transfer PDU that was forwarded
+      if (wasNULL)
+	m_outNULLps (nullp_i, foutFace);
+      else if (wasSO)
+	m_outSOs (so_i, foutFace);
+      else if (wasDO)
+	{
+	  if (nnptRedirect)
+	    m_outDUs (du_o_spec, foutFace);
+	  else
+	    m_outDUs (du_i, foutFace);
+	}
+      else if (wasDU)
+	{
+	  if (nnptRedirect)
+	    m_outDUs (du_o_spec, foutFace);
+	  else
+	    m_outDUs (du_i, foutFace);
+	}
 
       return true;
     }
@@ -1591,13 +1779,15 @@ namespace ns3 {
 
       int propagatedCount = 0;
 
+      // Here we pick the next place to forward to using the ICN strategy
       BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())
       {
 	if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED ||
 	    metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_YELLOW)
 	  break; //propagate only to green faces
 
-	if (!TrySendOutInterest (inFace, metricFace.GetFace (), interest, pitEntry))
+	// Now we actually attempt to forward the PDU
+	if (!TrySendOutInterest (pdu, inFace, metricFace.GetFace (), interest, pitEntry))
 	  {
 	    continue;
 	  }
@@ -1619,7 +1809,7 @@ namespace ns3 {
 	if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED) // all non-read faces are in the front of the list
 	  break;
 
-	if (!TrySendOutInterest (inFace, metricFace.GetFace (), interest, pitEntry))
+	if (!TrySendOutInterest (pdu, inFace, metricFace.GetFace (), interest, pitEntry))
 	  {
 	    continue;
 	  }

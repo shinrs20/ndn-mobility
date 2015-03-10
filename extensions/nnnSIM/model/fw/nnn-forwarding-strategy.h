@@ -536,6 +536,7 @@ namespace ns3 {
        *
        * If event returns false, then there is some kind of a problem exists
        *
+       * @param pdu The 3N PDU that created this information
        * @param inFace     incoming face of the Interest
        * @param outFace    proposed outgoing face of the Interest
        * @param interest Interest packet
@@ -544,7 +545,8 @@ namespace ns3 {
        * @see CanSendOutInterest
        */
       virtual bool
-      TrySendOutInterest (Ptr<Face> inFace,
+      TrySendOutInterest (Ptr<NNNPDU> pdu,
+                          Ptr<Face> inFace,
                           Ptr<Face> outFace,
                           Ptr<const ndn::Interest> interest,
                           Ptr<pit::Entry> pitEntry);
