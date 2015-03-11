@@ -937,6 +937,7 @@ namespace ns3 {
     std::vector<Address>
     ForwardingStrategy::GetAllPoANames ()
     {
+      NS_LOG_FUNCTION (this);
       // Vector to save the PoA names
       std::vector<Address> poanames;
       // Get the total number of addresses we have
@@ -963,10 +964,12 @@ namespace ns3 {
     void
     ForwardingStrategy::Enroll ()
     {
+      NS_LOG_FUNCTION (this);
       // Check whether this node has a 3N name
       if (!Has3NName ())
 	{
 	  std::vector<Address> poanames = GetAllPoANames ();
+	  bool ok = false;
 
 	  // Create the EN PDU to transmit
 	  Ptr<EN> en_o = Create<EN> ();
@@ -990,7 +993,10 @@ namespace ns3 {
 	      if (!tmp->isAppFace ())
 		{
 		  // Send the EN throughout the Faces
-		  tmp->SendEN(en_o);
+		  ok = tmp->SendEN(en_o);
+
+		  if (ok)
+		    m_outENs (en_o, tmp);
 		}
 	    }
 	}
@@ -999,10 +1005,12 @@ namespace ns3 {
     void
     ForwardingStrategy::Reenroll ()
     {
+      NS_LOG_FUNCTION (this);
       // Check whether this node has a 3N name
       if (Has3NName ())
 	{
 	  std::vector<Address> poanames = GetAllPoANames ();
+	  bool ok = false;
 
 	  // Create the REN PDU to transmit
 	  Ptr<REN> ren_o = Create<REN> ();
@@ -1030,7 +1038,10 @@ namespace ns3 {
 	      if (!tmp->isAppFace ())
 		{
 		  // Send the REN throughout the Faces
-		  tmp->SendREN(ren_o);
+		  ok = tmp->SendREN(ren_o);
+
+		  if (ok)
+		    m_outRENs (ren_o, tmp);
 		}
 	    }
 	}
@@ -1039,10 +1050,12 @@ namespace ns3 {
     void
     ForwardingStrategy::Disenroll ()
     {
+      NS_LOG_FUNCTION (this);
       // Check whether this node has a 3N name
       if (Has3NName ())
 	{
 	  std::vector<Address> poanames = GetAllPoANames ();
+	  bool ok = false;
 
 	  // Create the REN PDU to transmit
 	  Ptr<DEN> den_o = Create<DEN> ();
@@ -1068,7 +1081,10 @@ namespace ns3 {
 	      if (!tmp->isAppFace ())
 		{
 		  // Send the REN throughout the Faces
-		  tmp->SendDEN(den_o);
+		  ok = tmp->SendDEN(den_o);
+
+		  if (ok)
+		    m_outDENs (den_o, tmp);
 		}
 	    }
 	}
