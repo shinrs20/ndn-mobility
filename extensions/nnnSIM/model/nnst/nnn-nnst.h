@@ -108,10 +108,10 @@ namespace ns3 {
       ClosestSectorNameInfo (Ptr<const NNNAddress> prefix);
 
       std::pair<Ptr<Face>, Address>
-      ClosestSectorFaceInfo (const NNNAddress &prefix);
+      ClosestSectorFaceInfo (const NNNAddress &prefix, uint32_t skip);
 
       std::pair<Ptr<Face>, Address>
-      ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix);
+      ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip);
 
       std::vector<Ptr<const NNNAddress> >
       OneHopNameInfo (const NNNAddress &prefix);
@@ -120,10 +120,10 @@ namespace ns3 {
       OneHopNameInfo (Ptr<const NNNAddress> prefix);
 
       std::vector<std::pair<Ptr<Face>, Address> >
-      OneHopFaceInfo (const NNNAddress &prefix);
+      OneHopFaceInfo (const NNNAddress &prefix, uint32_t skip);
 
       std::vector<std::pair<Ptr<Face>, Address> >
-      OneHopFaceInfo (Ptr<const NNNAddress> prefix);
+      OneHopFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip);
 
       std::vector<Ptr<const NNNAddress> >
       OneHopSubSectorNameInfo (const NNNAddress &prefix);
@@ -132,10 +132,10 @@ namespace ns3 {
       OneHopSubSectorNameInfo (Ptr<const NNNAddress> prefix);
 
       std::vector<std::pair<Ptr<Face>, Address> >
-      OneHopSubSectorFaceInfo (const NNNAddress &prefix);
+      OneHopSubSectorFaceInfo (const NNNAddress &prefix, uint32_t skip);
 
       std::vector<std::pair<Ptr<Face>, Address> >
-      OneHopSubSectorFaceInfo (Ptr<const NNNAddress> prefix);
+      OneHopSubSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip);
 
       std::vector<Ptr<const NNNAddress> >
       OneHopParentSectorNameInfo (const NNNAddress &prefix);
@@ -144,10 +144,10 @@ namespace ns3 {
       OneHopParentSectorNameInfo (Ptr<const NNNAddress> prefix);
 
       std::vector<std::pair<Ptr<Face>, Address> >
-      OneHopParentSectorFaceInfo (const NNNAddress &prefix);
+      OneHopParentSectorFaceInfo (const NNNAddress &prefix, uint32_t skip);
 
       std::vector<std::pair<Ptr<Face>, Address> >
-      OneHopParentSectorFaceInfo (Ptr<const NNNAddress> prefix);
+      OneHopParentSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip);
 
       Ptr<nnst::Entry>
       Find (const NNNAddress &prefix);

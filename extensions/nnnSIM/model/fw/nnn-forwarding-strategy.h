@@ -20,6 +20,7 @@
 #ifndef NNN_FORWARDING_STRATEGY_H
 #define NNN_FORWARDING_STRATEGY_H
 
+#include <ns3-dev/ns3/address.h>
 #include <ns3-dev/ns3/nstime.h>
 #include <ns3-dev/ns3/callback.h>
 #include <ns3-dev/ns3/object.h>
@@ -541,15 +542,17 @@ namespace ns3 {
        * @param outFace    proposed outgoing face of the Interest
        * @param interest Interest packet
        * @param pitEntry   reference to PIT entry (reference to corresponding FIB entry inside)
+       * @param addr Address to use when sending PDUs
        *
        * @see CanSendOutInterest
        */
       virtual bool
       TrySendOutInterest (Ptr<NNNPDU> pdu,
-                          Ptr<Face> inFace,
-                          Ptr<Face> outFace,
-                          Ptr<const ndn::Interest> interest,
-                          Ptr<pit::Entry> pitEntry);
+			  Ptr<Face> inFace,
+			  Ptr<Face> outFace,
+			  Address addr,
+			  Ptr<const ndn::Interest> interest,
+			  Ptr<pit::Entry> pitEntry);
 
       /**
        * @brief Event fired just after forwarding the Interest

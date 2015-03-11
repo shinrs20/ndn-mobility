@@ -79,20 +79,20 @@ namespace ns3 {
     }
 
     std::pair<Ptr<Face>, Address>
-    NNST::ClosestSectorFaceInfo (const NNNAddress &prefix)
+    NNST::ClosestSectorFaceInfo (const NNNAddress &prefix, uint32_t skip)
     {
         NS_LOG_FUNCTION (this << prefix);
         // Find the closest entry to prefix.
         Ptr<nnst::Entry> tmp = ClosestSector(prefix);
 
-        return tmp->FindBestCandidateFaceInfo(0);
+        return tmp->FindBestCandidateFaceInfo(skip);
     }
 
     std::pair<Ptr<Face>, Address>
-    NNST::ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix)
+    NNST::ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip)
     {
         NS_LOG_FUNCTION (this << *prefix);
-        return ClosestSectorFaceInfo(*prefix);
+        return ClosestSectorFaceInfo(*prefix, skip);
     }
 
     std::vector<Ptr<const NNNAddress> >
@@ -121,7 +121,7 @@ namespace ns3 {
     }
 
     std::vector<std::pair<Ptr<Face>, Address> >
-    NNST::OneHopFaceInfo (const NNNAddress &prefix)
+    NNST::OneHopFaceInfo (const NNNAddress &prefix, uint32_t skip)
     {
       NS_LOG_FUNCTION (this << prefix);
 
@@ -132,7 +132,7 @@ namespace ns3 {
 	{
 	  if (curr->GetAddress().distance(prefix) == 1)
 	    {
-	      ret.push_back(curr->FindBestCandidateFaceInfo(0));
+	      ret.push_back(curr->FindBestCandidateFaceInfo(skip));
 	    }
 	}
 
@@ -140,10 +140,10 @@ namespace ns3 {
     }
 
     std::vector<std::pair<Ptr<Face>, Address> >
-    NNST::OneHopFaceInfo (Ptr<const NNNAddress> prefix)
+    NNST::OneHopFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip)
     {
       NS_LOG_FUNCTION (this << *prefix);
-      return OneHopFaceInfo(*prefix);
+      return OneHopFaceInfo(*prefix, skip);
     }
 
     std::vector<Ptr<const NNNAddress> >
@@ -173,7 +173,7 @@ namespace ns3 {
     }
 
     std::vector<std::pair<Ptr<Face>, Address> >
-    NNST::OneHopSubSectorFaceInfo (const NNNAddress &prefix)
+    NNST::OneHopSubSectorFaceInfo (const NNNAddress &prefix, uint32_t skip)
     {
       NS_LOG_FUNCTION (this << prefix);
 
@@ -184,7 +184,7 @@ namespace ns3 {
 	{
 	  if (curr->GetAddress().distance(prefix) == 1 && prefix.isParentSector(curr->GetAddress()))
 	    {
-	      ret.push_back(curr->FindBestCandidateFaceInfo(0));
+	      ret.push_back(curr->FindBestCandidateFaceInfo(skip));
 	    }
 	}
 
@@ -192,10 +192,10 @@ namespace ns3 {
     }
 
     std::vector<std::pair<Ptr<Face>, Address> >
-    NNST::OneHopSubSectorFaceInfo (Ptr<const NNNAddress> prefix)
+    NNST::OneHopSubSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip)
     {
       NS_LOG_FUNCTION (this << *prefix);
-      return OneHopSubSectorFaceInfo(*prefix);
+      return OneHopSubSectorFaceInfo(*prefix, skip);
     }
 
     std::vector<Ptr<const NNNAddress> >
@@ -225,7 +225,7 @@ namespace ns3 {
     }
 
     std::vector<std::pair<Ptr<Face>, Address> >
-    NNST::OneHopParentSectorFaceInfo (const NNNAddress &prefix)
+    NNST::OneHopParentSectorFaceInfo (const NNNAddress &prefix, uint32_t skip)
     {
       NS_LOG_FUNCTION (this << prefix);
 
@@ -236,7 +236,7 @@ namespace ns3 {
 	{
 	  if (curr->GetAddress().distance(prefix) == 1 && curr->GetAddress().isParentSector(prefix))
 	    {
-	      ret.push_back(curr->FindBestCandidateFaceInfo(0));
+	      ret.push_back(curr->FindBestCandidateFaceInfo(skip));
 	    }
 	}
 
@@ -244,10 +244,10 @@ namespace ns3 {
     }
 
     std::vector<std::pair<Ptr<Face>, Address> >
-    NNST::OneHopParentSectorFaceInfo (Ptr<const NNNAddress> prefix)
+    NNST::OneHopParentSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip)
     {
       NS_LOG_FUNCTION (this << *prefix);
-      return OneHopParentSectorFaceInfo(*prefix);
+      return OneHopParentSectorFaceInfo(*prefix, skip);
     }
 
     Ptr<nnst::Entry>
