@@ -93,6 +93,18 @@ namespace ns3 {
     }
 
     Ptr<Face>
+    FaceContainer::Get (uint32_t i) const
+    {
+      Ptr<Face> tmp;
+      if (0 <= i && i < GetN ())
+	{
+	  tmp = m_faces[i];
+	}
+
+      return tmp;
+    }
+
+    Ptr<Face>
     FaceContainer::Get (FaceContainer::Iterator i) const
     {
       return *i;

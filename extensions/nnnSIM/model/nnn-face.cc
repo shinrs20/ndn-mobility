@@ -574,6 +574,24 @@ namespace ns3 {
       m_flags = flags;
     }
 
+    void
+    Face::SetAddress (Address addr)
+    {
+      m_addr = addr;
+    }
+
+    Address
+    Face::GetAddress () const
+    {
+      return m_addr;
+    }
+
+    bool
+    Face::isAppFace() const
+    {
+      return (GetFlags () == Face::APPLICATION);
+    }
+
     bool
     Face::operator== (const Face &face) const
     {

@@ -113,6 +113,15 @@ namespace ns3 {
       void Remove (const Ptr<Face> &face);
 
       /**
+       * Get the Face-derived object stored in container from a given position
+       *
+       * \param i the Face corresponding to the object in position i
+       *
+       * @see Face
+       */
+      Ptr<Face> Get (uint32_t i) const;
+
+      /**
        * Get a smart pointer to Face-derived object stored in the container
        *
        * \param i the iterator corresponding to the requested object

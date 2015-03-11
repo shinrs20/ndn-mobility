@@ -58,6 +58,7 @@ namespace ns3 {
       NS_LOG_FUNCTION (this << netDevice);
 
       SetMetric (1); // default metric
+      SetAddress (m_netDevice->GetAddress());
 
       NS_ASSERT_MSG (m_netDevice != 0, "NetDeviceFace needs to be assigned a valid NetDevice");
     }

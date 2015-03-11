@@ -71,6 +71,7 @@ namespace ns3 {
 
     class NamesContainer;
     class NamesContainerEntry;
+    class FaceContainer;
 
     class NNST;
     namespace nnst {
@@ -265,6 +266,18 @@ namespace ns3 {
        */
       virtual void
       RemoveFace (Ptr<Face> face);
+
+      virtual std::vector<Address>
+      GetAllPoANames ();
+
+      virtual void
+      Enroll ();
+
+      virtual void
+      Reenroll ();
+
+      virtual void
+      Disenroll ();
 
       /**
        * @brief Event fired every time a NNST entry is added to NNST
@@ -620,6 +633,7 @@ namespace ns3 {
       Ptr<NNPT> m_nnpt; ///< \brief Reference to NNPT
       Ptr<NNST> m_nnst; ///< \brief Reference to NNST
 
+      Ptr<FaceContainer> m_faces; ///< \brief List of Faces attached to this node
       Ptr<NamesContainer> m_node_names; ///< \brief 3N names container for personal names
       Ptr<NamesContainer> m_leased_names; ///< \brief 3N names container for node leased names
 

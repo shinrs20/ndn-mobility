@@ -295,6 +295,15 @@ namespace ns3 {
 	NDN          ///< @brief Connects to the NDN layer
       };
 
+      void
+      SetAddress (Address addr);
+
+      Address
+      GetAddress () const;
+
+      bool
+      isAppFace () const;
+
       /**
        * @brief Print information about the Face into the stream
        * @param os stream to write information to
@@ -376,6 +385,7 @@ namespace ns3 {
       Ptr<Node> m_node; ///< \brief Smart pointer to Node
 
     private:
+      Address m_addr;
       NULLpHandler m_upstreamNULLpHandler;
       SOHandler m_upstreamSOHandler;
       DOHandler m_upstreamDOHandler;

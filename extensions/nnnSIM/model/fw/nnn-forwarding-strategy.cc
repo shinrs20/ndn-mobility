@@ -34,6 +34,7 @@
 #include "../nnst/nnn-nnst-entry-facemetric.h"
 #include "../nnpt/nnn-nnpt.h"
 #include "../../helper/nnn-names-container.h"
+#include "../../helper/nnn-face-container.h"
 #include "../buffers/nnn-pdu-buffer.h"
 #include "../addr-aggr/nnn-addr-aggregator.h"
 #include "../../helper/nnn-header-helper.h"
@@ -921,12 +922,156 @@ namespace ns3 {
     ForwardingStrategy::AddFace (Ptr<Face> face)
     {
       NS_LOG_FUNCTION (this);
+
+      m_faces->Add(face);
     }
 
     void
     ForwardingStrategy::RemoveFace (Ptr<Face> face)
     {
       NS_LOG_FUNCTION (this);
+
+      m_faces->Remove(face);
+    }
+
+    std::vector<Address>
+    ForwardingStrategy::GetAllPoANames ()
+    {
+      // Vector to save the PoA names
+      std::vector<Address> poanames;
+      // Get the total number of addresses we have
+      int totalFaces = m_faces->GetN ();
+      Ptr<Face> tmp;
+
+      // Go through the Faces attached to the ForwardingStrategy
+      for (int i = 0; i < totalFaces; i++)
+	{
+	  // Get a Face
+	  tmp = m_faces->Get (i);
+
+	  // Check that the Face is not of type APPLICATION
+	  if (!tmp->isAppFace ())
+	    {
+	      // Get the Address for the
+	      poanames.push_back (tmp->GetAddress ());
+	    }
+	}
+
+      return poanames;
+    }
+
+    void
+    ForwardingStrategy::Enroll ()
+    {
+      // Check whether this node has a 3N name
+      if (!Has3NName ())
+	{
+	  std::vector<Address> poanames = GetAllPoANames ();
+
+	  // Create the EN PDU to transmit
+	  Ptr<EN> en_o = Create<EN> ();
+	  // Set the lifetime for the EN PDU
+	  en_o->SetLifetime(m_3n_lifetime);
+	  // Set the PoA type
+	  en_o->SetPoaType(POA_MAC48);
+	  // Add all the PoA names we found
+	  for (int i = 0; i < poanames.size (); i++)
+	    {
+	      en_o->AddPoa (poanames[i]);
+	    }
+
+	  Ptr<Face> tmp;
+	  // Now transmit the EN through all Faces that are not of type APPLICATION
+	  for (int i = 0; i < m_faces->GetN (); i++)
+	    {
+	      // Get a Face
+	      tmp = m_faces->Get (i);
+	      // Check that the Face is not of type APPLICATION
+	      if (!tmp->isAppFace ())
+		{
+		  // Send the EN throughout the Faces
+		  tmp->SendEN(en_o);
+		}
+	    }
+	}
+    }
+
+    void
+    ForwardingStrategy::Reenroll ()
+    {
+      // Check whether this node has a 3N name
+      if (Has3NName ())
+	{
+	  std::vector<Address> poanames = GetAllPoANames ();
+
+	  // Create the REN PDU to transmit
+	  Ptr<REN> ren_o = Create<REN> ();
+	  Ptr<const NNNAddress> addr = GetNode3NNamePtr ();
+
+	  // Set the lifetime for the REN PDU
+	  ren_o->SetLifetime(m_3n_lifetime);
+	  // Set the 3N name for the REN
+	  ren_o->SetName(*addr);
+	  // Write the expire time for the 3N name
+	  ren_o->SetRemainLease(m_node_names->findNameExpireTime(addr));
+	  // Add all the PoA names we found
+	  for (int i = 0; i < poanames.size (); i++)
+	    {
+	      ren_o->AddPoa (poanames[i]);
+	    }
+
+	  Ptr<Face> tmp;
+	  // Now transmit the REN through all Faces that are not of type APPLICATION
+	  for (int i = 0; i < m_faces->GetN (); i++)
+	    {
+	      // Get a Face
+	      tmp = m_faces->Get (i);
+	      // Check that the Face is not of type APPLICATION
+	      if (!tmp->isAppFace ())
+		{
+		  // Send the REN throughout the Faces
+		  tmp->SendREN(ren_o);
+		}
+	    }
+	}
+    }
+
+    void
+    ForwardingStrategy::Disenroll ()
+    {
+      // Check whether this node has a 3N name
+      if (Has3NName ())
+	{
+	  std::vector<Address> poanames = GetAllPoANames ();
+
+	  // Create the REN PDU to transmit
+	  Ptr<DEN> den_o = Create<DEN> ();
+	  Ptr<const NNNAddress> addr = GetNode3NNamePtr ();
+
+	  // Set the lifetime for the REN PDU
+	  den_o->SetLifetime(m_3n_lifetime);
+	  // Set the 3N name for the REN
+	  den_o->SetName(*addr);
+	  // Add all the PoA names we found
+	  for (int i = 0; i < poanames.size (); i++)
+	    {
+	      den_o->AddPoa (poanames[i]);
+	    }
+
+	  Ptr<Face> tmp;
+	  // Now transmit the DEN through all Faces that are not of type APPLICATION
+	  for (int i = 0; i < m_faces->GetN (); i++)
+	    {
+	      // Get a Face
+	      tmp = m_faces->Get (i);
+	      // Check that the Face is not of type APPLICATION
+	      if (!tmp->isAppFace ())
+		{
+		  // Send the REN throughout the Faces
+		  tmp->SendDEN(den_o);
+		}
+	    }
+	}
     }
 
     void
