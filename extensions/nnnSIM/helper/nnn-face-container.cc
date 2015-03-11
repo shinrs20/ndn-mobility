@@ -22,69 +22,82 @@
 #include "nnn-face-container.h"
 
 namespace ns3 {
-namespace nnn {
+  namespace nnn {
 
-FaceContainer::FaceContainer() {
-}
+    FaceContainer::FaceContainer() {
+    }
 
-FaceContainer::FaceContainer (const FaceContainer &other)
-{
-	AddAll (other);
-}
+    FaceContainer::FaceContainer (const FaceContainer &other)
+    {
+      AddAll (other);
+    }
 
-FaceContainer&
-FaceContainer::operator= (const FaceContainer &other)
-{
-	m_faces.clear ();
-	AddAll (other);
+    FaceContainer&
+    FaceContainer::operator= (const FaceContainer &other)
+    {
+      m_faces.clear ();
+      AddAll (other);
 
-	return *this;
-}
-
-
-void
-FaceContainer::AddAll (Ptr<FaceContainer> other)
-{
-	AddAll (*other);
-}
-
-void
-FaceContainer::AddAll (const FaceContainer &other)
-{
-	m_faces.insert (m_faces.end (),
-			other.m_faces.begin (), other.m_faces.end ());
-}
-
-FaceContainer::Iterator
-FaceContainer::Begin (void) const
-{
-	return m_faces.begin ();
-}
-
-FaceContainer::Iterator
-FaceContainer::End (void) const
-{
-	return m_faces.end ();
-}
-
-uint32_t
-FaceContainer::GetN (void) const
-{
-	return m_faces.size ();
-}
-
-void
-FaceContainer::Add (const Ptr<Face> &face)
-{
-	m_faces.push_back (face);
-}
-
-Ptr<Face>
-FaceContainer::Get (FaceContainer::Iterator i) const
-{
-	return *i;
-}
+      return *this;
+    }
 
 
-} /* namespace nnn */
+    void
+    FaceContainer::AddAll (Ptr<FaceContainer> other)
+    {
+      AddAll (*other);
+    }
+
+    void
+    FaceContainer::AddAll (const FaceContainer &other)
+    {
+      m_faces.insert (m_faces.end (),
+		      other.m_faces.begin (), other.m_faces.end ());
+    }
+
+    FaceContainer::Iterator
+    FaceContainer::Begin (void) const
+    {
+      return m_faces.begin ();
+    }
+
+    FaceContainer::Iterator
+    FaceContainer::End (void) const
+    {
+      return m_faces.end ();
+    }
+
+    uint32_t
+    FaceContainer::GetN (void) const
+    {
+      return m_faces.size ();
+    }
+
+    void
+    FaceContainer::Add (const Ptr<Face> &face)
+    {
+      m_faces.push_back (face);
+    }
+
+    void
+    FaceContainer::Remove(const Ptr<Face> &face)
+    {
+      for (iter it = m_faces.begin(); it != m_faces.end(); ++it)
+	{
+	  if (face == *it)
+	    {
+	      m_faces.erase(it);
+	      break;
+	    }
+	}
+    }
+
+    Ptr<Face>
+    FaceContainer::Get (FaceContainer::Iterator i) const
+    {
+      return *i;
+    }
+
+
+  } /* namespace nnn */
 } /* namespace ns3 */
