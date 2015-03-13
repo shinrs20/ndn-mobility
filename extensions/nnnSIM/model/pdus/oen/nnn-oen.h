@@ -35,7 +35,7 @@ namespace ns3
 
       OEN (Ptr<NNNAddress> name);
 
-      OEN (Ptr<const NNNAddress> &name);
+      OEN (const NNNAddress &name);
 
       OEN (const OEN &oen_p);
 

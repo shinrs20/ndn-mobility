@@ -41,11 +41,11 @@ namespace ns3
       SetName (name);
     }
 
-    OEN::OEN (Ptr<const NNNAddress> &name)
+    OEN::OEN (const NNNAddress &name)
     : NNNPDU (OEN_NNN, Seconds (0))
     , ENPDU ()
     {
-      SetName (*name);
+      SetName (name);
     }
 
     OEN::~OEN ()
