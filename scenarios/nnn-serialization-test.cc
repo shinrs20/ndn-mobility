@@ -24,6 +24,9 @@
 // Extensions
 #include "nnnSIM/nnnSIM-module.h"
 
+#include "nnnSIM/model/pdus/oen/nnn-oen.h"
+#include "nnnSIM/model/wire/nnnsim/oen/nnnsim-oen.h"
+
 using namespace ns3;
 using namespace std;
 using namespace nnn;
@@ -189,4 +192,21 @@ int main (int argc, char *argv[])
   Ptr<nnn::DU> target8 = wire::nnnSIM::DU::FromWire(packet);
 
   std::cout << std::endl << "After " << std::endl << *target8 << std::endl;
+
+  // Test OEN packet serialization
+  Ptr<nnn::OEN> source9 = Create<nnn::OEN> ();
+
+  source9->SetLifetime(ttl);
+  source9->SetName(addr);
+  source9->SetLeasetime(lease);
+  source9->AddPoa(n1_mac00.operator ns3::Address());
+  source9->AddPoa(n1_mac01.operator ns3::Address());
+
+  std::cout << std::endl << "Before" << std::endl << *source9 << std::endl;
+
+  packet = wire::nnnSIM::OEN::ToWire(source9);
+
+  Ptr<nnn::OEN> target9 = wire::nnnSIM::OEN::FromWire(packet);
+
+  std::cout << std::endl << "After" << std::endl << *target9 << std::endl;
 }

@@ -98,7 +98,6 @@ namespace ns3 {
 	return Address();
     }
 
-
     void
     EN::Print (std::ostream &os) const
     {

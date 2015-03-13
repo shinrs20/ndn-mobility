@@ -32,7 +32,7 @@ namespace ns3
     /**
      * @brief enum for NNN PacketId for NNN Packets
      */
-    enum NNN_PDU_TYPE { NULL_NNN = 0, SO_NNN, DO_NNN, DU_NNN, EN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN};
+    enum NNN_PDU_TYPE { NULL_NNN = 0, SO_NNN, DO_NNN, DU_NNN, EN_NNN, OEN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN};
 
     /**
      * @brief enum for payload type the NNN data transmission packets are carrying
@@ -52,6 +52,8 @@ namespace ns3
     class NNNPDU : public SimpleRefCount<NNNPDU>
     {
     public:
+
+      NNNPDU ();
 
       NNNPDU (uint32_t pkt_id, Time ttl);
 
@@ -114,6 +116,9 @@ namespace ns3
        */
       inline void
       SetWire (Ptr<const Packet> packet) const;
+
+      virtual void
+      Print (std::ostream &os) const;
 
     protected:
       uint32_t m_packetid;              ///< @brief Packet Identifier

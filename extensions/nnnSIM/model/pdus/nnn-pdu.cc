@@ -23,6 +23,10 @@ namespace ns3
 {
   namespace nnn
   {
+    NNNPDU::NNNPDU ()
+    {
+    }
+
     NNNPDU::NNNPDU(uint32_t pkt_id, Time ttl)
     : m_packetid    (pkt_id)
     , m_ttl         (ttl)
@@ -41,6 +45,13 @@ namespace ns3
 
     NNNPDU::~NNNPDU ()
     {
+    }
+
+    void
+    NNNPDU::Print(std::ostream &os) const
+    {
+      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
+      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
     }
   } /* namespace nnn */
 } /* namespace ns3 */
