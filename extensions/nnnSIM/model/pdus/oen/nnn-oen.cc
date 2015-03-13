@@ -16,19 +16,36 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-oen.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <ns3-dev/ns3/log.h>
+
 #include "nnn-oen.h"
 #include "../nnn-en-pdus.h"
 #include "../../nnn-naming.h"
+
+NS_LOG_COMPONENT_DEFINE ("nnn.OEN");
 
 namespace ns3
 {
   namespace nnn
   {
-
     OEN::OEN ()
     : NNNPDU (OEN_NNN, Seconds(0))
     , ENPDU ()
     {
+    }
+
+    OEN::OEN (Ptr<NNNAddress> name)
+    : NNNPDU (OEN_NNN, Seconds(0))
+    , ENPDU ()
+    {
+      SetName (name);
+    }
+
+    OEN::OEN (Ptr<const NNNAddress> &name)
+    : NNNPDU (OEN_NNN, Seconds (0))
+    , ENPDU ()
+    {
+      SetName (*name);
     }
 
     OEN::~OEN ()
@@ -37,14 +54,15 @@ namespace ns3
 
     OEN::OEN (const OEN &oen_p)
     {
-      OEN tmp = OEN ();
-      tmp.SetLeasetime(oen_p.GetLeasetime());
-      tmp.SetLifetime(oen_p.GetLifetime());
-      tmp.AddPoa(oen_p.GetPoas());
-      tmp.SetName(oen_p.GetName());
-      tmp.SetPoaType(oen_p.GetPoaType());
-      tmp.SetVersion(oen_p.GetVersion());
-      tmp.SetWire(oen_p.GetWire());
+      NS_LOG_FUNCTION("OEN correct copy constructor");
+      OEN ();
+      SetVersion (oen_p.GetVersion ());
+      SetLifetime (oen_p.GetLifetime ());
+      SetLeasetime (oen_p.GetLeasetime ());
+      SetPoaType (oen_p.GetPoaType ());
+      AddPoa (oen_p.GetPoas ());
+      SetName (oen_p.GetName ());
+      SetWire (oen_p.GetWire ());
     }
 
     const NNNAddress&
@@ -74,13 +92,11 @@ namespace ns3
       SetWire (0);
     }
 
-
     Time
     OEN::GetLeasetime() const
     {
       return m_lease;
     }
-
 
     void
     OEN::SetLeasetime (Time lease)

@@ -20,10 +20,6 @@
 #ifndef _NNNSIM_OEN_H_
 #define _NNNSIM_OEN_H_
 
-// For testing purposes
-#include "../../../pdus/oen/nnn-oen.h"
-/////////////////////////////
-
 #include "../nnnsim-common-hdr.h"
 #include "../nnnsim-common.h"
 
@@ -35,7 +31,6 @@ namespace ns3
     {
       namespace nnnSIM
       {
-
 	class OEN : public CommonHeader<nnn::OEN>
 	{
 	public:
@@ -56,7 +51,6 @@ namespace ns3
 	  void Serialize (Buffer::Iterator start) const;
 	  uint32_t Deserialize (Buffer::Iterator start);
 	};
-
       } /* namespace nnnSIM */
     } /* namespace wire */
   } /* namespace nnn */
