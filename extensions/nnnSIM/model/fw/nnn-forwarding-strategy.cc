@@ -407,7 +407,7 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inENs(en_p, face);
+      m_inENs (en_p, face);
 
       // Find if we can produce 3N names
       if (m_produce3Nnames && Has3NName ())
@@ -438,11 +438,11 @@ namespace ns3 {
 	  // Send the created AEN PDU out the way it came
 	  face->SendAEN(aen_p, destAddr);
 
-	  m_outAENs(aen_p, face);
+	  m_outAENs (aen_p, face);
 	}
       else
 	{
-	  m_dropENs(en_p, face);
+	  m_dropENs (en_p, face);
 	}
     }
 
@@ -451,7 +451,7 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inAENs(aen_p, face);
+      m_inAENs (aen_p, face);
 
       Ptr<const NNNAddress> obtainedName = aen_p->GetNamePtr();
 
@@ -479,7 +479,7 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inRENs(ren_p, face);
+      m_inRENs (ren_p, face);
 
       // Check we can actually produce 3N names
       if(m_produce3Nnames && Has3NName ())
@@ -501,7 +501,7 @@ namespace ns3 {
 	  Ptr<NNNAddress> produced3Nname = produce3NName ();
 
 	  // Add the new information to the NNST
-	  m_nnst->Add(produced3Nname, face, poaAddrs, m_3n_lease_time, m_standardMetric);
+	  m_nnst->Add (produced3Nname, face, poaAddrs, m_3n_lease_time, m_standardMetric);
 
 	  // Add the information the the leased NodeNameContainer
 	  m_leased_names->addEntry(produced3Nname, m_3n_lease_time);
@@ -509,51 +509,51 @@ namespace ns3 {
 	  // Now create the AEN PDU to respond
 	  Ptr<AEN> aen_p = Create<AEN> (produced3Nname);
 	  // Ensure that the lease time is set right
-	  aen_p->SetLeasetime(m_3n_lease_time);
+	  aen_p->SetLeasetime (m_3n_lease_time);
 
 	  // Send the created AEN PDU out the way it came
-	  face->SendAEN(aen_p, destAddr);
+	  face->SendAEN (aen_p, destAddr);
 
 	  // Log that the AEN was sent
-	  m_outAENs(aen_p, face);
+	  m_outAENs (aen_p, face);
 
-	  Time remaining = ren_p->GetRemainLease();
+	  Time remaining = ren_p->GetRemainLease ();
 
 	  // Regardless of the name, we need to update the NNPT
-	  m_nnpt->addEntry(reenroll, produced3Nname, remaining);
+	  m_nnpt->addEntry (reenroll, produced3Nname, remaining);
 
 	  // If we happen to be in the same subsector, the buffer will have something
 	  // the check is good practice
-	  flushBuffer(reenroll, produced3Nname);
+	  flushBuffer (reenroll, produced3Nname);
 
 	  // Check if the Node was in our subsector
-	  if (! reenroll->isSubSector(myAddr))
+	  if (! reenroll->isSubSector (myAddr))
 	    {
 	      // If node was not originally in our sector, create a INF PDU
-	      NS_LOG_INFO("Creating INF PDU");
+	      NS_LOG_INFO ("Creating INF PDU");
 	      Ptr<INF> inf_o = Create<INF> ();
 
 	      // Fill the necessary information
-	      inf_o->SetOldName(reenroll);
-	      inf_o->SetNewName(produced3Nname);
-	      inf_o->SetRemainLease(remaining);
+	      inf_o->SetOldName (reenroll);
+	      inf_o->SetNewName (produced3Nname);
+	      inf_o->SetRemainLease (remaining);
 
 	      // Find where to send the INF
-	      std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo(reenroll->getSectorName(), 0);
+	      std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (reenroll->getSectorName(), 0);
 
 	      Ptr<Face> outFace = tmp.first;
 	      Address destAddr = tmp.second;
 
 	      // Send the created INF PDU
-	      outFace->SendINF(inf_o, destAddr);
+	      outFace->SendINF (inf_o, destAddr);
 
 	      // Log that the INF PDU was sent
-	      m_outINFs(inf_o, outFace);
+	      m_outINFs (inf_o, outFace);
 	    }
 	}
       else
 	{
-	  m_dropRENs(ren_p, face);
+	  m_dropRENs (ren_p, face);
 	}
     }
 
@@ -562,37 +562,37 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inDENs(den_p, face);
+      m_inDENs (den_p, face);
 
       NNNAddress myAddr = GetNode3NName ();
-      Ptr<NNNAddress> leavingAddr = Create<NNNAddress> (den_p->GetNamePtr()->getName());
+      Ptr<NNNAddress> leavingAddr = Create<NNNAddress> (den_p->GetNamePtr ()->getName ());
 
       NS_LOG_INFO("We are in " << myAddr << ", " << *leavingAddr << " is leaving");
 
       // We know the node sending the DEN is moving. His lease time will be maintained
       // All we need to do is tell the buffer to keep the packets to that destination
-      m_node_pdu_buffer->AddDestination(leavingAddr);
+      m_node_pdu_buffer->AddDestination (leavingAddr);
 
       // If the DEN packet arrives at a node that is less than 2 hops away, then we
       // forward the DEN packet to the parent of this node
-      if (leavingAddr->distance(myAddr) <= 2 && leavingAddr->isSubSector(myAddr))
+      if (leavingAddr->distance (myAddr) <= 2 && leavingAddr->isSubSector (myAddr))
 	{
 	  // Now we forward the DEN information to the higher hierarchical nodes
-	  std::vector<std::pair<Ptr<Face>, Address> > hierarchicalFaces = m_nnst->OneHopParentSectorFaceInfo(myAddr, 0);
+	  std::vector<std::pair<Ptr<Face>, Address> > hierarchicalFaces = m_nnst->OneHopParentSectorFaceInfo (myAddr, 0);
 	  std::vector<std::pair<Ptr<Face>, Address> >::iterator it;
 
 	  Ptr<Face> outFace;
 	  Address destAddr;
 
-	  for (it = hierarchicalFaces.begin(); it != hierarchicalFaces.end (); ++it)
+	  for (it = hierarchicalFaces.begin (); it != hierarchicalFaces.end (); ++it)
 	    {
 	      outFace = it->first;
 	      destAddr = it->second;
 
-	      outFace->SendDEN(den_p, destAddr);
+	      outFace->SendDEN (den_p, destAddr);
 
 	      // Log that the DEN PDU was sent
-	      m_outDENs(den_p, outFace);
+	      m_outDENs (den_p, outFace);
 	    }
 	}
     }
@@ -600,6 +600,9 @@ namespace ns3 {
     void
     ForwardingStrategy::OnOEN (Ptr<Face> face, Ptr<OEN> oen_p)
     {
+      NS_LOG_FUNCTION (this);
+
+      m_inOENs (oen_p, face);
 
     }
 
@@ -608,34 +611,34 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inINFs(inf_p, face);
+      m_inINFs (inf_p, face);
 
       // Update our NNPT with the information in the INF PDU
-      m_nnpt->addEntry(inf_p->GetOldNamePtr(), inf_p->GetNewNamePtr(), inf_p->GetRemainLease());
+      m_nnpt->addEntry (inf_p->GetOldNamePtr (), inf_p->GetNewNamePtr (), inf_p->GetRemainLease ());
 
-      NNNAddress endSector = inf_p->GetOldNamePtr()->getSectorName();
+      NNNAddress endSector = inf_p->GetOldNamePtr ()->getSectorName ();
       NNNAddress myAddr = GetNode3NName ();
 
-      Ptr<NNNAddress> oldName = Create<NNNAddress> (inf_p->GetOldName());
-      Ptr<NNNAddress> newName = Create<NNNAddress> (inf_p->GetNewName());
+      Ptr<NNNAddress> oldName = Create<NNNAddress> (inf_p->GetOldName ());
+      Ptr<NNNAddress> newName = Create<NNNAddress> (inf_p->GetNewName ());
 
       // We have inserted the INF information. Now flush the relevant buffer
-      flushBuffer(oldName, newName);
+      flushBuffer (oldName, newName);
 
       if (myAddr != endSector)
 	{
 	  NS_LOG_INFO("We are in " << myAddr << " receiving an INF. Have not yet reached the delegated Sector " << endSector);
 
 	  // Roughly pick the next hop that would bring us closer to the endSector
-          std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo(endSector, 0);
+          std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (endSector, 0);
 
           Ptr<Face> outFace = tmp.first;
           Address destAddr = tmp.second;
 
-          outFace->SendINF(inf_p, destAddr);
+          outFace->SendINF (inf_p, destAddr);
 
           // Log that the INF PDU was sent
-          m_outINFs(inf_p, outFace);
+          m_outINFs (inf_p, outFace);
 	}
     }
 
@@ -644,15 +647,15 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inNULLps(null_p, face);
+      m_inNULLps (null_p, face);
 
       //Give us a rw copy of the packet
       Ptr<Packet> icn_pdu = null_p->GetPayload ()->Copy ();
 
       // To be able to simplify code, convert pointer to common type
-      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(null_p);
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU> (null_p);
 
-      ProcessICNPDU(pdu, face, icn_pdu);
+      ProcessICNPDU (pdu, face, icn_pdu);
     }
 
     void
@@ -660,7 +663,7 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inSOs(so_p, face);
+      m_inSOs (so_p, face);
 
       //Give us a rw copy of the packet
       Ptr<Packet> icn_pdu = so_p->GetPayload ()->Copy ();
@@ -668,7 +671,7 @@ namespace ns3 {
       // To be able to simplify code, convert pointer to common type
       Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(so_p);
 
-      ProcessICNPDU(pdu, face, icn_pdu);
+      ProcessICNPDU (pdu, face, icn_pdu);
     }
 
     void
@@ -676,15 +679,15 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inDOs(do_p, face);
+      m_inDOs (do_p, face);
 
       //Give us a rw copy of the packet
       Ptr<Packet> icn_pdu = do_p->GetPayload ()->Copy ();
 
       // To be able to simplify code, convert pointer to common type
-      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(do_p);
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU> (do_p);
 
-      ProcessICNPDU(pdu, face, icn_pdu);
+      ProcessICNPDU (pdu, face, icn_pdu);
     }
 
     void
@@ -692,15 +695,15 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_inDUs(du_p, face);
+      m_inDUs (du_p, face);
 
       //Give us a rw copy of the packet
       Ptr<Packet> icn_pdu = du_p->GetPayload ()->Copy ();
 
       // To be able to simplify code, convert pointer to common type
-      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(du_p);
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU> (du_p);
 
-      ProcessICNPDU(pdu, face, icn_pdu);
+      ProcessICNPDU (pdu, face, icn_pdu);
     }
 
     void
@@ -749,7 +752,7 @@ namespace ns3 {
       // If the PDU is Data
       if (receivedData)
 	{
-	  ProcessData(pdu, face, data);
+	  ProcessData (pdu, face, data);
 	}
     }
 
@@ -761,26 +764,26 @@ namespace ns3 {
       Ptr<DU> du_i;
 
       // Find out the type of PDU we are dealing with
-      uint32_t pduid = pdu->GetPacketId();
+      uint32_t pduid = pdu->GetPacketId ();
       switch(pduid)
       {
 	case NULL_NNN:
 	  // Add the Face
-	  pitEntry->AddIncoming(face);
+	  pitEntry->AddIncoming (face);
 	  // Show that you received a NULL PDU
-	  pitEntry->SetReceivedNULLPDU(true);
+	  pitEntry->SetReceivedNULLPDU (true);
 	  break;
 	case SO_NNN:
 	  // Convert pointer to SO
-	  so_i = DynamicCast<SO>(pdu);
+	  so_i = DynamicCast<SO> (pdu);
 	  // Add the Face
-	  pitEntry->AddIncoming(face, so_i->GetNamePtr());
+	  pitEntry->AddIncoming (face, so_i->GetNamePtr ());
 	  break;
 	case DU_NNN:
 	  // Convert pointer to DU
-	  du_i = DynamicCast<DU>(pdu);
+	  du_i = DynamicCast<DU> (pdu);
 	  // Add the Face
-	  pitEntry->AddIncoming(face, du_i->GetSrcNamePtr());
+	  pitEntry->AddIncoming (face, du_i->GetSrcNamePtr ());
 	  break;
 	default:
 	  break;
@@ -935,7 +938,7 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_faces->Add(face);
+      m_faces->Add (face);
     }
 
     void
@@ -943,7 +946,7 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this);
 
-      m_faces->Remove(face);
+      m_faces->Remove (face);
     }
 
     std::vector<Address>
@@ -986,9 +989,9 @@ namespace ns3 {
 	  // Create the EN PDU to transmit
 	  Ptr<EN> en_o = Create<EN> ();
 	  // Set the lifetime for the EN PDU
-	  en_o->SetLifetime(m_3n_lifetime);
+	  en_o->SetLifetime (m_3n_lifetime);
 	  // Set the PoA type
-	  en_o->SetPoaType(POA_MAC48);
+	  en_o->SetPoaType (POA_MAC48);
 	  // Add all the PoA names we found
 	  for (int i = 0; i < poanames.size (); i++)
 	    {
@@ -1005,7 +1008,7 @@ namespace ns3 {
 	      if (!tmp->isAppFace ())
 		{
 		  // Send the EN throughout the Faces
-		  ok = tmp->SendEN(en_o);
+		  ok = tmp->SendEN (en_o);
 
 		  if (ok)
 		    m_outENs (en_o, tmp);
@@ -1029,11 +1032,11 @@ namespace ns3 {
 	  Ptr<const NNNAddress> addr = GetNode3NNamePtr ();
 
 	  // Set the lifetime for the REN PDU
-	  ren_o->SetLifetime(m_3n_lifetime);
+	  ren_o->SetLifetime (m_3n_lifetime);
 	  // Set the 3N name for the REN
-	  ren_o->SetName(*addr);
+	  ren_o->SetName (*addr);
 	  // Write the expire time for the 3N name
-	  ren_o->SetRemainLease(m_node_names->findNameExpireTime(addr));
+	  ren_o->SetRemainLease (m_node_names->findNameExpireTime (addr));
 	  // Add all the PoA names we found
 	  for (int i = 0; i < poanames.size (); i++)
 	    {
@@ -1050,7 +1053,7 @@ namespace ns3 {
 	      if (!tmp->isAppFace ())
 		{
 		  // Send the REN throughout the Faces
-		  ok = tmp->SendREN(ren_o);
+		  ok = tmp->SendREN (ren_o);
 
 		  if (ok)
 		    m_outRENs (ren_o, tmp);
@@ -1074,9 +1077,9 @@ namespace ns3 {
 	  Ptr<const NNNAddress> addr = GetNode3NNamePtr ();
 
 	  // Set the lifetime for the REN PDU
-	  den_o->SetLifetime(m_3n_lifetime);
+	  den_o->SetLifetime (m_3n_lifetime);
 	  // Set the 3N name for the REN
-	  den_o->SetName(*addr);
+	  den_o->SetName (*addr);
 	  // Add all the PoA names we found
 	  for (int i = 0; i < poanames.size (); i++)
 	    {
@@ -1093,7 +1096,7 @@ namespace ns3 {
 	      if (!tmp->isAppFace ())
 		{
 		  // Send the REN throughout the Faces
-		  ok = tmp->SendDEN(den_o);
+		  ok = tmp->SendDEN (den_o);
 
 		  if (ok)
 		    m_outDENs (den_o, tmp);
@@ -1268,7 +1271,7 @@ namespace ns3 {
       Ptr<DU> du_i;
       bool wasDU = false;
 
-      uint32_t pduid = pdu->GetPacketId();
+      uint32_t pduid = pdu->GetPacketId ();
       switch(pduid)
       {
 	case NULL_NNN:
@@ -1307,7 +1310,7 @@ namespace ns3 {
 	{
 	  bool subSector = (*j == GetNode3NName ());
 	  // Obtain all the 3N names aggregated in this sector
-	  std::vector<Ptr<NNNAddress> > addrs = incoming.m_addrs->GetCompleteDestinations(j);
+	  std::vector<Ptr<NNNAddress> > addrs = incoming.m_addrs->GetCompleteDestinations (j);
 
 	  // If the aggregation is the same as the 3N Name the node is using, then
 	  // everything aggregated is probably connected to it
@@ -1319,7 +1322,7 @@ namespace ns3 {
 		NNNAddress newdst;
 
 		// Check if the NNPT has any information for this particular 3N name
-		if (m_nnpt->foundOldName(i))
+		if (m_nnpt->foundOldName (i))
 		  {
 		    // Retrieve the new 3N name destination
 		    newdst = m_nnpt->findPairedNamePtr (i)->getName ();
@@ -1350,12 +1353,12 @@ namespace ns3 {
 		    do_o_spec->SetPDUPayloadType (NNN_NNN);
 
 		    // Send the DO PDU out the selected Face
-		    ok = outFace->SendDO(do_o_spec, destAddr);
+		    ok = outFace->SendDO (do_o_spec, destAddr);
 
 		    // Log that a Data PDU was sent
 		    DidSendOutData (inFace, outFace, data, pitEntry);
 		    // Log that a DO PDU was sent
-		    m_outDOs(do_o_spec, outFace);
+		    m_outDOs (do_o_spec, outFace);
 
 		    // Something caused an error
 		    if (!ok)
@@ -1428,7 +1431,7 @@ namespace ns3 {
 		  null_p_o->SetPDUPayloadType (NNN_NNN);
 
 		  // Send out the NULL PDU
-		  ok = incoming.m_face->SendNULLp(null_p_o);
+		  ok = incoming.m_face->SendNULLp (null_p_o);
 
 		  // Log that a Data PDU was sent
 		  DidSendOutData (inFace, incoming.m_face, data, pitEntry);
@@ -1455,7 +1458,7 @@ namespace ns3 {
 
 		// Only push a new PDU if the 3N name has changed
 		// Check if the NNPT has any information for this particular 3N name
-		if (m_nnpt->foundOldName(i))
+		if (m_nnpt->foundOldName (i))
 		  {
 		    // Retrieve the new 3N name destination
 		    newdst = m_nnpt->findPairedNamePtr (i)->getName ();
@@ -1481,12 +1484,12 @@ namespace ns3 {
 			do_o_spec->SetPDUPayloadType (NNN_NNN);
 
 			// Send the DO PDU out the selected Face
-			ok = outFace->SendDO(do_o_spec, destAddr);
+			ok = outFace->SendDO (do_o_spec, destAddr);
 
 			// Log that a Data PDU was sent
 			DidSendOutData (inFace, outFace, data, pitEntry);
 			// Log that a DO PDU was sent
-			m_outDOs(do_o_spec, outFace);
+			m_outDOs (do_o_spec, outFace);
 
 			// Something caused an error
 			if (!ok)
@@ -1559,7 +1562,7 @@ namespace ns3 {
 		    null_p_o->SetPDUPayloadType (NNN_NNN);
 
 		    // Send out the NULL PDU
-		    ok = incoming.m_face->SendNULLp(null_p_o);
+		    ok = incoming.m_face->SendNULLp (null_p_o);
 
 		    // Log that a Data PDU was sent
 		    DidSendOutData (inFace, incoming.m_face, data, pitEntry);
