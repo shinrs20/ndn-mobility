@@ -1904,6 +1904,13 @@ namespace ns3 {
 	  else if (wasDU)
 	    newdst = du_i->GetDstName ();
 
+	  // Check if we are already at the destination
+	  if (newdst == GetNode3NName ())
+	    {
+	      // We have reached the destination return
+	      return true;
+	    }
+
 	  // Need to update the NNNAddress Ptr to use the newdst
 	  newdstPtr = Create<NNNAddress> (newdst);
 
@@ -1955,6 +1962,7 @@ namespace ns3 {
 	    {
 	      pdu_i = pdu;
 	    }
+
 
 	  for (int j = 0; j < totalFaces; j++)
 	    {
