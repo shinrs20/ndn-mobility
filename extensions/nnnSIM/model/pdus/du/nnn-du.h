@@ -16,21 +16,18 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-du.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #ifndef _NNN_DU_HEADER_H_
 #define _NNN_DU_HEADER_H_
 
 #include "../nnn-pdu.h"
-#include "../../naming/nnn-address.h"
+#include "../nnn-data-pdus.h"
+#include "../../nnn-naming.h"
 
 namespace ns3
 {
-  class Packet;
-
   namespace nnn
   {
-
-    class DU : public NNNPDU
+    class DU : public DATAPDU
     {
     public:
       DU ();
@@ -41,9 +38,6 @@ namespace ns3
        * @brief Copy constructor
        */
       DU (const DU &du_p);
-
-      virtual
-      ~DU ();
 
       DU(const NNNAddress &src, const NNNAddress &dst, Ptr<Packet> payload);
 
@@ -72,32 +66,6 @@ namespace ns3
       SetDstName (const NNNAddress &dst);
 
       /**
-       * @brief Gets the payload of the DU packet
-       */
-      Ptr<const Packet>
-      GetPayload () const;
-
-      /**
-       * @brief Sets the payload of the DU packet
-       */
-      void
-      SetPayload (Ptr<Packet> payload);
-
-      /**
-       * @brief Get the PDU type in DU
-       */
-      uint16_t
-      GetPDUPayloadType () const;
-
-      /**
-       * @brief Set the PDU type held in DU
-       *
-       * @param pdu_type PDU type in DU
-       */
-      void
-      SetPDUPayloadType (uint16_t pdu_type);
-
-      /**
        * @brief Print DU in plain-text to the specified output stream
        */
       void
@@ -106,8 +74,6 @@ namespace ns3
     private:
       Ptr<NNNAddress> m_src;
       Ptr<NNNAddress> m_dst;
-      uint16_t m_PDUdatatype;
-      Ptr<Packet> m_payload;
     };
 
     inline std::ostream &

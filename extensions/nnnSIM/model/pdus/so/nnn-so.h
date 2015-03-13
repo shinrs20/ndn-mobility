@@ -22,19 +22,18 @@
 #define _NNN_SO_HEADER_H_
 
 #include "../nnn-pdu.h"
-#include "../../naming/nnn-address.h"
+#include "../nnn-data-pdus.h"
+#include "../../nnn-naming.h"
 
-namespace ns3 {
-
-  class Packet;
-
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn
      * @brief NNN SO packet (wire formats are defined in wire)
      **/
-    class SO : public NNNPDU
+    class SO : public DATAPDU
     {
     public:
       /**
@@ -102,32 +101,6 @@ namespace ns3 {
       SetName (const NNNAddress &name);
 
       /**
-       * @brief Gets the payload of the NULL packet
-       */
-      Ptr<const Packet>
-      GetPayload () const;
-
-      /**
-       * @brief Sets the payload of the NULL packet
-       */
-      void
-      SetPayload (Ptr<Packet> payload);
-
-      /**
-       * @brief Get the PDU type in DO
-       */
-      uint16_t
-      GetPDUPayloadType () const;
-
-      /**
-       * @brief Set the PDU type held in DO
-       *
-       * @param pdu_type PDU type in DO
-       */
-      void
-      SetPDUPayloadType (uint16_t pdu_type);
-
-      /**
        * @brief Print SO in plain-text to the specified output stream
        */
       void
@@ -140,9 +113,6 @@ namespace ns3 {
 
     private:
       Ptr<NNNAddress> m_name;   ///< @brief Source NNN Address used in the packet
-      uint16_t m_PDUdatatype;   ///< @brief Type of payload held in SO
-      Ptr<Packet> m_payload;    ///< @brief Payload
-
     };
 
     inline std::ostream &

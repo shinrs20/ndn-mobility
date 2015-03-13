@@ -17,48 +17,45 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-den.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include<ns3-dev/ns3/log.h>
-#include <ns3-dev/ns3/unused.h>
 
 #include "nnn-den.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.DEN");
 
-namespace ns3 {
-  namespace nnn{
-
+namespace ns3
+{
+  namespace nnn
+  {
     DEN::DEN ()
     : NNNPDU (DEN_NNN, Seconds(0))
-    , m_poa_type (POA_MAC48)
-    , m_poas     (std::vector<Address> ())
+    , ENPDU ()
     {
     }
 
     DEN::DEN (Ptr<NNNAddress> name)
-    : NNNPDU (DEN_NNN, Seconds(300))
-    , m_name     (name)
-    , m_poa_type (POA_MAC48)
-    , m_poas     (std::vector<Address> ())
+    : NNNPDU (DEN_NNN, Seconds(0))
+    , ENPDU ()
     {
+      SetName (name);
     }
 
     DEN::DEN (const NNNAddress &name)
-    : NNNPDU (DEN_NNN, Seconds(300))
-    , m_name     (Create<NNNAddress> (name))
-    , m_poa_type (POA_MAC48)
-    , m_poas     (std::vector<Address> ())
+    : NNNPDU (DEN_NNN, Seconds(0))
+    , ENPDU ()
     {
+      SetName (name);
     }
 
     DEN::DEN (const DEN &den_p)
-    : NNNPDU (DEN_NNN, den_p.GetLifetime ())
-    , m_name     (Create<NNNAddress> (den_p.GetName()))
-    , m_poa_type (den_p.GetPoaType())
-    , m_poas (den_p.GetPoas())
     {
       NS_LOG_FUNCTION("DEN correct copy constructor");
-
+      DEN ();
+      SetVersion (den_p.GetVersion ());
+      SetLifetime (den_p.GetLifetime ());
+      SetPoaType (den_p.GetPoaType ());
+      AddPoa (den_p.GetPoas ());
+      SetName (den_p.GetName ());
       SetWire (den_p.GetWire ());
     }
 
@@ -89,66 +86,13 @@ namespace ns3 {
       SetWire (0);
     }
 
-    uint16_t
-    DEN::GetPoaType () const
-    {
-      return m_poa_type;
-    }
-
-    void
-    DEN::SetPoaType (uint16_t type)
-    {
-      m_poa_type = type;
-    }
-
-    void
-    DEN::AddPoa (Address signature)
-    {
-      m_poas.push_back(signature);
-    }
-
-    void
-    DEN::AddPoa (std::vector<Address> signatures)
-    {
-      m_poas.insert(m_poas.end (), signatures.begin (), signatures.end ());
-    }
-
-    uint32_t
-    DEN::GetNumPoa () const
-    {
-      return m_poas.size();
-    }
-
-    std::vector<Address>
-    DEN::GetPoas () const
-    {
-      return m_poas;
-    }
-
-    Address
-    DEN::GetOnePoa (uint32_t index) const
-    {
-      if (index < GetNumPoa ())
-	return m_poas[index];
-      else
-	return Address();
-    }
-
     void
     DEN::Print (std::ostream &os) const
     {
-      uint32_t num = GetNumPoa ();
-      uint16_t type = GetPoaType ();
       os << "<DEN>" << std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      NNNPDU::Print(os);
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
-      os << "  <POA Type>" << type << "</POA Type>"<< std::endl;
-      os << "  <POA Num>" << num << "</POA Num>"<< std::endl;
-      for (int i = 0; i < num; i++)
-	{
-	  os << "  <POA" << i << ">" << GetOnePoa(i) << "</POA" << i << ">"<< std::endl;
-	}
+      ENPDU::Print(os);
       os << "</DEN>" << std::endl;
     }
 

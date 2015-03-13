@@ -19,59 +19,53 @@
  */
 
 #include <ns3-dev/ns3/log.h>
-#include <ns3-dev/ns3/unused.h>
 
 #include "nnn-so.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.SO");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     SO::SO ()
     : NNNPDU (SO_NNN, Seconds (0))
-    , m_name     (Create<NNNAddress> ())
-    , m_payload  (Create<Packet> ())
-    , m_PDUdatatype (NDN_NNN)
+    , DATAPDU ()
+    , m_name (Create<NNNAddress> ())
     {
     }
 
     SO::SO (Ptr<NNNAddress> name, Ptr<Packet> payload)
     : NNNPDU (SO_NNN, Seconds (0))
+    , DATAPDU ()
     , m_name (name)
-    , m_PDUdatatype (NDN_NNN)
     {
       if (m_payload == 0)
-	{
-	  m_payload = Create<Packet> ();
-	} else
-	  {
-	    m_payload = payload;
-	  }
+	m_payload = Create<Packet> ();
+      else
+	m_payload = payload;
     }
 
     SO::SO (const NNNAddress &name, Ptr<Packet> payload)
     : NNNPDU (SO_NNN, Seconds (0))
+    , DATAPDU ()
     , m_name     (Create<NNNAddress> (name))
-    , m_PDUdatatype (NDN_NNN)
     {
       if (m_payload == 0)
-	{
-	  m_payload = Create<Packet> ();
-	} else
-	  {
-	    m_payload = payload;
-	  }
+	m_payload = Create<Packet> ();
+      else
+	m_payload = payload;
     }
 
     SO::SO (const SO &so_p)
-    : NNNPDU (SO_NNN, so_p.GetLifetime ())
-    , m_name     (Create<NNNAddress> (so_p.GetName()))
-    , m_payload  (so_p.GetPayload ()->Copy ())
-    , m_PDUdatatype (so_p.GetPDUPayloadType ())
     {
       NS_LOG_FUNCTION("SO correct copy constructor");
-
+      SO ();
+      SetVersion (so_p.GetVersion ());
+      SetLifetime (so_p.GetLifetime ());
+      SetName (so_p.GetName());
+      SetPDUPayloadType (so_p.GetPDUPayloadType ());
+      SetPayload (so_p.GetPayload()->Copy ());
       SetWire (so_p.GetWire ());
     }
 
@@ -102,46 +96,13 @@ namespace ns3 {
       m_wire = 0;
     }
 
-    Ptr<const Packet>
-    SO::GetPayload () const
-    {
-      return m_payload;
-    }
-
-    void
-    SO::SetPayload (Ptr<Packet> payload)
-    {
-      m_payload = payload;
-      m_wire = 0;
-    }
-
-    uint16_t
-    SO::GetPDUPayloadType() const
-    {
-      return m_PDUdatatype;
-    }
-
-    void
-    SO::SetPDUPayloadType (uint16_t pdu_type)
-    {
-      m_PDUdatatype = pdu_type;
-    }
-
     void
     SO::Print (std::ostream &os) const
     {
       os << "<SO>" << std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      NNNPDU::Print (os);
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
-      os << "  <PDU Type>" << GetPDUPayloadType() << "</PDU Type>" << std::endl;
-      if (m_payload != 0)
-	{
-	  os << "  <Payload>Yes</Payload>" << std::endl;
-	} else
-	  {
-	    os << "  <Payload>No</Payload>" << std::endl;
-	  }
+      DATAPDU::Print (os);
       os << "</SO>" << std::endl;
     }
   } // namespace nnn

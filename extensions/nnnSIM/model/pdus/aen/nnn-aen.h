@@ -22,7 +22,7 @@
 #define _NNN_AEN_HEADER_H_
 
 #include "../nnn-pdu.h"
-#include "../../naming/nnn-address.h"
+#include "../../nnn-naming.h"
 
 namespace ns3 {
 

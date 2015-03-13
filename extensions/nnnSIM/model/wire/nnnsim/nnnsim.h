@@ -29,6 +29,7 @@
 #include "aen/nnnsim-aen.h"
 #include "ren/nnnsim-ren.h"
 #include "den/nnnsim-den.h"
+#include "oen/nnnsim-oen.h"
 #include "inf/nnnsim-inf.h"
 
 #endif // NNN_WIRE_NNNSIM_H

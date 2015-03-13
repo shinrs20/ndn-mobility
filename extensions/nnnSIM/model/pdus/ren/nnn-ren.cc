@@ -30,39 +30,37 @@ namespace ns3 {
 
     REN::REN ()
     : NNNPDU (REN_NNN, Seconds (0))
+    , ENPDU ()
     , m_re_lease (Seconds (0))
-    , m_poa_type (POA_MAC48)
-    , m_poas     (std::vector<Address> ())
     {
     }
 
     REN::REN (Ptr<NNNAddress> name)
     : NNNPDU (REN_NNN, Seconds (0))
+    , ENPDU ()
     , m_name     (name)
     , m_re_lease (Seconds (0))
-    , m_poa_type (POA_MAC48)
-    , m_poas     (std::vector<Address> ())
     {
     }
 
     REN::REN (const NNNAddress &name)
     : NNNPDU (REN_NNN, Seconds (0))
-    , m_name     (Create<NNNAddress> (name))
+    , ENPDU ()
     , m_re_lease (Seconds (0))
-    , m_poa_type (POA_MAC48)
-    , m_poas     (std::vector<Address> ())
     {
+      SetName (name);
     }
 
     REN::REN (const REN &ren_p)
-    : NNNPDU (REN_NNN, ren_p.GetLifetime ())
-    , m_name     (Create<NNNAddress> (ren_p.GetName()))
-    , m_re_lease (ren_p.GetRemainLease ())
-    , m_poa_type (ren_p.GetPoaType ())
-    , m_poas     (ren_p.GetPoas ())
     {
       NS_LOG_FUNCTION("REN correct copy constructor");
-
+      REN ();
+      SetVersion (ren_p.GetVersion ());
+      SetLifetime (ren_p.GetLifetime ());
+      SetPoaType (ren_p.GetPoaType ());
+      AddPoa (ren_p.GetPoas ());
+      SetRemainLease (ren_p.GetRemainLease ());
+      SetName (ren_p.GetName ());
       SetWire (ren_p.GetWire ());
     }
 
@@ -93,51 +91,6 @@ namespace ns3 {
       m_wire = 0;
     }
 
-    uint16_t
-    REN::GetPoaType () const
-    {
-      return m_poa_type;
-    }
-
-    void
-    REN::SetPoaType (uint16_t type)
-    {
-      m_poa_type = type;
-    }
-
-    uint32_t
-    REN::GetNumPoa () const
-    {
-      return m_poas.size();
-    }
-
-    std::vector<Address>
-    REN::GetPoas () const
-    {
-      return m_poas;
-    }
-
-    Address
-    REN::GetOnePoa (uint32_t index) const
-    {
-      if (index < GetNumPoa ())
-	return m_poas[index];
-      else
-	return Address();
-    }
-
-    void
-    REN::AddPoa (Address signature)
-    {
-      m_poas.push_back(signature);
-    }
-
-    void
-    REN::AddPoa (std::vector<Address> signatures)
-    {
-      m_poas.insert(m_poas.end (), signatures.begin (), signatures.end ());
-    }
-
     Time
     REN::GetRemainLease () const
     {
@@ -153,21 +106,12 @@ namespace ns3 {
     void
     REN::Print (std::ostream &os) const
     {
-      uint32_t num = GetNumPoa ();
-      uint16_t type = GetPoaType ();
       os << "<REN>" << std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      NNNPDU::Print(os);
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
       os << "  <RLease>" << GetRemainLease () << "</RLease>" << std::endl;
-      os << "  <POA Type>" << type << "</POA Type>" << std::endl;
-      os << "  <POA Num>" << num << "</POA Num>" << std::endl;
-      for (int i = 0; i < num; i++)
-	{
-	  os << "  <POA" << i << ">" << m_poas[i] << "</POA" << i << ">" << std::endl;
-	}
+      ENPDU::Print(os);
       os << "</REN>" << std::endl;
     }
-
   } // namespace nnn
 } // namespace ns3

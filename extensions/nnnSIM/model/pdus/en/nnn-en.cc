@@ -26,92 +26,37 @@ NS_LOG_COMPONENT_DEFINE ("nnn.EN");
 
 namespace ns3 {
 
-  class Packet;
-
   namespace nnn {
 
-    EN::EN () : NNNPDU (EN_NNN, Seconds(0))
-    , m_poa_type (POA_MAC48)
-    , m_poas     (std::vector<Address> ())
+    EN::EN ()
+    : NNNPDU (EN_NNN, Seconds(0))
+    , ENPDU ()
     {
     }
 
     EN::EN (std::vector<Address> signatures)
     : NNNPDU (EN_NNN, Seconds(0))
-    , m_poa_type (POA_MAC48)
-    , m_poas     (signatures)
+    , ENPDU ()
     {
     }
 
     EN::EN (const EN &en_p)
-    : NNNPDU (EN_NNN, en_p.GetLifetime ())
-    , m_poa_type  (en_p.GetPoaType ())
-    , m_poas      (en_p.GetPoas ())
     {
       NS_LOG_FUNCTION("EN correct copy constructor");
-
+      EN ();
+      SetVersion (en_p.GetVersion ());
+      SetLifetime (en_p.GetLifetime ());
+      SetPoaType (en_p.GetPoaType ());
+      AddPoa (en_p.GetPoas ());
       SetWire (en_p.GetWire ());
-    }
-
-    uint16_t
-    EN::GetPoaType () const
-    {
-      return m_poa_type;
-    }
-
-    void
-    EN::SetPoaType (uint16_t type)
-    {
-      m_poa_type = type;
-    }
-
-    void
-    EN::AddPoa (Address signature)
-    {
-      m_poas.push_back(signature);
-    }
-
-    void
-    EN::AddPoa (std::vector<Address> signatures)
-    {
-      m_poas.insert(m_poas.end (), signatures.begin (), signatures.end ());
-    }
-
-    uint32_t
-    EN::GetNumPoa () const
-    {
-      return m_poas.size();
-    }
-
-    std::vector<Address>
-    EN::GetPoas () const
-    {
-      return m_poas;
-    }
-
-    Address
-    EN::GetOnePoa (uint32_t index) const
-    {
-      if (index < GetNumPoa ())
-	return m_poas[index];
-      else
-	return Address();
     }
 
     void
     EN::Print (std::ostream &os) const
     {
-      uint32_t num = GetNumPoa ();
-      uint16_t type = GetPoaType ();
       os << "<EN>"<< std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
-      os << "  <POA Type>" << type << "</POA Type>"<< std::endl;
-      os << "  <POA Num>" << num << "</POA Num>"<< std::endl;
-      for (int i = 0; i < num; i++)
-	{
-	  os << "  <POA" << i << ">" << m_poas[i] << "</POA" << i << ">"<< std::endl;
-	}
+      NNNPDU::Print(os);
+      ENPDU::Print(os);
       os << "</EN>" << std::endl;
     }
 

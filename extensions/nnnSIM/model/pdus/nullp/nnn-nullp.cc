@@ -19,7 +19,6 @@
  */
 
 #include <ns3-dev/ns3/log.h>
-#include <ns3-dev/ns3/unused.h>
 
 #include "nnn-nullp.h"
 
@@ -30,73 +29,37 @@ namespace ns3 {
 
     NULLp::NULLp ()
     : NNNPDU (NULL_NNN, Seconds (0))
-    , m_payload  (Create<Packet> ())
-    , m_PDUdatatype (NDN_NNN)
+    , DATAPDU ()
     {
     }
 
     NULLp::NULLp (Ptr<Packet> payload)
     : NNNPDU (NULL_NNN, Seconds (0))
-    , m_PDUdatatype (NDN_NNN)
+    , DATAPDU ()
     {
       if (m_payload == 0)
-	{
-	  m_payload = Create<Packet> ();
-	} else
-	  {
-	    m_payload = payload;
-	  }
+	m_payload = Create<Packet> ();
+      else
+	m_payload = payload;
     }
 
     NULLp::NULLp (const NULLp &nullp)
-    : NNNPDU (NULL_NNN, nullp.GetLifetime ())
-    , m_payload  (nullp.GetPayload ()->Copy ())
-    , m_PDUdatatype (nullp.GetPDUPayloadType ())
     {
       NS_LOG_FUNCTION("NULLp correct copy constructor");
-
+      NULLp ();
+      SetVersion (nullp.GetVersion ());
+      SetLifetime (nullp.GetLifetime ());
+      SetPDUPayloadType (nullp.GetPDUPayloadType ());
+      SetPayload (nullp.GetPayload()->Copy ());
       SetWire (nullp.GetWire ());
-    }
-
-    uint16_t
-    NULLp::GetPDUPayloadType() const
-    {
-      return m_PDUdatatype;
-    }
-
-    void
-    NULLp::SetPDUPayloadType (uint16_t pdu_type)
-    {
-      m_PDUdatatype = pdu_type;
-    }
-
-    void
-    NULLp::SetPayload (Ptr<Packet> payload)
-    {
-      m_payload = payload;
-      m_wire = 0;
-    }
-
-    Ptr<const Packet>
-    NULLp::GetPayload () const
-    {
-      return m_payload;
     }
 
     void
     NULLp::Print (std::ostream &os) const
     {
       os << "<NULLp>" << std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
-      os << "  <PDU Type>" << GetPDUPayloadType() << "</PDU Type>" << std::endl;
-      if (m_payload != 0)
-	{
-	  os << "  <Payload>Yes</Payload>" << std::endl;
-	} else
-	  {
-	    os << "  <Payload>No</Payload>" << std::endl;
-	  }
+      NNNPDU::Print(os);
+      DATAPDU::Print(os);
       os << "</NULLp>" << std::endl;
     }
   } // namespace nnn

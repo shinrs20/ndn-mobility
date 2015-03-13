@@ -21,24 +21,19 @@
 #ifndef _NNN_REN_HEADER_H_
 #define _NNN_REN_HEADER_H_
 
-#include <vector>
-
-#include <ns3-dev/ns3/address.h>
-
 #include "../nnn-pdu.h"
-#include "../../naming/nnn-address.h"
+#include "../nnn-en-pdus.h"
+#include "../../nnn-naming.h"
 
-namespace ns3 {
-
-  class Packet;
-
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn
      * @brief NNN REN packet (wire formats are defined in wire)
      **/
-    class REN : public NNNPDU
+    class REN : public ENPDU
     {
     public:
       /**
@@ -70,43 +65,6 @@ namespace ns3 {
        * @brief Copy constructor
        */
       REN (const REN &ren_p);
-
-      void
-      SetPoaType (uint16_t type);
-
-      uint16_t
-      GetPoaType () const;
-
-      /**
-       * \brief Get number of MN's Signatures
-       *
-       * @param  const reference to Name object
-       *
-       **/
-      uint32_t
-      GetNumPoa () const;
-
-      /**
-       * \brief Get Signatures of MN
-       *
-       **/
-      std::vector<Address>
-      GetPoas () const;
-
-      Address
-      GetOnePoa (uint32_t index) const;
-
-      /**
-       * \brief Add Signature(MAC)
-       *
-       * @param signature MAC vectors
-       *
-       **/
-      void
-      AddPoa (Address signature);
-
-      void
-      AddPoa (std::vector<Address> signatures);
 
       /**
        * \brief Get interest name
@@ -157,12 +115,8 @@ namespace ns3 {
       REN &
       operator = (const REN &other) { return *this; }
 
-    private:
-      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
       Time m_re_lease;          ///< @brief Packet Remaining lease time
-      uint16_t m_poa_type;      ///< @brief Type of PoA in REN packet
-      std::vector<Address> m_poas;  ///<@brief vector of Signatures
-
+      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
     };
 
     inline std::ostream &

@@ -17,21 +17,16 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-inf.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #ifndef _NNN_INF_HEADER_H_
 #define _NNN_INF_HEADER_H_
 
-#include <ns3-dev/ns3/simple-ref-count.h>
-
 #include "../nnn-pdu.h"
-#include "../../naming/nnn-address.h"
+#include "../../nnn-naming.h"
 
-namespace ns3 {
-
-  class Packet;
-
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn
      * @brief NNN INF packet (wire formats are defined in wire)
@@ -155,8 +150,6 @@ namespace ns3 {
       Ptr<NNNAddress> m_old_name;  ///< @brief Old NNN Address used in the packet
       Ptr<NNNAddress> m_new_name;  ///< @brief New NNN Address used in the packet
       Time m_re_lease;             ///< @brief Packet Remaining lease time
-
-      mutable Ptr<const Packet> m_wire;
     };
 
     inline std::ostream &

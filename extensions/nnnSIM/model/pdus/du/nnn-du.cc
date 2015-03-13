@@ -26,60 +26,49 @@ namespace ns3
 {
   namespace nnn
   {
-
     DU::DU ()
     : NNNPDU (DU_NNN, Seconds (0))
-    , m_payload (Create<Packet> ())
-    , m_PDUdatatype (NDN_NNN)
+    , DATAPDU ()
+    , m_src (Create<NNNAddress> ())
+    , m_dst (Create<NNNAddress> ())
     {
     }
 
     DU::DU (Ptr<NNNAddress> src, Ptr<NNNAddress> dst, Ptr<Packet> payload)
     : NNNPDU (DU_NNN, Seconds (0))
-    , m_src     (src)
-    , m_dst     (dst)
-    , m_PDUdatatype (NDN_NNN)
+    , DATAPDU ()
+    , m_src (src)
+    , m_dst (dst)
     {
       if (m_payload == 0)
-	{
-	  m_payload = Create<Packet> ();
-	}
+	m_payload = Create<Packet> ();
       else
-	{
-	  m_payload = payload;
-	}
+	m_payload = payload;
     }
 
     DU::DU (const NNNAddress &src, const NNNAddress &dst, Ptr<Packet> payload)
     : NNNPDU (DU_NNN, Seconds(0))
+    , DATAPDU ()
     , m_src     (Create<NNNAddress> (src))
     , m_dst      (Create<NNNAddress> (dst))
-    , m_PDUdatatype (NDN_NNN)
     {
       if (m_payload == 0)
-	{
-	  m_payload = Create<Packet> ();
-	}
+	m_payload = Create<Packet> ();
       else
-	{
-	  m_payload = payload;
-	}
+	m_payload = payload;
     }
 
     DU::DU (const DU &du_p)
-    : NNNPDU (DU_NNN, du_p.GetLifetime ())
-    , m_src     (Create<NNNAddress> (du_p.GetSrcName()))
-    , m_dst     (Create<NNNAddress> (du_p.GetDstName()))
-    , m_payload  (du_p.GetPayload ()->Copy ())
-    , m_PDUdatatype (du_p.GetPDUPayloadType ())
     {
       NS_LOG_FUNCTION("DU correct copy constructor");
-
+      DU ();
+      SetVersion (du_p.GetVersion ());
+      SetLifetime (du_p.GetLifetime ());
+      SetSrcName (du_p.GetSrcName ());
+      SetDstName (du_p.GetDstName ());
+      SetPDUPayloadType (du_p.GetPDUPayloadType ());
+      SetPayload (du_p.GetPayload()->Copy ());
       SetWire (du_p.GetWire ());
-    }
-
-    DU::~DU ()
-    {
     }
 
     const NNNAddress&
@@ -136,48 +125,14 @@ namespace ns3
       SetWire(0);
     }
 
-    Ptr<const Packet>
-    DU::GetPayload () const
-    {
-      return m_payload;
-    }
-
-    void
-    DU::SetPayload (Ptr<Packet> payload)
-    {
-      m_payload = payload;
-      SetWire(0);
-    }
-
-    uint16_t
-    DU::GetPDUPayloadType() const
-    {
-      return m_PDUdatatype;
-    }
-
-    void
-    DU::SetPDUPayloadType (uint16_t pdu_type)
-    {
-      m_PDUdatatype = pdu_type;
-    }
-
     void
     DU::Print (std::ostream &os) const
     {
       os << "<DU>" << std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      NNNPDU::Print (os);
       os << "  <Name Src>" << GetSrcName () << "</Name Src>" << std::endl;
       os << "  <Name Dst>" << GetDstName () << "</Name Dst>" << std::endl;
-      os << "  <PDU Type>" << GetPDUPayloadType() << "</PDU Type>" << std::endl;
-      if (m_payload != 0)
-	{
-	  os << "  <Payload>Yes</Payload>" << std::endl;
-	}
-      else
-	{
-	  os << "  <Payload>No</Payload>" << std::endl;
-	}
+      DATAPDU::Print (os);
       os << "</DU>" << std::endl;
     }
   } /* namespace nnn */

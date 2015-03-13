@@ -29,7 +29,6 @@ namespace ns3
 {
   namespace nnn
   {
-
     class ENPDU : virtual public NNNPDU
     {
     public:

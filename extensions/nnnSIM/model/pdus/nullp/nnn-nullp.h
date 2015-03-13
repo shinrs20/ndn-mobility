@@ -22,18 +22,17 @@
 #define _NNN_NULLP_HEADER_H_
 
 #include "../nnn-pdu.h"
+#include "../nnn-data-pdus.h"
 
-namespace ns3 {
-
-  class Packet;
-
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn
      * @brief NNN Null packet (wire formats are defined in wire)
      **/
-    class NULLp : public NNNPDU
+    class NULLp : public DATAPDU
     {
     public:
       /**
@@ -56,32 +55,6 @@ namespace ns3 {
       NULLp (const NULLp &nullp);
 
       /**
-       * @brief Sets the payload of the NULL packet
-       */
-      void
-      SetPayload (Ptr<Packet> payload);
-
-      /**
-       * @brief Gets the payload of the NULL packet
-       */
-      Ptr<const Packet>
-      GetPayload () const;
-
-      /**
-       * @brief Get the PDU type in DO
-       */
-      uint16_t
-      GetPDUPayloadType () const;
-
-      /**
-       * @brief Set the PDU type held in DO
-       *
-       * @param pdu_type PDU type in DO
-       */
-      void
-      SetPDUPayloadType (uint16_t pdu_type);
-
-      /**
        * @brief Print NULLp in plain-text to the specified output stream
        */
       void
@@ -91,11 +64,6 @@ namespace ns3 {
       // NO_ASSIGN
       NULLp &
       operator = (const NULLp &other) { return *this; }
-
-    private:
-      uint16_t m_PDUdatatype;   ///< @brief Type of payload held in NULLp
-      Ptr<Packet> m_payload;    ///< @brief Payload
-
     };
 
     inline std::ostream &

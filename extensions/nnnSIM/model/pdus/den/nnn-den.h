@@ -21,19 +21,19 @@
 #ifndef _NNN_DEN_HEADER_H_
 #define _NNN_DEN_HEADER_H_
 
-#include <vector>
-
 #include "../nnn-pdu.h"
-#include "../../naming/nnn-address.h"
+#include "../nnn-en-pdus.h"
+#include "../../nnn-naming.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn
      * @brief NNN DEN packet (wire formats are defined in wire)
      **/
-    class DEN : virtual public NNNPDU
+    class DEN : public ENPDU
     {
     public:
       /**
@@ -98,43 +98,6 @@ namespace ns3 {
       void
       SetName (const NNNAddress &name);
 
-      uint16_t
-      GetPoaType () const;
-
-      void
-      SetPoaType (uint16_t type);
-
-      /**
-       * \brief Get number of MN's Signatures
-       *
-       * @param  const reference to Name object
-       *
-       **/
-      uint32_t
-      GetNumPoa () const;
-
-      /**
-       * \brief Get Signatures of MN
-       *
-       **/
-      std::vector<Address>
-      GetPoas () const;
-
-      Address
-      GetOnePoa (uint32_t index) const;
-
-      /**
-       * \brief Add Signature(MAC)
-       *
-       * @param signature MAC vectors
-       *
-       **/
-      void
-      AddPoa (Address signature);
-
-      void
-      AddPoa (std::vector<Address> signatures);
-
       /**
        * @brief Print DEN in plain-text to the specified output stream
        */
@@ -148,9 +111,6 @@ namespace ns3 {
 
     protected:
       Ptr<NNNAddress> m_name;   ///< @brief NNN Address used in the packet
-      uint16_t m_poa_type;      ///< @brief Type of PoA in DEN packet
-      std::vector<Address> m_poas;  ///<@brief vector of Signatures
-
     };
 
     inline std::ostream &

@@ -21,24 +21,18 @@
 #ifndef _NNN_EN_HEADER_H_
 #define _NNN_EN_HEADER_H_
 
-#include <vector>
-
-#include <ns3-dev/ns3/address.h>
-
 #include "../nnn-pdu.h"
-#include "../../naming/nnn-address.h"
+#include "../nnn-en-pdus.h"
 
-namespace ns3 {
-
-  class Packet;
-
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn
      * @brief NNN EN packet (wire formats are defined in wire)
      **/
-    class EN : public NNNPDU
+    class EN : public ENPDU
     {
     public:
       /**
@@ -51,52 +45,14 @@ namespace ns3 {
       /**
        * \brief Constructor
        *
-       *
-       * @param name Address signature creator
+       * @param poas vector of PoA names
        **/
-      EN (std::vector<Address> signature);
+      EN (std::vector<Address> poas);
 
       /**
        * @brief Copy constructor
        */
       EN (const EN &en_p);
-
-      uint16_t
-      GetPoaType () const;
-
-      void
-      SetPoaType (uint16_t type);
-
-      /**
-       * \brief Get number of MN's Signatures
-       *
-       * @param  const reference to Name object
-       *
-       **/
-      uint32_t
-      GetNumPoa () const;
-
-      /**
-       * \brief Get Signatures of MN
-       *
-       **/
-      std::vector<Address>
-      GetPoas () const;
-
-      Address
-      GetOnePoa (uint32_t index) const;
-
-      /**
-       * \brief Add Signature(MAC)
-       *
-       * @param signature MAC vectors
-       *
-       **/
-      void
-      AddPoa (Address signature);
-
-      void
-      AddPoa (std::vector<Address> signatures);
 
       /**
        * @brief Print EN in plain-text to the specified output stream
@@ -108,11 +64,6 @@ namespace ns3 {
       // NO_ASSIGN
       EN &
       operator = (const EN &other) { return *this; }
-
-    private:
-      uint16_t m_poa_type;      ///< @brief Type of PoA in EN packet
-      std::vector<Address> m_poas;  ///<@brief vector of Signatures
-
     };
 
     inline std::ostream &

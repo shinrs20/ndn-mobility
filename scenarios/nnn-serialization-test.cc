@@ -24,9 +24,6 @@
 // Extensions
 #include "nnnSIM/nnnSIM-module.h"
 
-#include "nnnSIM/model/pdus/oen/nnn-oen.h"
-#include "nnnSIM/model/wire/nnnsim/oen/nnnsim-oen.h"
-
 using namespace ns3;
 using namespace std;
 using namespace nnn;

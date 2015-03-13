@@ -29,4 +29,5 @@
 #include "pdus/aen/nnn-aen.h"
 #include "pdus/ren/nnn-ren.h"
 #include "pdus/den/nnn-den.h"
+#include "pdus/oen/nnn-oen.h"
 #include "pdus/inf/nnn-inf.h"

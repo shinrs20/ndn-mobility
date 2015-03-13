@@ -18,7 +18,6 @@
  */
 
 #include <ns3-dev/ns3/log.h>
-#include <ns3-dev/ns3/unused.h>
 
 #include "nnn-inf.h"
 
@@ -32,7 +31,7 @@ namespace ns3 {
     }
 
     INF::INF (Ptr<NNNAddress> oldname,  Ptr<NNNAddress> newname)
-    : NNNPDU (INF_NNN, Seconds(300))
+    : NNNPDU (INF_NNN, Seconds(0))
     , m_old_name (oldname)
     , m_new_name (newname)
     , m_re_lease (Seconds (300))
@@ -40,7 +39,7 @@ namespace ns3 {
     }
 
     INF::INF (const NNNAddress &oldname, const NNNAddress &newname)
-    : NNNPDU (INF_NNN, Seconds(300))
+    : NNNPDU (INF_NNN, Seconds(0))
     , m_old_name (Create<NNNAddress> (oldname))
     , m_new_name (Create<NNNAddress> (newname))
     , m_re_lease (Seconds (300))
@@ -128,8 +127,7 @@ namespace ns3 {
     INF::Print (std::ostream &os) const
     {
       os << "<INF>" << std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      NNNPDU::Print (os);
       os << "  <OldName>" << GetOldName () << "</OldName>" << std::endl;
       os << "  <NewName>" << GetNewName () << "</NewName>" << std::endl;
       os << "  <RLease>" << GetRemainLease () << "</RLease>" << std::endl;

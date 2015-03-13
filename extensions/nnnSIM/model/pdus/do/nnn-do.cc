@@ -19,57 +19,53 @@
  */
 
 #include <ns3-dev/ns3/log.h>
-#include <ns3-dev/ns3/unused.h>
 
 #include "nnn-do.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.DO");
 
-namespace ns3 {
-  namespace nnn {
-
-    DO::DO () : NNNPDU (DO_NNN, Seconds (0))
-    , m_payload  (Create<Packet> ())
-    , m_PDUdatatype (NDN_NNN)
+namespace ns3
+{
+  namespace nnn
+  {
+    DO::DO ()
+    : NNNPDU (DO_NNN, Seconds (0))
+    , DATAPDU ()
+    , m_name (Create<NNNAddress> ())
     {
     }
 
     DO::DO (Ptr<NNNAddress> name, Ptr<Packet> payload)
     : NNNPDU (DO_NNN, Seconds (0))
-    , m_name     (name)
-    , m_PDUdatatype (NDN_NNN)
+    , DATAPDU ()
+    , m_name (name)
     {
       if (m_payload == 0)
-	{
-	  m_payload = Create<Packet> ();
-	} else
-	  {
-	    m_payload = payload;
-	  }
+	m_payload = Create<Packet> ();
+      else
+	m_payload = payload;
     }
 
     DO::DO (const NNNAddress &name, Ptr<Packet> payload)
     : NNNPDU (DO_NNN, Seconds(0))
-    , m_name     (Create<NNNAddress> (name))
-    , m_PDUdatatype (NDN_NNN)
+    , DATAPDU ()
+    , m_name (Create<NNNAddress> (name))
     {
       if (m_payload == 0)
-	{
-	  m_payload = Create<Packet> ();
-	} else
-	  {
-	    m_payload = payload;
-	  }
+	m_payload = Create<Packet> ();
+      else
+	m_payload = payload;
     }
 
     DO::DO (const DO &do_p)
-    : NNNPDU (DO_NNN, do_p.GetLifetime ())
-    , m_name     (Create<NNNAddress> (do_p.GetName()))
-    , m_payload  (do_p.GetPayload ()->Copy ())
-    , m_PDUdatatype (do_p.GetPDUPayloadType ())
     {
       NS_LOG_FUNCTION("DO correct copy constructor");
-
+      DO ();
+      SetVersion (do_p.GetVersion ());
+      SetLifetime (do_p.GetLifetime ());
+      SetName (do_p.GetName());
+      SetPDUPayloadType (do_p.GetPDUPayloadType ());
+      SetPayload (do_p.GetPayload()->Copy ());
       SetWire (do_p.GetWire ());
     }
 
@@ -79,7 +75,6 @@ namespace ns3 {
       if (m_name == 0) throw DOException ();
       return *m_name;
     }
-
 
     Ptr<const NNNAddress>
     DO::GetNamePtr () const
@@ -101,49 +96,14 @@ namespace ns3 {
       SetWire(0);
     }
 
-    uint16_t
-    DO::GetPDUPayloadType() const
-    {
-      return m_PDUdatatype;
-    }
-
-    void
-    DO::SetPDUPayloadType (uint16_t pdu_type)
-    {
-      m_PDUdatatype = pdu_type;
-    }
-
-    void
-    DO::SetPayload (Ptr<Packet> payload)
-    {
-      m_payload = payload;
-      SetWire(0);
-    }
-
-    Ptr<const Packet>
-    DO::GetPayload () const
-    {
-      return m_payload;
-    }
-
     void
     DO::Print (std::ostream &os) const
     {
       os << "<DO>" << std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      NNNPDU::Print (os);
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
-      os << "  <PDU Type>" << GetPDUPayloadType() << "</PDU Type>" << std::endl;
-      if (m_payload != 0)
-	{
-	  os << "  <Payload>Yes</Payload>" << std::endl;
-	}
-      else
-	{
-	  os << "  <Payload>No</Payload>" << std::endl;
-	}
+      DATAPDU::Print (os);
       os << "</DO>" << std::endl;
     }
-
   } // namespace nnn
 } // namespace ns3
