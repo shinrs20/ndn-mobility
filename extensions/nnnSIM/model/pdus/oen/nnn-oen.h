@@ -16,8 +16,8 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-oen.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _NNN_OEN_H_
-#define _NNN_OEN_H_
+#ifndef _NNN_OEN_HEADER_H_
+#define _NNN_OEN_HEADER_H_
 
 #include "../nnn-pdu.h"
 #include "../nnn-en-pdus.h"
@@ -121,4 +121,4 @@ namespace ns3
   } /* namespace nnn */
 } /* namespace ns3 */
 
-#endif /* _NNN_OEN_H_ */
+#endif /* _NNN_OEN_HEADER_H_ */

@@ -19,8 +19,6 @@
 #include <ns3-dev/ns3/log.h>
 
 #include "nnn-oen.h"
-#include "../nnn-en-pdus.h"
-#include "../../nnn-naming.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.OEN");
 
@@ -113,6 +111,5 @@ namespace ns3
       ENPDU::Print(os);
       os << "</OEN>" << std::endl;
     }
-
   } /* namespace nnn */
 } /* namespace ns3 */
