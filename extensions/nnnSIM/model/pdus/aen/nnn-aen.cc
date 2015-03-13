@@ -35,13 +35,13 @@ namespace ns3 {
     }
 
     AEN::AEN (Ptr<NNNAddress> name)
-    : NNNPDU (AEN_NNN, Seconds (300))
+    : NNNPDU (AEN_NNN, Seconds (0))
     , m_name     (name)
     {
     }
 
     AEN::AEN (const NNNAddress &name)
-    : NNNPDU (AEN_NNN, Seconds (300))
+    : NNNPDU (AEN_NNN, Seconds (0))
     , m_name     (Create<NNNAddress> (name))
     {
     }
@@ -99,8 +99,7 @@ namespace ns3 {
     AEN::Print (std::ostream &os) const
     {
       os << "<AEN>" << std::endl;
-      os << "  <TTL>" << GetLifetime () << "</TTL>" << std::endl;
-      os << "  <Version>" << GetVersion () << "</Version>" << std::endl;
+      NNNPDU::Print (os);
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
       os << "  <Lease>" << GetLeasetime () << "</Lease>" << std::endl;
       os << "</AEN>"  << std::endl;
