@@ -67,6 +67,7 @@ namespace ns3 {
     class AEN;
     class REN;
     class DEN;
+    class OEN;
     class INF;
 
     class NamesContainer;
@@ -181,6 +182,16 @@ namespace ns3 {
        */
       virtual void
       OnDEN (Ptr<Face> face, Ptr<DEN> den_p);
+
+      /**
+       * \brief Actual processing of incoming Nnn DENs
+       *
+       * Processing OEN PDUs
+       * @param face    incoming face
+       * @param oen_p    OEN PDU
+       */
+      virtual void
+      OnOEN (Ptr<Face> face, Ptr<OEN> oen_p);
 
       /**
        * \brief Actual processing of incoming Nnn INFs
@@ -695,6 +706,17 @@ namespace ns3 {
 
       TracedCallback<Ptr<const REN>,
       Ptr<const Face> > m_dropRENs;  ///< @brief trace of dropped REN
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const OEN>,
+      Ptr<const Face> > m_outOENs; ///< @brief trace of outgoing OEN
+
+      TracedCallback<Ptr<const OEN>,
+      Ptr<const Face> > m_inOENs; ///< @brief trace of incoming OEN
+
+      TracedCallback<Ptr<const OEN>,
+      Ptr<const Face> > m_dropOENs;  ///< @brief trace of dropped OEN
 
       ////////////////////////////////////////////////////////////////////
 

@@ -49,6 +49,7 @@ namespace ns3 {
     class AEN;
     class REN;
     class DEN;
+    class OEN;
     class INF;
 
     /**
@@ -84,6 +85,7 @@ namespace ns3 {
       typedef Callback<void, Ptr<Face>, Ptr<AEN> > AENHandler;
       typedef Callback<void, Ptr<Face>, Ptr<REN> > RENHandler;
       typedef Callback<void, Ptr<Face>, Ptr<DEN> > DENHandler;
+      typedef Callback<void, Ptr<Face>, Ptr<OEN> > OENHandler;
       typedef Callback<void, Ptr<Face>, Ptr<INF> > INFHandler;
       typedef Callback<void, Ptr<Face>, Ptr<DU> > DUHandler;
 
@@ -111,7 +113,7 @@ namespace ns3 {
                                    const DOHandler &DOHandler, const ENHandler &ENHandler,
                                    const AENHandler &AENHandler, const RENHandler &RENHandler,
                                    const DENHandler &DENHandler, const INFHandler &INFHandler,
-				   const DUHandler &DUHandler);
+				   const DUHandler &DUHandler, const OENHandler &OENHandler);
 
       /**
        * \brief Un-Register callback to call when new packet arrives on the Face
@@ -185,6 +187,12 @@ namespace ns3 {
       SendDEN (Ptr<const DEN> den_o, Address addr);
 
       virtual bool
+      SendOEN (Ptr<const OEN> oen_o);
+
+      virtual bool
+      SendOEN (Ptr<const OEN> oen_o, Address addr);
+
+      virtual bool
       SendINF (Ptr<const INF> inf_o);
 
       virtual bool
@@ -231,6 +239,9 @@ namespace ns3 {
 
       virtual bool
       ReceiveDEN (Ptr<DEN> den_i);
+
+      virtual bool
+      ReceiveOEN (Ptr<OEN> oen_i);
 
       virtual bool
       ReceiveINF (Ptr<INF> inf_i);
@@ -394,6 +405,7 @@ namespace ns3 {
       AENHandler m_upstreamAENHandler;
       RENHandler m_upstreamRENHandler;
       DENHandler m_upstreamDENHandler;
+      OENHandler m_upstreamOENHandler;
       INFHandler m_upstreamINFHandler;
       bool m_ifup;
       uint32_t m_id; ///< \brief id of the interNN_Face in NNN stack (per-node uniqueness)

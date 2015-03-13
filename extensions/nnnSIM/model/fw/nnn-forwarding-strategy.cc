@@ -114,6 +114,12 @@ namespace ns3 {
 
 	  ////////////////////////////////////////////////////////////////////
 
+	  .AddTraceSource ("OutOENs",  "OutOENs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outOENs))
+	  .AddTraceSource ("InOENs",   "InOENs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inOENs))
+	  .AddTraceSource ("DropOENs", "DropOENs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropOENs))
+
+	  ////////////////////////////////////////////////////////////////////
+
 	  .AddTraceSource ("OutINFs",  "OutINFs",  MakeTraceSourceAccessor (&ForwardingStrategy::m_outINFs))
 	  .AddTraceSource ("InINFs",   "InINFs",   MakeTraceSourceAccessor (&ForwardingStrategy::m_inINFs))
 	  .AddTraceSource ("DropINFs", "DropINFs", MakeTraceSourceAccessor (&ForwardingStrategy::m_dropINFs))
@@ -589,6 +595,12 @@ namespace ns3 {
 	      m_outDENs(den_p, outFace);
 	    }
 	}
+    }
+
+    void
+    ForwardingStrategy::OnOEN (Ptr<Face> face, Ptr<OEN> oen_p)
+    {
+
     }
 
     void

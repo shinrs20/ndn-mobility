@@ -111,7 +111,7 @@ namespace ns3 {
                                        const DOHandler &DOHandler, const ENHandler &ENHandler,
                                        const AENHandler &AENHandler, const RENHandler &RENHandler,
                                        const DENHandler &DENHandler, const INFHandler &INFHandler,
-				       const DUHandler &DUHandler)
+				       const DUHandler &DUHandler, const OENHandler &OENHandler)
     {
       NS_LOG_FUNCTION_NOARGS ();
 
@@ -124,6 +124,7 @@ namespace ns3 {
       m_upstreamDENHandler = DENHandler;
       m_upstreamINFHandler = INFHandler;
       m_upstreamDUHandler = DUHandler;
+      m_upstreamOENHandler = OENHandler;
     }
 
     void
@@ -139,6 +140,7 @@ namespace ns3 {
       m_upstreamRENHandler = MakeNullCallback< void, Ptr<Face>, Ptr<REN> > ();
       m_upstreamDENHandler = MakeNullCallback< void, Ptr<Face>, Ptr<DEN> > ();
       m_upstreamINFHandler = MakeNullCallback< void, Ptr<Face>, Ptr<INF> > ();
+      m_upstreamOENHandler = MakeNullCallback< void, Ptr<Face>, Ptr<OEN> > ();
     }
 
     bool
@@ -350,6 +352,32 @@ namespace ns3 {
     }
 
     bool
+    Face::SendOEN (Ptr<const OEN> oen_o)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << oen_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromOEN (oen_o));
+    }
+
+    bool
+    Face::SendOEN (Ptr<const OEN> oen_o, Address addr)
+    {
+      NS_LOG_FUNCTION (this << boost::cref (*this) << oen_o);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      return Send (Wire::FromOEN (oen_o), addr);
+    }
+
+    bool
     Face::SendINF (Ptr<const INF> inf_o)
     {
       NS_LOG_FUNCTION (this << boost::cref (*this) << inf_o);
@@ -416,6 +444,8 @@ namespace ns3 {
 	      return ReceiveAEN (Wire::ToAEN (packet, Wire::WIRE_FORMAT_NNNSIM));
 	    case nnn::REN_NNN:
 	      return ReceiveREN (Wire::ToREN (packet, Wire::WIRE_FORMAT_NNNSIM));
+	    case nnn::OEN_NNN:
+	      return ReceiveOEN (Wire::ToOEN (packet, Wire::WIRE_FORMAT_NNNSIM));
 	    case nnn::DEN_NNN:
 	      return ReceiveDEN (Wire::ToDEN (packet, Wire::WIRE_FORMAT_NNNSIM));
 	    case nnn::INF_NNN:
@@ -526,6 +556,19 @@ namespace ns3 {
 	}
 
       m_upstreamDENHandler (this, den_i);
+      return true;
+    }
+
+    bool
+    Face::ReceiveOEN (Ptr<OEN> oen_i)
+    {
+      if (!IsUp ())
+	{
+	  // no tracing here. If we were off while receiving, we shouldn't even know that something was there
+	  return false;
+	}
+
+      m_upstreamOENHandler (this, oen_i);
       return true;
     }
 
