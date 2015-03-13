@@ -20,8 +20,6 @@
  */
 
 #include <ns3-dev/ns3/log.h>
-#include <ns3-dev/ns3/packet.h>
-#include <ns3-dev/ns3/unused.h>
 
 #include "nnn-aen.h"
 
