@@ -536,9 +536,81 @@ Wire::ToDU (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
     }
 }
 
+Ptr<Packet>
+Wire::FromOEN (Ptr<const OEN> oen_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
+{
+  if (wireFormat == WIRE_FORMAT_DEFAULT)
+    wireFormat = GetWireFormat ();
+
+  if (wireFormat == WIRE_FORMAT_NNNSIM)
+    return wire::nnnSIM::OEN::ToWire (oen_p);
+  else
+    {
+      NS_FATAL_ERROR ("Unsupported format requested");
+      return 0;
+    }
+}
+
+Ptr<OEN>
+Wire::ToOEN (Ptr<Packet> packet, int8_t wireFormat/* = WIRE_FORMAT_AUTODETECT*/)
+{
+  if (wireFormat == WIRE_FORMAT_AUTODETECT)
+    {
+      try
+      {
+	  NNN_PDU_TYPE type = HeaderHelper::GetNNNHeaderType (packet);
+	  switch (type)
+	  {
+	    case nnn::OEN_NNN:
+	      {
+		return wire::nnnSIM::OEN::FromWire (packet);
+	      }
+	    default:
+	      NS_FATAL_ERROR ("Unsupported format");
+	      return 0;
+	  }
+
+	  // exception will be thrown if packet is not recognized
+      }
+      catch (UnknownHeaderException)
+      {
+	  NS_FATAL_ERROR ("Unknown NNN header");
+	  return 0;
+      }
+    }
+  else
+    {
+      if (wireFormat == WIRE_FORMAT_NNNSIM)
+	return wire::nnnSIM::OEN::FromWire (packet);
+      else
+	{
+	  NS_FATAL_ERROR ("Unsupported format requested");
+	  return 0;
+	}
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Helper methods for Python
 ///////////////////////////////////////////////////////////////////////////////
+
+std::string
+Wire::FromNULLpStr (Ptr<const NULLp> nullp_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
+{
+  Ptr<Packet> pkt = FromNULLp (nullp_p, wireFormat);
+  std::string wire;
+  wire.resize (pkt->GetSize ());
+  pkt->CopyData (reinterpret_cast<uint8_t*> (&wire[0]), wire.size ());
+
+  return wire;
+}
+
+Ptr<NULLp>
+Wire::ToNULLpStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*/)
+{
+  Ptr<Packet> pkt = Create<Packet> (reinterpret_cast<const uint8_t*> (&wire[0]), wire.size ());
+  return ToNULLp (pkt, type);
+}
 
 std::string
 Wire::FromSOStr (Ptr<const SO> so_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
@@ -559,24 +631,6 @@ Wire::ToSOStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*/
 }
 
 std::string
-Wire::FromDUStr (Ptr<const DU> du_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
-{
-  Ptr<Packet> pkt = FromDU (du_p, wireFormat);
-  std::string wire;
-  wire.resize (pkt->GetSize ());
-  pkt->CopyData (reinterpret_cast<uint8_t*> (&wire[0]), wire.size ());
-
-  return wire;
-}
-
-Ptr<DU>
-Wire::ToDUStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*/)
-{
-  Ptr<Packet> pkt = Create<Packet> (reinterpret_cast<const uint8_t*> (&wire[0]), wire.size ());
-  return ToDU (pkt, type);
-}
-
-std::string
 Wire::FromDOStr (Ptr<const DO> do_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
 {
   Ptr<Packet> pkt = FromDO (do_p, wireFormat);
@@ -592,6 +646,24 @@ Wire::ToDOStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*/
 {
   Ptr<Packet> pkt = Create<Packet> (reinterpret_cast<const uint8_t*> (&wire[0]), wire.size ());
   return ToDO (pkt, type);
+}
+
+std::string
+Wire::FromDUStr (Ptr<const DU> du_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
+{
+  Ptr<Packet> pkt = FromDU (du_p, wireFormat);
+  std::string wire;
+  wire.resize (pkt->GetSize ());
+  pkt->CopyData (reinterpret_cast<uint8_t*> (&wire[0]), wire.size ());
+
+  return wire;
+}
+
+Ptr<DU>
+Wire::ToDUStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*/)
+{
+  Ptr<Packet> pkt = Create<Packet> (reinterpret_cast<const uint8_t*> (&wire[0]), wire.size ());
+  return ToDU (pkt, type);
 }
 
 std::string
@@ -664,6 +736,24 @@ Wire::ToINFStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*
 {
   Ptr<Packet> pkt = Create<Packet> (reinterpret_cast<const uint8_t*> (&wire[0]), wire.size ());
   return ToINF (pkt, type);
+}
+
+std::string
+Wire::FromOENStr (Ptr<const OEN> oen_p, int8_t wireFormat/* = WIRE_FORMAT_DEFAULT*/)
+{
+  Ptr<Packet> pkt = FromOEN (oen_p, wireFormat);
+  std::string wire;
+  wire.resize (pkt->GetSize ());
+  pkt->CopyData (reinterpret_cast<uint8_t*> (&wire[0]), wire.size ());
+
+  return wire;
+}
+
+Ptr<OEN>
+Wire::ToOENStr (const std::string &wire, int8_t type/* = WIRE_FORMAT_AUTODETECT*/)
+{
+  Ptr<Packet> pkt = Create<Packet> (reinterpret_cast<const uint8_t*> (&wire[0]), wire.size ());
+  return ToOEN (pkt, type);
 }
 
 std::string
