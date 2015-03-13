@@ -33,7 +33,7 @@
 #include <ns3-dev/ns3/ndn-interest.h>
 
 #include "../model/nnn-face.h"
-#include "../model/nnn-packets.h"
+#include "../model/nnn-pdus.h"
 
 namespace ns3 {
 

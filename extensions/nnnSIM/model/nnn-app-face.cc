@@ -31,7 +31,7 @@
 #include <ns3-dev/ns3/ndnSIM/helper/ndn-header-helper.h>
 
 #include "nnn-app-face.h"
-#include "nnn-packets.h"
+#include "nnn-pdus.h"
 #include "../helper/nnn-header-helper.h"
 #include "../apps/nnn-app.h"
 

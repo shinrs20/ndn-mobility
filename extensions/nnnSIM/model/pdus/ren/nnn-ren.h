@@ -2,28 +2,30 @@
 /*
  * Copyright 2014 Waseda University, Sato Laboratory
  *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
- *	             Zhu Li <philipszhuli1990@ruri.waseda.jp>
+ *	         Zhu Li <philipszhuli1990@ruri.waseda.jp>
  *
- *  nnn-den.h is free software: you can redistribute it and/or modify
+ *  nnn-ren.h is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  nnn-den.h is distributed in the hope that it will be useful,
+ *  nnn-ren.h is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Affero Public License for more details.
  *
  *  You should have received a copy of the GNU Affero Public License
- *  along with nnn-den.h.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with nnn-do.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _NNN_DEN_HEADER_H_
-#define _NNN_DEN_HEADER_H_
+#ifndef _NNN_REN_HEADER_H_
+#define _NNN_REN_HEADER_H_
 
 #include <vector>
 
-#include "../nnn-packet.h"
+#include <ns3-dev/ns3/address.h>
+
+#include "../nnn-pdu.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
@@ -34,9 +36,9 @@ namespace ns3 {
 
     /**
      * @ingroup nnn
-     * @brief NNN DEN packet (wire formats are defined in wire)
+     * @brief NNN REN packet (wire formats are defined in wire)
      **/
-    class DEN : public NNNPDU
+    class REN : public NNNPDU
     {
     public:
       /**
@@ -44,7 +46,7 @@ namespace ns3 {
        *
        * Creates a REN packet
        **/
-      DEN ();
+      REN ();
 
       /**
        * \brief Constructor
@@ -52,60 +54,28 @@ namespace ns3 {
        *
        * @param name NNN Address Ptr
        **/
-      DEN(Ptr<NNNAddress> name);
+      REN(Ptr<NNNAddress> name);
 
       /**
        * \brief Constructor
        *
-       * Creates a DEN packet with payload
+       * Creates a REN packet with payload
        *
        * @param name NNN Address
        * @param payload Packet Ptr
        **/
-      DEN(const NNNAddress &name);
+      REN(const NNNAddress &name);
 
       /**
        * @brief Copy constructor
        */
-      DEN (const DEN &den_p);
-
-      /**
-       * \brief Get interest name
-       *
-       * Gets name of the interest.
-       **/
-      const NNNAddress&
-      GetName () const;
-
-      /**
-       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
-       */
-      Ptr<const NNNAddress>
-      GetNamePtr () const;
-
-      /**
-       * \brief Set interest name
-       *
-       * @param name smart pointer to Name
-       *
-       **/
-      void
-      SetName (Ptr<NNNAddress> name);
-
-      /**
-       * \brief Another variant to set interest name
-       *
-       * @param name const reference to Name object
-       *
-       **/
-      void
-      SetName (const NNNAddress &name);
-
-      uint16_t
-      GetPoaType () const;
+      REN (const REN &ren_p);
 
       void
       SetPoaType (uint16_t type);
+
+      uint16_t
+      GetPoaType () const;
 
       /**
        * \brief Get number of MN's Signatures
@@ -139,25 +109,64 @@ namespace ns3 {
       AddPoa (std::vector<Address> signatures);
 
       /**
-       * @brief Print DEN in plain-text to the specified output stream
+       * \brief Get interest name
+       *
+       * Gets name of the interest.
+       **/
+      const NNNAddress&
+      GetName () const;
+
+      /**
+       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
+       */
+      Ptr<const NNNAddress>
+      GetNamePtr () const;
+
+      /**
+       * \brief Set interest name
+       *
+       * @param name smart pointer to Name
+       *
+       **/
+      void
+      SetName (Ptr<NNNAddress> name);
+
+      /**
+       * \brief Another variant to set interest name
+       *
+       * @param name const reference to Name object
+       *
+       **/
+      void
+      SetName (const NNNAddress &name);
+
+      Time
+      GetRemainLease () const;
+
+      void
+      SetRemainLease (Time ex_lease);
+
+      /**
+       * @brief Print REN in plain-text to the specified output stream
        */
       void
       Print (std::ostream &os) const;
 
     private:
       // NO_ASSIGN
-      DEN &
-      operator = (const DEN &other) { return *this; }
+      REN &
+      operator = (const REN &other) { return *this; }
 
     private:
-      Ptr<NNNAddress> m_name;   ///< @brief NNN Address used in the packet
-      uint16_t m_poa_type;      ///< @brief Type of PoA in DEN packet
+      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
+      Time m_re_lease;          ///< @brief Packet Remaining lease time
+      uint16_t m_poa_type;      ///< @brief Type of PoA in REN packet
       std::vector<Address> m_poas;  ///<@brief vector of Signatures
 
     };
 
     inline std::ostream &
-    operator << (std::ostream &os, const DEN &i)
+    operator << (std::ostream &os, const REN &i)
     {
       i.Print (os);
       return os;
@@ -166,8 +175,9 @@ namespace ns3 {
     /**
      * @brief Class for Interest parsing exception
      */
-    class DENException {};
-  } //namespace nnn
-} //namespace ns3
+    class RENException {};
 
-#endif // _NNN_DEN_HEADER_H_
+  } // namespace nnn
+} // namespace ns3
+
+#endif // _NNN_REN_HEADER_H_

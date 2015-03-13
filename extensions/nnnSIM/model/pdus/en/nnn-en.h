@@ -25,7 +25,7 @@
 
 #include <ns3-dev/ns3/address.h>
 
-#include "../nnn-packet.h"
+#include "../nnn-pdu.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {

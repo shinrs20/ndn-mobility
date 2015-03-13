@@ -28,7 +28,7 @@
 #include "../fib/nnn-fib.h"
 #include "../nnn-face.h"
 #include "../nnn-naming.h"
-#include "../nnn-packets.h"
+#include "../nnn-pdus.h"
 #include "../nnst/nnn-nnst.h"
 #include "../nnst/nnn-nnst-entry.h"
 #include "../nnst/nnn-nnst-entry-facemetric.h"

@@ -34,9 +34,9 @@
 #include <ns3-dev/ns3/uinteger.h>
 
 #include "nnn-face.h"
+#include "nnn-pdus.h"
 #include "nnn-nnnsim-wire.h"
 
-#include "packets/nnn-packet.h"
 #include "../helper/nnn-header-helper.h"
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Face");

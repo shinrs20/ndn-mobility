@@ -33,7 +33,7 @@
 
 #include "nnn-face.h"
 #include "nnn-l3-protocol.h"
-#include "nnn-packets.h"
+#include "nnn-pdus.h"
 #include "nnn-net-device-face.h"
 
 #include "fw/nnn-forwarding-strategy.h"

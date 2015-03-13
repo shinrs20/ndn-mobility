@@ -20,6 +20,8 @@
  *  along with nnn-app.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "nnn-app.h"
+
 #include <ns3-dev/ns3/assert.h>
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/packet.h>
@@ -27,7 +29,6 @@
 
 #include "../model/nnn-app-face.h"
 #include "../model/nnn-l3-protocol.h"
-#include "../model/nnn-packets.h"
 #include "../model/fw/nnn-forwarding-strategy.h"
 
 //#include "ns3/ndn-fib.h"

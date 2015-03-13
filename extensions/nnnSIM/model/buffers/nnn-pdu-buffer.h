@@ -25,7 +25,7 @@
 #include <ns3-dev/ns3/object.h>
 #include <ns3-dev/ns3/ptr.h>
 
-#include "../nnn-packets.h"
+#include "../nnn-pdus.h"
 #include "../nnn-naming.h"
 #include "../nnn-nnnsim-wire.h"
 #include "../../utils/trie/trie.h"

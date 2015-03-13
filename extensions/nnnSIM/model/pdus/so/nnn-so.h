@@ -2,26 +2,26 @@
 /*
  * Copyright 2014 Waseda University, Sato Laboratory
  *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
- *	     Zhu Li <philipszhuli1990@ruri.waseda.jp>
  *
- *  nnn-aen.h is free software: you can redistribute it and/or modify
+ *  nnn-so.h is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  nnn-aen.h is distributed in the hope that it will be useful,
+ *  nnn-so.h is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Affero Public License for more details.
  *
  *  You should have received a copy of the GNU Affero Public License
- *  along with nnn-aen.h.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with nnn-so.h.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
-#ifndef _NNN_AEN_HEADER_H_
-#define _NNN_AEN_HEADER_H_
+#ifndef _NNN_SO_HEADER_H_
+#define _NNN_SO_HEADER_H_
 
-#include "../nnn-packet.h"
+#include "../nnn-pdu.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
@@ -32,43 +32,45 @@ namespace ns3 {
 
     /**
      * @ingroup nnn
-     * @brief NNN AEN packet (wire formats are defined in wire)
+     * @brief NNN SO packet (wire formats are defined in wire)
      **/
-    class AEN : public NNNPDU
+    class SO : public NNNPDU
     {
     public:
       /**
        * \brief Constructor
        *
-       * Creates a AEN packet
+       * Creates a SO packet with no payload
        **/
-      AEN ();
+      SO ();
 
       /**
        * \brief Constructor
        *
+       * Creates a SO packet with payload
        *
        * @param name NNN Address Ptr
+       * @param payload Packet Ptr
        **/
-      AEN(Ptr<NNNAddress> name);
+      SO(Ptr<NNNAddress> name, Ptr<Packet> payload);
 
       /**
        * \brief Constructor
        *
-       * Creates a AEN packet with payload
+       * Creates a SO packet with payload
        *
        * @param name NNN Address
        * @param payload Packet Ptr
        **/
-      AEN(const NNNAddress &name);
+      SO(const NNNAddress &name, Ptr<Packet> payload);
 
       /**
        * @brief Copy constructor
        */
-      AEN (const AEN &aen_p);
+      SO (const SO &so_p);
 
       /**
-       * \brief Get interest name
+       * \brief Get NNN name
        *
        * Gets name of the interest.
        **/
@@ -76,23 +78,22 @@ namespace ns3 {
       GetName () const;
 
       /**
-       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
+       * @brief Get smart pointer to the NNN name (to avoid extra memory usage)
        */
       Ptr<const NNNAddress>
       GetNamePtr () const;
 
       /**
-       * \brief Set interest name
+       * \brief Set NNN name
        *
        * @param name smart pointer to Name
        *
        **/
-
       void
       SetName (Ptr<NNNAddress> name);
 
       /**
-       * \brief Another variant to set interest name
+       * \brief Another variant to set NNN name
        *
        * @param name const reference to Name object
        *
@@ -100,31 +101,52 @@ namespace ns3 {
       void
       SetName (const NNNAddress &name);
 
-      Time
-      GetLeasetime() const;
-
-      void
-      SetLeasetime (Time lease);
+      /**
+       * @brief Gets the payload of the NULL packet
+       */
+      Ptr<const Packet>
+      GetPayload () const;
 
       /**
-       * @brief Print AEN in plain-text to the specified output stream
+       * @brief Sets the payload of the NULL packet
+       */
+      void
+      SetPayload (Ptr<Packet> payload);
+
+      /**
+       * @brief Get the PDU type in DO
+       */
+      uint16_t
+      GetPDUPayloadType () const;
+
+      /**
+       * @brief Set the PDU type held in DO
+       *
+       * @param pdu_type PDU type in DO
+       */
+      void
+      SetPDUPayloadType (uint16_t pdu_type);
+
+      /**
+       * @brief Print SO in plain-text to the specified output stream
        */
       void
       Print (std::ostream &os) const;
 
     private:
       // NO_ASSIGN
-      AEN &
-      operator = (const AEN &other) { return *this; }
+      SO &
+      operator = (const SO &other) { return *this; }
 
     private:
-      Time m_lease;             ///< @brief Lease time for NNN Address
-      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address handed
+      Ptr<NNNAddress> m_name;   ///< @brief Source NNN Address used in the packet
+      uint16_t m_PDUdatatype;   ///< @brief Type of payload held in SO
+      Ptr<Packet> m_payload;    ///< @brief Payload
 
     };
 
     inline std::ostream &
-    operator << (std::ostream &os, const AEN &i)
+    operator << (std::ostream &os, const SO &i)
     {
       i.Print (os);
       return os;
@@ -133,9 +155,9 @@ namespace ns3 {
     /**
      * @brief Class for Interest parsing exception
      */
-    class AENException {};
+    class SOException {};
 
   } // namespace nnn
 } // namespace ns3
 
-#endif // _NNN_AEN_HEADER_H_
+#endif // _NNN_SO_HEADER_H_

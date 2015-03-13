@@ -2,30 +2,26 @@
 /*
  * Copyright 2014 Waseda University, Sato Laboratory
  *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
- *	         Zhu Li <philipszhuli1990@ruri.waseda.jp>
+ *	     Zhu Li <philipszhuli1990@ruri.waseda.jp>
  *
- *  nnn-ren.h is free software: you can redistribute it and/or modify
+ *  nnn-aen.h is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  nnn-ren.h is distributed in the hope that it will be useful,
+ *  nnn-aen.h is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Affero Public License for more details.
  *
  *  You should have received a copy of the GNU Affero Public License
- *  along with nnn-do.h.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with nnn-aen.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _NNN_REN_HEADER_H_
-#define _NNN_REN_HEADER_H_
+#ifndef _NNN_AEN_HEADER_H_
+#define _NNN_AEN_HEADER_H_
 
-#include <vector>
-
-#include <ns3-dev/ns3/address.h>
-
-#include "../nnn-packet.h"
+#include "../nnn-pdu.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
@@ -36,17 +32,17 @@ namespace ns3 {
 
     /**
      * @ingroup nnn
-     * @brief NNN REN packet (wire formats are defined in wire)
+     * @brief NNN AEN packet (wire formats are defined in wire)
      **/
-    class REN : public NNNPDU
+    class AEN : public NNNPDU
     {
     public:
       /**
        * \brief Constructor
        *
-       * Creates a REN packet
+       * Creates a AEN packet
        **/
-      REN ();
+      AEN ();
 
       /**
        * \brief Constructor
@@ -54,59 +50,22 @@ namespace ns3 {
        *
        * @param name NNN Address Ptr
        **/
-      REN(Ptr<NNNAddress> name);
+      AEN(Ptr<NNNAddress> name);
 
       /**
        * \brief Constructor
        *
-       * Creates a REN packet with payload
+       * Creates a AEN packet with payload
        *
        * @param name NNN Address
        * @param payload Packet Ptr
        **/
-      REN(const NNNAddress &name);
+      AEN(const NNNAddress &name);
 
       /**
        * @brief Copy constructor
        */
-      REN (const REN &ren_p);
-
-      void
-      SetPoaType (uint16_t type);
-
-      uint16_t
-      GetPoaType () const;
-
-      /**
-       * \brief Get number of MN's Signatures
-       *
-       * @param  const reference to Name object
-       *
-       **/
-      uint32_t
-      GetNumPoa () const;
-
-      /**
-       * \brief Get Signatures of MN
-       *
-       **/
-      std::vector<Address>
-      GetPoas () const;
-
-      Address
-      GetOnePoa (uint32_t index) const;
-
-      /**
-       * \brief Add Signature(MAC)
-       *
-       * @param signature MAC vectors
-       *
-       **/
-      void
-      AddPoa (Address signature);
-
-      void
-      AddPoa (std::vector<Address> signatures);
+      AEN (const AEN &aen_p);
 
       /**
        * \brief Get interest name
@@ -128,6 +87,7 @@ namespace ns3 {
        * @param name smart pointer to Name
        *
        **/
+
       void
       SetName (Ptr<NNNAddress> name);
 
@@ -141,32 +101,30 @@ namespace ns3 {
       SetName (const NNNAddress &name);
 
       Time
-      GetRemainLease () const;
+      GetLeasetime() const;
 
       void
-      SetRemainLease (Time ex_lease);
+      SetLeasetime (Time lease);
 
       /**
-       * @brief Print REN in plain-text to the specified output stream
+       * @brief Print AEN in plain-text to the specified output stream
        */
       void
       Print (std::ostream &os) const;
 
     private:
       // NO_ASSIGN
-      REN &
-      operator = (const REN &other) { return *this; }
+      AEN &
+      operator = (const AEN &other) { return *this; }
 
     private:
-      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
-      Time m_re_lease;          ///< @brief Packet Remaining lease time
-      uint16_t m_poa_type;      ///< @brief Type of PoA in REN packet
-      std::vector<Address> m_poas;  ///<@brief vector of Signatures
+      Time m_lease;             ///< @brief Lease time for NNN Address
+      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address handed
 
     };
 
     inline std::ostream &
-    operator << (std::ostream &os, const REN &i)
+    operator << (std::ostream &os, const AEN &i)
     {
       i.Print (os);
       return os;
@@ -175,9 +133,9 @@ namespace ns3 {
     /**
      * @brief Class for Interest parsing exception
      */
-    class RENException {};
+    class AENException {};
 
   } // namespace nnn
 } // namespace ns3
 
-#endif // _NNN_REN_HEADER_H_
+#endif // _NNN_AEN_HEADER_H_

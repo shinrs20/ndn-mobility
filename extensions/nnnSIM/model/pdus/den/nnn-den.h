@@ -2,72 +2,69 @@
 /*
  * Copyright 2014 Waseda University, Sato Laboratory
  *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
+ *	             Zhu Li <philipszhuli1990@ruri.waseda.jp>
  *
- *  nnn-do.h is free software: you can redistribute it and/or modify
+ *  nnn-den.h is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  nnn-do.h is distributed in the hope that it will be useful,
+ *  nnn-den.h is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Affero Public License for more details.
  *
  *  You should have received a copy of the GNU Affero Public License
- *  along with nnn-do.h.  If not, see <http://www.gnu.org/licenses/>.
- *
+ *  along with nnn-den.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _NNN_DO_HEADER_H_
-#define _NNN_DO_HEADER_H_
+#ifndef _NNN_DEN_HEADER_H_
+#define _NNN_DEN_HEADER_H_
 
-#include "../nnn-packet.h"
+#include <vector>
+
+#include "../nnn-pdu.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
-
-  class Packet;
-
   namespace nnn {
 
     /**
      * @ingroup nnn
-     * @brief NNN Null packet (wire formats are defined in wire)
+     * @brief NNN DEN packet (wire formats are defined in wire)
      **/
-    class DO : public NNNPDU
+    class DEN : virtual public NNNPDU
     {
     public:
       /**
        * \brief Constructor
        *
-       * Creates a NULL packet with no payload
+       * Creates a REN packet
        **/
-      DO ();
+      DEN ();
 
       /**
        * \brief Constructor
        *
-       * Creates a DO packet with payload
        *
        * @param name NNN Address Ptr
-       * @param payload Packet Ptr
        **/
-      DO(Ptr<NNNAddress> name, Ptr<Packet> payload);
+      DEN(Ptr<NNNAddress> name);
 
       /**
        * \brief Constructor
        *
-       * Creates a DO packet with payload
+       * Creates a DEN packet with payload
        *
        * @param name NNN Address
        * @param payload Packet Ptr
        **/
-      DO(const NNNAddress &name, Ptr<Packet> payload);
+      DEN(const NNNAddress &name);
 
       /**
        * @brief Copy constructor
        */
-      DO (const DO &do_p);
+      DEN (const DEN &den_p);
 
       /**
        * \brief Get interest name
@@ -101,52 +98,63 @@ namespace ns3 {
       void
       SetName (const NNNAddress &name);
 
-      /**
-       * @brief Gets the payload of the DO packet
-       */
-      Ptr<const Packet>
-      GetPayload () const;
-
-      /**
-       * @brief Sets the payload of the DO packet
-       */
-      void
-      SetPayload (Ptr<Packet> payload);
-
-      /**
-       * @brief Get the PDU type in DO
-       */
       uint16_t
-      GetPDUPayloadType () const;
+      GetPoaType () const;
 
-      /**
-       * @brief Set the PDU type held in DO
-       *
-       * @param pdu_type PDU type in DO
-       */
       void
-      SetPDUPayloadType (uint16_t pdu_type);
+      SetPoaType (uint16_t type);
 
       /**
-       * @brief Print DO in plain-text to the specified output stream
+       * \brief Get number of MN's Signatures
+       *
+       * @param  const reference to Name object
+       *
+       **/
+      uint32_t
+      GetNumPoa () const;
+
+      /**
+       * \brief Get Signatures of MN
+       *
+       **/
+      std::vector<Address>
+      GetPoas () const;
+
+      Address
+      GetOnePoa (uint32_t index) const;
+
+      /**
+       * \brief Add Signature(MAC)
+       *
+       * @param signature MAC vectors
+       *
+       **/
+      void
+      AddPoa (Address signature);
+
+      void
+      AddPoa (std::vector<Address> signatures);
+
+      /**
+       * @brief Print DEN in plain-text to the specified output stream
        */
       void
       Print (std::ostream &os) const;
 
     private:
       // NO_ASSIGN
-      DO &
-      operator = (const DO &other) { return *this; }
+      DEN &
+      operator = (const DEN &other) { return *this; }
 
-    private:
-      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
-      uint16_t m_PDUdatatype;   ///< @brief Type of payload held in DO
-      Ptr<Packet> m_payload;    ///< @brief Payload
+    protected:
+      Ptr<NNNAddress> m_name;   ///< @brief NNN Address used in the packet
+      uint16_t m_poa_type;      ///< @brief Type of PoA in DEN packet
+      std::vector<Address> m_poas;  ///<@brief vector of Signatures
 
     };
 
     inline std::ostream &
-    operator << (std::ostream &os, const DO &i)
+    operator << (std::ostream &os, const DEN &i)
     {
       i.Print (os);
       return os;
@@ -155,9 +163,8 @@ namespace ns3 {
     /**
      * @brief Class for Interest parsing exception
      */
-    class DOException {};
+    class DENException {};
+  } //namespace nnn
+} //namespace ns3
 
-  } // namespace nnn
-} // namespace ns3
-
-#endif // _NNN_DO_HEADER_H_
+#endif // _NNN_DEN_HEADER_H_

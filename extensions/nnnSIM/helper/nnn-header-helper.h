@@ -23,40 +23,40 @@
 
 #include <ns3-dev/ns3/ptr.h>
 
-#include "../model/packets/nnn-packet.h"
+#include "../model/pdus/nnn-pdu.h"
 
 namespace ns3 {
 
-class Header;
-class Packet;
+  class Header;
+  class Packet;
 
-namespace nnn {
+  namespace nnn {
 
-class NNNAddress;
+    class NNNAddress;
 
-typedef NNNAddress NameComponents;
+    typedef NNNAddress NameComponents;
 
-/**
- * @ingroup nnn-helpers
- *
- * \brief Class implementing functionality to detect NNN packet type and
- * create the corresponding object
- *
- * Throws UnknownHeaderException if header type couldn't be determined
- */
-class HeaderHelper
-{
-public:
-  static NNN_PDU_TYPE
-  GetNNNHeaderType (Ptr<const Packet> packet);
-};
+    /**
+     * @ingroup nnn-helpers
+     *
+     * \brief Class implementing functionality to detect NNN packet type and
+     * create the corresponding object
+     *
+     * Throws UnknownHeaderException if header type couldn't be determined
+     */
+    class HeaderHelper
+    {
+    public:
+      static NNN_PDU_TYPE
+      GetNNNHeaderType (Ptr<const Packet> packet);
+    };
 
-/**
- * \brief Exception thrown if NNN stack receives unrecognized message type
- */
-class UnknownHeaderException {};
+    /**
+     * \brief Exception thrown if NNN stack receives unrecognized message type
+     */
+    class UnknownHeaderException {};
 
-} // namespace nnn
+  } // namespace nnn
 } // namespace ns3
 
 #endif // _NNN_HEADER_HELPER_H_

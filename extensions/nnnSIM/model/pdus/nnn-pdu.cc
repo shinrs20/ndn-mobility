@@ -17,7 +17,7 @@
  *  along with nnn-packet.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "nnn-packet.h"
+#include "nnn-pdu.h"
 
 namespace ns3
 {

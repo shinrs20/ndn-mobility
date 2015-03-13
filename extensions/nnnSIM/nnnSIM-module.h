@@ -27,7 +27,7 @@
 #include "model/nnn-naming.h"
 
 // Packets
-#include "model/nnn-packets.h"
+#include "model/nnn-pdus.h"
 
 // Wire definitions
 #include "model/nnn-nnnsim-wire.h"

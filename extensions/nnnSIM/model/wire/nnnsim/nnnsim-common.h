@@ -25,4 +25,4 @@
 
 #include "../wire-nnnsim.h"
 #include "../../nnn-common.h"
-#include "../../nnn-packets.h"
+#include "../../nnn-pdus.h"

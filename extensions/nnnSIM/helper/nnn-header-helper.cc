@@ -26,8 +26,6 @@
 #include <iomanip>
 #include "nnn-header-helper.h"
 
-#include "../model/packets/nnn-packet.h"
-
 NS_LOG_COMPONENT_DEFINE ("nnn.HeaderHelper");
 
 namespace ns3 {

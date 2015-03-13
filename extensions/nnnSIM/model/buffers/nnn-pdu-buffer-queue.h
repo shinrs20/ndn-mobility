@@ -22,7 +22,7 @@
 
 #include <queue>
 
-#include "../nnn-packets.h"
+#include "../nnn-pdus.h"
 
 namespace ns3
 {

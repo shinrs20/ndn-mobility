@@ -25,7 +25,7 @@
 
 #include "../nnn-common.h"
 #include "../nnn-naming.h"
-#include "../nnn-packets.h"
+#include "../nnn-pdus.h"
 
 NNN_NAMESPACE_BEGIN
 

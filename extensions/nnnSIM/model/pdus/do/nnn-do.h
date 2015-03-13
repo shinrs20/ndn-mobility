@@ -3,25 +3,25 @@
  * Copyright 2014 Waseda University, Sato Laboratory
  *   Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
  *
- *  nnn-so.h is free software: you can redistribute it and/or modify
+ *  nnn-do.h is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  nnn-so.h is distributed in the hope that it will be useful,
+ *  nnn-do.h is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Affero Public License for more details.
  *
  *  You should have received a copy of the GNU Affero Public License
- *  along with nnn-so.h.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with nnn-do.h.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
-#ifndef _NNN_SO_HEADER_H_
-#define _NNN_SO_HEADER_H_
+#ifndef _NNN_DO_HEADER_H_
+#define _NNN_DO_HEADER_H_
 
-#include "../nnn-packet.h"
+#include "../nnn-pdu.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3 {
@@ -32,45 +32,45 @@ namespace ns3 {
 
     /**
      * @ingroup nnn
-     * @brief NNN SO packet (wire formats are defined in wire)
+     * @brief NNN Null packet (wire formats are defined in wire)
      **/
-    class SO : public NNNPDU
+    class DO : public NNNPDU
     {
     public:
       /**
        * \brief Constructor
        *
-       * Creates a SO packet with no payload
+       * Creates a NULL packet with no payload
        **/
-      SO ();
+      DO ();
 
       /**
        * \brief Constructor
        *
-       * Creates a SO packet with payload
+       * Creates a DO packet with payload
        *
        * @param name NNN Address Ptr
        * @param payload Packet Ptr
        **/
-      SO(Ptr<NNNAddress> name, Ptr<Packet> payload);
+      DO(Ptr<NNNAddress> name, Ptr<Packet> payload);
 
       /**
        * \brief Constructor
        *
-       * Creates a SO packet with payload
+       * Creates a DO packet with payload
        *
        * @param name NNN Address
        * @param payload Packet Ptr
        **/
-      SO(const NNNAddress &name, Ptr<Packet> payload);
+      DO(const NNNAddress &name, Ptr<Packet> payload);
 
       /**
        * @brief Copy constructor
        */
-      SO (const SO &so_p);
+      DO (const DO &do_p);
 
       /**
-       * \brief Get NNN name
+       * \brief Get interest name
        *
        * Gets name of the interest.
        **/
@@ -78,13 +78,13 @@ namespace ns3 {
       GetName () const;
 
       /**
-       * @brief Get smart pointer to the NNN name (to avoid extra memory usage)
+       * @brief Get smart pointer to the interest name (to avoid extra memory usage)
        */
       Ptr<const NNNAddress>
       GetNamePtr () const;
 
       /**
-       * \brief Set NNN name
+       * \brief Set interest name
        *
        * @param name smart pointer to Name
        *
@@ -93,7 +93,7 @@ namespace ns3 {
       SetName (Ptr<NNNAddress> name);
 
       /**
-       * \brief Another variant to set NNN name
+       * \brief Another variant to set interest name
        *
        * @param name const reference to Name object
        *
@@ -102,13 +102,13 @@ namespace ns3 {
       SetName (const NNNAddress &name);
 
       /**
-       * @brief Gets the payload of the NULL packet
+       * @brief Gets the payload of the DO packet
        */
       Ptr<const Packet>
       GetPayload () const;
 
       /**
-       * @brief Sets the payload of the NULL packet
+       * @brief Sets the payload of the DO packet
        */
       void
       SetPayload (Ptr<Packet> payload);
@@ -128,25 +128,25 @@ namespace ns3 {
       SetPDUPayloadType (uint16_t pdu_type);
 
       /**
-       * @brief Print SO in plain-text to the specified output stream
+       * @brief Print DO in plain-text to the specified output stream
        */
       void
       Print (std::ostream &os) const;
 
     private:
       // NO_ASSIGN
-      SO &
-      operator = (const SO &other) { return *this; }
+      DO &
+      operator = (const DO &other) { return *this; }
 
     private:
-      Ptr<NNNAddress> m_name;   ///< @brief Source NNN Address used in the packet
-      uint16_t m_PDUdatatype;   ///< @brief Type of payload held in SO
+      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
+      uint16_t m_PDUdatatype;   ///< @brief Type of payload held in DO
       Ptr<Packet> m_payload;    ///< @brief Payload
 
     };
 
     inline std::ostream &
-    operator << (std::ostream &os, const SO &i)
+    operator << (std::ostream &os, const DO &i)
     {
       i.Print (os);
       return os;
@@ -155,9 +155,9 @@ namespace ns3 {
     /**
      * @brief Class for Interest parsing exception
      */
-    class SOException {};
+    class DOException {};
 
   } // namespace nnn
 } // namespace ns3
 
-#endif // _NNN_SO_HEADER_H_
+#endif // _NNN_DO_HEADER_H_

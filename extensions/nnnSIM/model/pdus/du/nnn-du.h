@@ -20,7 +20,7 @@
 #ifndef _NNN_DU_HEADER_H_
 #define _NNN_DU_HEADER_H_
 
-#include "../nnn-packet.h"
+#include "../nnn-pdu.h"
 #include "../../naming/nnn-address.h"
 
 namespace ns3
