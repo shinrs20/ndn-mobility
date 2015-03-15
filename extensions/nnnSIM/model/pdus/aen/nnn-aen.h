@@ -22,19 +22,18 @@
 #define _NNN_AEN_HEADER_H_
 
 #include "../nnn-pdu.h"
+#include "../nnn-en-pdus.h"
 #include "../../nnn-naming.h"
 
-namespace ns3 {
-
-  class Packet;
-
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn
      * @brief NNN AEN packet (wire formats are defined in wire)
      **/
-    class AEN : public NNNPDU
+    class AEN : public ENPDU
     {
     public:
       /**
