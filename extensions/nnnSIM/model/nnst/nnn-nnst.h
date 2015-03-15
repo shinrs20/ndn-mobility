@@ -243,6 +243,12 @@ namespace ns3 {
       Ptr<NNST>
       GetNNST (Ptr<Object> node);
 
+      bool
+      FoundName (const NNNAddress &prefix);
+
+      std::vector<Address>
+      GetAllPoas (const NNNAddress &prefix);
+
     protected:
       // inherited from Object class
       virtual void NotifyNewAggregate (); ///< @brief Notify when object is aggregated

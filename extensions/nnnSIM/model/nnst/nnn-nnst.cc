@@ -626,6 +626,30 @@ namespace ns3 {
       return node->GetObject<NNST> ();
     }
 
+    bool
+    NNST::FoundName (const NNNAddress &prefix)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+      super::iterator item = super::find_exact (prefix);
+
+      if (item == super::end ())
+	return false;
+      else
+	return true;
+    }
+
+    std::vector<Address>
+    NNST::GetAllPoas (const NNNAddress &prefix)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+      super::iterator item = super::find_exact (prefix);
+
+      if (item == super::end ())
+	return std::vector<Address> ();
+      else
+	return item->payload ()->GetPoAs();
+    }
+
     void
     NNST::NotifyNewAggregate ()
     {
