@@ -643,6 +643,7 @@ namespace ns3 {
     protected:
       Ptr<NNPT> m_nnpt; ///< \brief Reference to NNPT
       Ptr<NNST> m_nnst; ///< \brief Reference to NNST
+      Ptr<NNST> m_awaiting_response; /// \brief Reference to awaiting response, using NNST
 
       Ptr<FaceContainer> m_faces; ///< \brief List of Faces attached to this node
       Ptr<NamesContainer> m_node_names; ///< \brief 3N names container for personal names
@@ -660,6 +661,7 @@ namespace ns3 {
       bool m_produce3Nnames;
 
       Time m_3n_lease_time;
+      Time m_3n_lease_ack_timeout;
       Time m_3n_lifetime;
       int32_t m_standardMetric;
 

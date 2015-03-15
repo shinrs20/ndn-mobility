@@ -53,6 +53,7 @@
 #include <boost/lambda/bind.hpp>
 #include <boost/tuple/tuple.hpp>
 
+#include <algorithm>
 #include <ns3-dev/ns3/assert.h>
 #include <ns3-dev/ns3/boolean.h>
 #include <ns3-dev/ns3/integer.h>
@@ -195,6 +196,11 @@ namespace ns3 {
 	  .AddAttribute ("3NLeasetime", "Lease time for a 3N name (Only in use if Produce3Nnames is used)",
 	                 StringValue ("300s"),
 	                 MakeTimeAccessor (&ForwardingStrategy::m_3n_lease_time),
+	                 MakeTimeChecker ())
+
+	  .AddAttribute ("3NLeaseACK", "Timeout for leasing a 3N name (Only in use if Produce3Nnames is used)",
+	                 StringValue ("5s"),
+	                 MakeTimeAccessor (&ForwardingStrategy::m_3n_lease_ack_timeout),
 	                 MakeTimeChecker ())
 
 	  .AddAttribute ("3NLifetime", "LifeTime for 3N PDUs",
@@ -424,21 +430,21 @@ namespace ns3 {
 	  // Produce a 3N name
 	  Ptr<NNNAddress> produced3Nname = produce3NName ();
 
-	  // Add the new information to the NNST
-	  m_nnst->Add(produced3Nname, face, poaAddrs, m_3n_lease_time, m_standardMetric);
+	  // Add the new information into the Awaiting Response NNST type structure
+	  // Create a 5 second timeout
+	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, m_3n_lease_ack_timeout, m_standardMetric);
 
-	  // Add the information the the leased NodeNameContainer
-	  m_leased_names->addEntry(produced3Nname, m_3n_lease_time);
+	  // Create an OEN PDU to respond
+	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname);
+	  // Ensure that the lease time is set in the PDU
+	  oen_p->SetLeasetime(m_3n_lease_time);
+	  // Add the PoA names to the PDU
+	  oen_p->AddPoa(poaAddrs);
 
-	  // Now create the AEN PDU to respond
-	  Ptr<AEN> aen_p = Create<AEN> (produced3Nname);
-	  // Ensure that the lease time is set right
-	  aen_p->SetLeasetime(m_3n_lease_time);
+	  // Send the create OEN PDU out the way it came
+	  face->SendOEN(oen_p, destAddr);
 
-	  // Send the created AEN PDU out the way it came
-	  face->SendAEN(aen_p, destAddr);
-
-	  m_outAENs (aen_p, face);
+	  m_outOENs (oen_p, face);
 	}
       else
 	{
@@ -453,24 +459,47 @@ namespace ns3 {
 
       m_inAENs (aen_p, face);
 
-      Ptr<const NNNAddress> obtainedName = aen_p->GetNamePtr();
-
-      NS_LOG_INFO("Obtained AEN with " << *obtainedName);
-
-      // Check if we have a 3N name
-      if (Has3NName ())
+      // Find out if we can produce 3N names
+      if (m_produce3Nnames)
 	{
-	  // As long as the name is not the same, we can use the name
-	  if (*GetNode3NNamePtr() != *obtainedName)
+	  // Get the 3N name from the AEN
+	  NNNAddress tmp = aen_p->GetName ();
+
+	  NS_LOG_INFO("We got a AEN with " << tmp);
+	  // Assure that the name in the AEN is under the delegated 3N name
+	  if (GetNode3NName () == tmp.getSectorName ())
 	    {
-	      NS_LOG_INFO("Node had " << GetNode3NName () << " now taking " << *obtainedName);
-	      SetNode3NName(obtainedName, aen_p->GetLeasetime());
+	      // Check if we have this entry in the waiting list
+	      if (m_awaiting_response->FoundName(tmp))
+		{
+		  NS_LOG_INFO("We found a " << tmp << " in waiting response");
+		  // Get the list of PoAs in the AEN PDU
+		  std::vector<Address> receivedPoas = aen_p->GetPoas ();
+		  // Get the list of stored PoAs
+		  std::vector<Address> storedPoas = m_awaiting_response->GetAllPoas (tmp);
+
+		  // Check differences
+		  std::vector<Address> diff;
+
+		  // Check if there are any differences
+		  std::set_difference(receivedPoas.begin (), receivedPoas.end (),
+		                      storedPoas.begin (), storedPoas.end (),
+		                      std::inserter(diff, diff.begin ()));
+
+		  // There has to be no differences
+		  if (diff.size () == 0)
+		    {
+		      NS_LOG_INFO("We found a no differences in PoAs for " << tmp);
+		      NS_LOG_INFO("Adding NNST information for " << tmp);
+
+		      // Add the new information to the NNST
+		      m_nnst->Add(aen_p->GetNamePtr(), face, storedPoas, m_3n_lease_time, m_standardMetric);
+
+		      // Add the information the the leased NodeNameContainer
+		      m_leased_names->addEntry(aen_p->GetNamePtr(), m_3n_lease_time);
+		    }
+		}
 	    }
-	}
-      else
-	{
-	  NS_LOG_INFO("Node has no name, taking " << *obtainedName);
-	  SetNode3NName(obtainedName, aen_p->GetLeasetime());
 	}
     }
 
@@ -604,6 +633,46 @@ namespace ns3 {
 
       m_inOENs (oen_p, face);
 
+      Ptr<const NNNAddress> obtainedName = oen_p->GetNamePtr();
+
+      NS_LOG_INFO("Obtained OEN with " << *obtainedName);
+
+      bool willUseName = false;
+
+      // Check if we have a 3N name
+      if (Has3NName ())
+	{
+	  // As long as the name is not the same, we can use the name
+	  if (*GetNode3NNamePtr() != *obtainedName)
+	    {
+	      NS_LOG_INFO("Node had " << GetNode3NName () << " now taking " << *obtainedName);
+	      SetNode3NName(obtainedName, oen_p->GetLeasetime());
+	      willUseName = true;
+	    }
+	}
+      else
+	{
+	  NS_LOG_INFO("Node has no name, taking " << *obtainedName);
+	  SetNode3NName(obtainedName, oen_p->GetLeasetime());
+	  willUseName = true;
+	}
+
+      // If you start using the 3N name, execute the following
+      if (willUseName)
+	{
+	  NS_LOG_INFO("Pushing AEN with Node name " << *obtainedName);
+	  // Now create the AEN PDU to respond
+	  Ptr<AEN> aen_p = Create<AEN> (*obtainedName);
+	  // Ensure that the lease time is set right
+	  aen_p->SetLeasetime(oen_p->GetLeasetime());
+	  // Add the PoAs to the response PDU
+	  aen_p->AddPoa(GetAllPoANames());
+
+	  // Send the created AEN PDU
+	  face->SendAEN(aen_p);
+
+	  m_outAENs (aen_p, face);
+	}
     }
 
     void
