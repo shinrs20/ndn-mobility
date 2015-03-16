@@ -140,28 +140,16 @@ namespace ns3 {
     NNPT::findPairedName (Ptr<const NNNAddress> oldName)
     {
       NS_LOG_FUNCTION (this);
-//      pair_set_by_oldname& pair_index = container.get<oldname> ();
-//      pair_set_by_oldname::iterator it = pair_index.find(oldName);
-//
-//      if (it != pair_index.end())
-//	{
-//	  NNPTEntry tmp;
-//	  // Check if there is a newer entry
-//	  while (true)
-//	    {
-//	      tmp = *it;
-//	      it = pair_index.find(tmp.m_newName);
-//	      if (it == pair_index.end())
-//		break;
-//	    }
-//	  return *tmp.m_newName;
-//	}
-//      else
-//	{
-//	  return *oldName;
-//	}
 
       return *findPairedNamePtr(oldName);
+    }
+
+    const NNNAddress&
+    NNPT::findPairedOldName (Ptr<const NNNAddress> newName)
+    {
+      NS_LOG_FUNCTION (this);
+
+      return *findPairedOldNamePtr(newName);
     }
 
     Ptr<const NNNAddress>
@@ -174,19 +162,45 @@ namespace ns3 {
       if (it != pair_index.end())
 	{
 	  NNPTEntry tmp;
-          // Check if there is a newer entry
-          while (true)
-            {
-              tmp = *it;
-              it = pair_index.find(tmp.m_newName);
-              if (it == pair_index.end())
-                  break;
-            }
-          return tmp.m_newName;
-        }
+	  // Check if there is a newer entry
+	  while (true)
+	    {
+	      tmp = *it;
+	      it = pair_index.find(tmp.m_newName);
+	      if (it == pair_index.end())
+		break;
+	    }
+	  return tmp.m_newName;
+	}
       else
 	{
 	  return oldName;
+	}
+    }
+
+    Ptr<const NNNAddress>
+    NNPT::findPairedOldNamePtr (Ptr<const NNNAddress> newName)
+    {
+      NS_LOG_FUNCTION (this);
+      pair_set_by_newname& pair_index = container.get<newname> ();
+      pair_set_by_newname::iterator it = pair_index.find(newName);
+
+      if (it != pair_index.end ())
+	{
+	  NNPTEntry tmp;
+	  // Check if there is a newer entry
+	  while (true)
+	    {
+	      tmp = *it;
+	      it = pair_index.find (tmp.m_oldName);
+	      if (it == pair_index.end ())
+		break;
+	    }
+	  return tmp.m_oldName;
+	}
+      else
+	{
+	  return newName;
 	}
     }
 

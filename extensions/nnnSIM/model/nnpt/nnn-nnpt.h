@@ -111,8 +111,14 @@ namespace ns3 {
       const NNNAddress&
       findPairedName (Ptr<const NNNAddress> oldName);
 
+      const NNNAddress&
+      findPairedOldName (Ptr<const NNNAddress> newName);
+
       Ptr<const NNNAddress>
       findPairedNamePtr (Ptr<const NNNAddress> oldName);
+
+      Ptr<const NNNAddress>
+      findPairedOldNamePtr (Ptr<const NNNAddress> newName);
 
       NNPTEntry
       findEntry (Ptr<const NNNAddress> name);

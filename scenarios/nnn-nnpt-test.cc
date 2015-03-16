@@ -59,6 +59,7 @@ int main (int argc, char *argv[])
   test1.printByAddress();
 
   std::cout << "\"" << *nn_test1 <<"\"'s New address is \"" << test1.findPairedName (nn_test1) << "\"" << std::endl;
+  std::cout << "\"" << *nn_test3 << "\"'s Old address is \"" << test1.findPairedOldName(nn_test3) << "\"" << std::endl;
 
   std::cout << "Printing ordering by lease expire time" << std::endl;
   test1.printByLease();
