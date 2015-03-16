@@ -182,8 +182,8 @@ namespace ns3 {
 	const FaceMetric &
 	FindBestCandidate (uint32_t skip = 0) const;
 
-        std::pair<Ptr<Face>, Address>
-        FindBestCandidateFaceInfo (uint32_t skip = 0) const;
+	std::pair<Ptr<Face>, Address>
+	FindBestCandidateFaceInfo (uint32_t skip = 0) const;
 
 	void
 	RemoveFace (const Ptr<Face> &face);

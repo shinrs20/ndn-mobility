@@ -27,11 +27,20 @@ namespace ns3 {
   namespace nnn {
 
     NamesContainer::NamesContainer ()
+    : renewName (MakeNullCallback <void> ())
+    , hasNoName (MakeNullCallback <void> ())
     {
     }
 
     NamesContainer::~NamesContainer ()
     {
+    }
+
+    void
+    NamesContainer::RegisterCallbacks (const Callback<void> renewal, const Callback<void> leaseagain)
+    {
+      renewName = renewal;
+      hasNoName = leaseagain;
     }
 
     void
@@ -49,6 +58,7 @@ namespace ns3 {
       NS_LOG_FUNCTION (this << name << lease_expire);
       container.insert(NamesContainerEntry(name, lease_expire));
 
+      Simulator::Schedule(lease_expire - Seconds(5), &NamesContainer::willAttemptRenew, this);
       Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
     }
 
@@ -58,6 +68,7 @@ namespace ns3 {
       NS_LOG_FUNCTION (this << name << lease_expire << renew);
       container.insert(NamesContainerEntry(name, lease_expire, renew));
 
+      Simulator::Schedule(renew, &NamesContainer::willAttemptRenew, this);
       Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
     }
 
@@ -213,6 +224,10 @@ namespace ns3 {
 
 	  ++it;
 	}
+
+      // The container is actually empty, callback
+      if (isEmpty ())
+	hasNoName ();
     }
 
     void
@@ -228,6 +243,14 @@ namespace ns3 {
 	  deleteEntry(*it);
 	  ++it;
 	}
+    }
+
+    void
+    NamesContainer::willAttemptRenew ()
+    {
+      NS_LOG_FUNCTION (this);
+      if (size () == 1)
+	renewName ();
     }
 
     void

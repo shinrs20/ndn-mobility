@@ -309,21 +309,21 @@ namespace ns3 {
       }
 
       void
-      Entry::cleanExpired()
+      Entry::cleanExpired ()
       {
 	NS_LOG_FUNCTION (this);
 	fmtr_set_by_lease& lease_index = m_faces.get<i_lease> ();
-	Time now = Simulator::Now();
+	Time now = Simulator::Now ();
 
-	fmtr_set_by_lease::iterator it = lease_index.begin();
-	for (; it != lease_index.end();)
+	fmtr_set_by_lease::iterator it = lease_index.begin ();
+	for (; it != lease_index.end ();)
 	  {
 	    if (it->GetExpireTime() <= now)
-	      it = lease_index.erase(it);
+	      it = lease_index.erase (it);
 	    else
 	      ++it;
 
-	    if (it->GetExpireTime() > now)
+	    if (it->GetExpireTime () > now)
 	      break;
 	  }
       }

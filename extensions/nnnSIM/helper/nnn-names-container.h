@@ -73,6 +73,9 @@ namespace ns3 {
       ~NamesContainer();
 
       void
+      RegisterCallbacks (const Callback<void> renewal, const Callback<void> leaseagain);
+
+      void
       addEntry (NamesContainerEntry nameEntry);
 
       void
@@ -118,12 +121,18 @@ namespace ns3 {
       clear ();
 
       void
+      willAttemptRenew ();
+
+      void
       printByAddress ();
 
       void
       printByLease ();
 
       names_set container;
+
+      Callback<void> renewName;
+      Callback<void> hasNoName;
     };
 
   } /* namespace nnn */

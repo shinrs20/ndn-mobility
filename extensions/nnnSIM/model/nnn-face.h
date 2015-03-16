@@ -457,7 +457,6 @@ namespace ns3 {
     {
       return !(*this == face);
     }
-
   } // namespace nnn
 } // namespace ns3
 

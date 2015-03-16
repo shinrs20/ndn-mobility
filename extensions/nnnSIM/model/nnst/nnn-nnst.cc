@@ -729,10 +729,10 @@ namespace ns3 {
       Ptr<const NNNAddress> name = item->GetAddressPtr();
       NS_LOG_FUNCTION (this << boost::cref(*name));
 
-      item->cleanExpired();
+      item->cleanExpired ();
 
-      if (item->isEmpty())
-	Remove(name);
+      if (item->isEmpty ())
+	Remove (name);
     }
 
     std::ostream&

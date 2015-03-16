@@ -36,7 +36,7 @@ namespace ns3 {
     NamesContainerEntry::NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire)
     : m_name           (name)
     , m_lease_expire   (lease_expire)
-    , m_renew          (lease_expire - Seconds(1))
+    , m_renew          (lease_expire - Seconds(5))
     {
 
     }
