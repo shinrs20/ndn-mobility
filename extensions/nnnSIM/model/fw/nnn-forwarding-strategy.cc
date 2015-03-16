@@ -778,6 +778,7 @@ namespace ns3 {
     void
     ForwardingStrategy::ProcessICNPDU (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<Packet> icn_pdu)
     {
+      NS_LOG_FUNCTION (this);
       bool receivedInterest =false;
       bool receivedData = false;
       Ptr<ndn::Interest> interest;
@@ -828,6 +829,7 @@ namespace ns3 {
     void
     ForwardingStrategy::UpdatePITEntry (Ptr<pit::Entry> pitEntry, Ptr<NNNPDU> pdu, Ptr<Face> face, Time lifetime)
     {
+      NS_LOG_FUNCTION (this);
       // Pointers for PDU types
       Ptr<SO> so_i;
       Ptr<DU> du_i;
