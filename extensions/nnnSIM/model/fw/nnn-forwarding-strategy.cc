@@ -464,10 +464,11 @@ namespace ns3 {
 	{
 	  // Get the 3N name from the AEN
 	  NNNAddress tmp = aen_p->GetName ();
+	  NNNAddress myAddr = GetNode3NName ();
 
 	  NS_LOG_INFO("We got a AEN with " << tmp);
 	  // Assure that the name in the AEN is under the delegated 3N name
-	  if (GetNode3NName () == tmp.getSectorName ())
+	  if (myAddr == tmp.getSectorName ())
 	    {
 	      // Check if we have this entry in the waiting list
 	      if (m_awaiting_response->FoundName(tmp))
@@ -477,6 +478,8 @@ namespace ns3 {
 		  std::vector<Address> receivedPoas = aen_p->GetPoas ();
 		  // Get the list of stored PoAs
 		  std::vector<Address> storedPoas = m_awaiting_response->GetAllPoas (tmp);
+		  // Get the name that will finally be used
+		  Ptr<const NNNAddress> newName = aen_p->GetNamePtr ();
 
 		  // Check differences
 		  std::vector<Address> diff;
@@ -493,10 +496,47 @@ namespace ns3 {
 		      NS_LOG_INFO("Adding NNST information for " << tmp);
 
 		      // Add the new information to the NNST
-		      m_nnst->Add(aen_p->GetNamePtr(), face, storedPoas, m_3n_lease_time, m_standardMetric);
+		      m_nnst->Add(newName, face, storedPoas, m_3n_lease_time, m_standardMetric);
 
 		      // Add the information the the leased NodeNameContainer
-		      m_leased_names->addEntry(aen_p->GetNamePtr(), m_3n_lease_time);
+		      m_leased_names->addEntry(newName, m_3n_lease_time);
+
+		      // If there is an NNPT entry, it means we had a REN before. We need to
+		      // ensure the network of this change
+		      if (m_nnpt->foundNewName (newName))
+			{
+			  Ptr<NNNAddress> registeredOldName = Create<NNNAddress> (m_nnpt->findPairedOldName(newName));
+			  Ptr<NNNAddress> registeredNewName = Create<NNNAddress> (newName->getName());
+
+			  // If we happen to be in the same subsector, the buffer will have something
+			  // the check is good practice
+			  flushBuffer (registeredOldName, registeredNewName);
+
+			  // Check if the Node was in our subsector
+			  if (! registeredOldName->isSubSector (myAddr))
+			    {
+			      // If node was not originally in our sector, create a INF PDU
+			      NS_LOG_INFO ("Creating INF PDU");
+			      Ptr<INF> inf_o = Create<INF> ();
+
+			      // Fill the necessary information
+			      inf_o->SetOldName (registeredOldName);
+			      inf_o->SetNewName (registeredNewName);
+			      inf_o->SetRemainLease (m_nnpt->findNameExpireTime(registeredOldName));
+
+			      // Find where to send the INF
+			      std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (registeredOldName->getSectorName(), 0);
+
+			      Ptr<Face> outFace = tmp.first;
+			      Address destAddr = tmp.second;
+
+			      // Send the created INF PDU
+			      outFace->SendINF (inf_o, destAddr);
+
+			      // Log that the INF PDU was sent
+			      m_outINFs (inf_o, outFace);
+			    }
+			}
 		    }
 		}
 	    }
@@ -529,56 +569,26 @@ namespace ns3 {
 	  // Produce a new 3N name
 	  Ptr<NNNAddress> produced3Nname = produce3NName ();
 
-	  // Add the new information to the NNST
-	  m_nnst->Add (produced3Nname, face, poaAddrs, m_3n_lease_time, m_standardMetric);
+	  // Add the new information into the Awaiting Response NNST type structure
+	  // Create a 5 second timeout
+	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, m_3n_lease_ack_timeout, m_standardMetric);
 
-	  // Add the information the the leased NodeNameContainer
-	  m_leased_names->addEntry(produced3Nname, m_3n_lease_time);
+	  // Create an OEN PDU to respond
+	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname);
+	  // Ensure that the lease time is set in the PDU
+	  oen_p->SetLeasetime(m_3n_lease_time);
+	  // Add the PoA names to the PDU
+	  oen_p->AddPoa(poaAddrs);
 
-	  // Now create the AEN PDU to respond
-	  Ptr<AEN> aen_p = Create<AEN> (produced3Nname);
-	  // Ensure that the lease time is set right
-	  aen_p->SetLeasetime (m_3n_lease_time);
+	  // Send the create OEN PDU out the way it came
+	  face->SendOEN(oen_p, destAddr);
 
-	  // Send the created AEN PDU out the way it came
-	  face->SendAEN (aen_p, destAddr);
-
-	  // Log that the AEN was sent
-	  m_outAENs (aen_p, face);
+	  m_outOENs (oen_p, face);
 
 	  Time remaining = ren_p->GetRemainLease ();
 
 	  // Regardless of the name, we need to update the NNPT
 	  m_nnpt->addEntry (reenroll, produced3Nname, remaining);
-
-	  // If we happen to be in the same subsector, the buffer will have something
-	  // the check is good practice
-	  flushBuffer (reenroll, produced3Nname);
-
-	  // Check if the Node was in our subsector
-	  if (! reenroll->isSubSector (myAddr))
-	    {
-	      // If node was not originally in our sector, create a INF PDU
-	      NS_LOG_INFO ("Creating INF PDU");
-	      Ptr<INF> inf_o = Create<INF> ();
-
-	      // Fill the necessary information
-	      inf_o->SetOldName (reenroll);
-	      inf_o->SetNewName (produced3Nname);
-	      inf_o->SetRemainLease (remaining);
-
-	      // Find where to send the INF
-	      std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (reenroll->getSectorName(), 0);
-
-	      Ptr<Face> outFace = tmp.first;
-	      Address destAddr = tmp.second;
-
-	      // Send the created INF PDU
-	      outFace->SendINF (inf_o, destAddr);
-
-	      // Log that the INF PDU was sent
-	      m_outINFs (inf_o, outFace);
-	    }
 	}
       else
 	{
@@ -1106,7 +1116,7 @@ namespace ns3 {
 	  ren_o->SetLifetime (m_3n_lifetime);
 	  // Set the 3N name for the REN
 	  ren_o->SetName (*addr);
-	  // Write the expire time for the 3N name
+	  // Write the expire time for the 3N name (Time within the simulator is absolute)
 	  ren_o->SetRemainLease (m_node_names->findNameExpireTime (addr));
 	  // Add all the PoA names we found
 	  for (int i = 0; i < poanames.size (); i++)
