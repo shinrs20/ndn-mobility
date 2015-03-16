@@ -221,6 +221,10 @@ namespace ns3 {
 
     ForwardingStrategy::ForwardingStrategy ()
     {
+      m_node_names->RegisterCallbacks(
+	  MakeCallback (&ForwardingStrategy::Reenroll, this),
+	  MakeCallback (&ForwardingStrategy::Enroll, this)
+	  );
     }
 
     ForwardingStrategy::~ForwardingStrategy ()

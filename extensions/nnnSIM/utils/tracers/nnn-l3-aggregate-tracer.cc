@@ -163,9 +163,6 @@ namespace ns3
     void
     L3AggregateTracer::InstallAll (const std::string &file, Time averagingPeriod/* = Seconds (0.5)*/)
     {
-      using namespace boost;
-      using namespace std;
-
       std::list<Ptr<L3AggregateTracer> > tracers;
       boost::shared_ptr<std::ostream> outputStream;
       if (file != "-")
