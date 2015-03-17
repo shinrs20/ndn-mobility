@@ -33,6 +33,7 @@
 namespace ns3 {
 
   class Node;
+  class NodeContainer;
 
   namespace nnn {
 
@@ -80,9 +81,9 @@ namespace ns3 {
        */
       void
       SetStackAttributes (const std::string &attr1 = "", const std::string &value1 = "",
-			  const std::string &attr2 = "", const std::string &value2 = "",
-			  const std::string &attr3 = "", const std::string &value3 = "",
-			  const std::string &attr4 = "", const std::string &value4 = "");
+                          const std::string &attr2 = "", const std::string &value2 = "",
+                          const std::string &attr3 = "", const std::string &value3 = "",
+                          const std::string &attr4 = "", const std::string &value4 = "");
 
 
       /**
@@ -93,39 +94,43 @@ namespace ns3 {
        */
       void
       SetForwardingStrategy (const std::string &ForwardingStrategyClass,
-			     const std::string &attr1 = "", const std::string &value1 = "",
-			     const std::string &attr2 = "", const std::string &value2 = "",
-			     const std::string &attr3 = "", const std::string &value3 = "",
-			     const std::string &attr4 = "", const std::string &value4 = "");
-
+                             const std::string &attr1 = "", const std::string &value1 = "",
+                             const std::string &attr2 = "", const std::string &value2 = "",
+                             const std::string &attr3 = "", const std::string &value3 = "",
+                             const std::string &attr4 = "", const std::string &value4 = "");
 
       /**
        * @brief Set content store class and its attributes
        * @param contentStoreClass string, representing class of the content store
        */
+      void
+      SetContentStore (const std::string &contentStoreClass,
+                       const std::string &attr1 = "", const std::string &value1 = "",
+                       const std::string &attr2 = "", const std::string &value2 = "",
+                       const std::string &attr3 = "", const std::string &value3 = "",
+                       const std::string &attr4 = "", const std::string &value4 = "");
 
       /**
        * @brief Set PIT class and its attributes
        * @param pitClass string, representing class of PIT
-
-  void
-  SetPit (const std::string &pitClass,
-          const std::string &attr1 = "", const std::string &value1 = "",
-          const std::string &attr2 = "", const std::string &value2 = "",
-          const std::string &attr3 = "", const std::string &value3 = "",
-          const std::string &attr4 = "", const std::string &value4 = "");
-       */
-
-      /**
-       * @brief Set NNST class and its attributes
-       * @param nnstClass string, representing class of NNST
        */
       void
-      SetNNST (const std::string &nnstClass,
-	       const std::string &attr1 = "", const std::string &value1 = "",
-	       const std::string &attr2 = "", const std::string &value2 = "",
-	       const std::string &attr3 = "", const std::string &value3 = "",
-	       const std::string &attr4 = "", const std::string &value4 = "");
+      SetPit (const std::string &pitClass,
+              const std::string &attr1 = "", const std::string &value1 = "",
+              const std::string &attr2 = "", const std::string &value2 = "",
+              const std::string &attr3 = "", const std::string &value3 = "",
+              const std::string &attr4 = "", const std::string &value4 = "");
+
+      /**
+       * @brief Set FIB class and its attributes
+       * @param pitClass string, representing class of FIB
+       */
+      void
+      SetFib (const std::string &fibClass,
+              const std::string &attr1 = "", const std::string &value1 = "",
+              const std::string &attr2 = "", const std::string &value2 = "",
+              const std::string &attr3 = "", const std::string &value3 = "",
+              const std::string &attr4 = "", const std::string &value4 = "");
 
       typedef Callback< Ptr<NetDeviceFace>, Ptr<Node>, Ptr<L3Protocol>, Ptr<NetDevice> > NetDeviceFaceCreateCallback;
 
@@ -165,10 +170,9 @@ namespace ns3 {
        * @param avgRtt           Average RTT
        * @param avgData Average size of contentObject packets (including all headers)
        * @param avgInterest      Average size of interest packets (including all headers)
-
-void
-  EnableLimits (bool enable = true, Time avgRtt=Seconds(0.1), uint32_t avgData=1100, uint32_t avgInterest=40);
        */
+      void
+      EnableLimits (bool enable = true, Time avgRtt=Seconds(0.1), uint32_t avgData=1100, uint32_t avgInterest=40);
 
       /**
        * \brief Install Nnn stack on the node
@@ -223,7 +227,7 @@ void
       InstallAll () const;
 
       /**
-       * \brief Add Forwarding entry to NNST
+       * \brief Add Forwarding entry to FIB
        *
        * \param nodeName Node name
        * \param prefix Routing prefix
@@ -234,7 +238,7 @@ void
       AddRoute (const std::string &nodeName, const std::string &prefix, uint32_t faceId, int32_t metric);
 
       /**
-       * \brief Add Forwarding entry to NNST
+       * \brief Add Forwarding entry to FIB
        *
        * \param nodeName Node
        * \param prefix Routing prefix
@@ -245,7 +249,7 @@ void
       AddRoute (Ptr<Node> node, const std::string &prefix, uint32_t faceId, int32_t metric);
 
       /**
-       * \brief Add Forwarding entry to NNST
+       * \brief Add Forwarding entry to FIB
        *
        * \param node   Node
        * \param prefix Routing prefix
@@ -256,7 +260,7 @@ void
       AddRoute (Ptr<Node> node, const std::string &prefix, Ptr<Face> face, int32_t metric);
 
       /**
-       * @brief Add Forwarding entry to NNST (work only with point-to-point links)
+       * @brief Add Forwarding entry to FIB (work only with point-to-point links)
        *
        * \param node Node
        * \param prefix Routing prefix
@@ -267,7 +271,7 @@ void
       AddRoute (Ptr<Node> node, const std::string &prefix, Ptr<Node> otherNode, int32_t metric);
 
       /**
-       * @brief Add Forwarding entry to NNST (work only with point-to-point links)
+       * @brief Add Forwarding entry to FIB (work only with point-to-point links)
        *
        * \param nodeName Node name (refer to ns3::Names)
        * \param prefix Routing prefix
@@ -307,11 +311,11 @@ void
       ObjectFactory m_fibFactory;
       ObjectFactory m_contentStoreFactory;
 
-      //  bool     m_limitsEnabled;
-      //  Time     m_avgRtt;
-      //  uint32_t m_avgDataSize;
-      //  uint32_t m_avgInterestSize;
-      bool     m_needSetDefaultRoutes;
+      bool m_limitsEnabled;
+      Time m_avgRtt;
+      uint32_t m_avgDataSize;
+      uint32_t m_avgInterestSize;
+      bool m_needSetDefaultRoutes;
 
       typedef std::list< std::pair<TypeId, NetDeviceFaceCreateCallback> > NetDeviceCallbackList;
 

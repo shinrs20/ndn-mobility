@@ -18,6 +18,8 @@
  *  along with nnn-stack-helper.h.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "nnn-stack-helper.h"
+
 #include <ns3-dev/ns3/assert.h>
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/object.h>
@@ -31,13 +33,12 @@
 #include <ns3-dev/ns3/net-device.h>
 #include <ns3-dev/ns3/node.h>
 #include <ns3-dev/ns3/node-list.h>
+#include <ns3-dev/ns3/node-container.h>
 #include <ns3-dev/ns3/packet-socket-factory.h>
 #include <ns3-dev/ns3/point-to-point-helper.h>
 #include <ns3-dev/ns3/point-to-point-net-device.h>
 #include <ns3-dev/ns3/simulator.h>
 #include <ns3-dev/ns3/string.h>
-
-#include "nnn-stack-helper.h"
 
 #include <ns3-dev/ns3/ndn-content-store.h>
 
@@ -54,6 +55,8 @@
 #include "../model/fib/nnn-fib.h"
 #include "../model/pit/nnn-pit.h"
 
+#include "../utils/nnn-limits.h"
+
 #include "../model/fw/nnn-forwarding-strategy.h"
 
 #include <boost/foreach.hpp>
@@ -67,10 +70,15 @@ namespace ns3 {
   namespace nnn {
 
     NNNStackHelper::NNNStackHelper ()
+    : m_limitsEnabled (false)
+    , m_needSetDefaultRoutes (false)
     {
-      m_nnnFactory.         SetTypeId ("ns3::nnn::L3Protocol");
-      m_nnnforwardingstrategyFactory.    SetTypeId ("ns3::nnn::ForwardingStrategy");
-      m_nnstFactory.         SetTypeId ("ns3::nnn::nnst::Default");
+      m_nnnFactory.                    SetTypeId ("ns3::nnn::L3Protocol");
+      m_nnnforwardingstrategyFactory.  SetTypeId ("ns3::nnn::ForwardingStrategy");
+      m_nnstFactory.                   SetTypeId ("ns3::nnn::nnst::Default");
+      m_contentStoreFactory.           SetTypeId ("ns3::ndn::cs::Lru");
+      m_fibFactory.                    SetTypeId ("ns3::nnn::fib::Default");
+      m_pitFactory.                    SetTypeId ("ns3::nnn::pit::Persistent");
 
       m_netDeviceCallbacks.push_back (std::make_pair (PointToPointNetDevice::GetTypeId (), MakeCallback (&NNNStackHelper::PointToPointNetDeviceCallback, this)));
       // default callback will be fired if non of others callbacks fit or did the job
@@ -82,9 +90,9 @@ namespace ns3 {
 
     void
     NNNStackHelper::SetStackAttributes (const std::string &attr1, const std::string &value1,
-					const std::string &attr2, const std::string &value2,
-					const std::string &attr3, const std::string &value3,
-					const std::string &attr4, const std::string &value4)
+                                        const std::string &attr2, const std::string &value2,
+                                        const std::string &attr3, const std::string &value3,
+                                        const std::string &attr4, const std::string &value4)
     {
       if (attr1 != "")
 	m_nnnFactory.Set (attr1, StringValue (value1));
@@ -98,10 +106,10 @@ namespace ns3 {
 
     void
     NNNStackHelper::SetForwardingStrategy (const std::string &ForwardingStrategy,
-					   const std::string &attr1, const std::string &value1,
-					   const std::string &attr2, const std::string &value2,
-					   const std::string &attr3, const std::string &value3,
-					   const std::string &attr4, const std::string &value4)
+                                           const std::string &attr1, const std::string &value1,
+                                           const std::string &attr2, const std::string &value2,
+                                           const std::string &attr3, const std::string &value3,
+                                           const std::string &attr4, const std::string &value4)
     {
       m_nnnforwardingstrategyFactory.SetTypeId (ForwardingStrategy);
       if (attr1 != "")
@@ -115,28 +123,110 @@ namespace ns3 {
     }
 
     void
-    NNNStackHelper::SetNNST (const std::string &nnstClass,
-			     const std::string &attr1, const std::string &value1,
-			     const std::string &attr2, const std::string &value2,
-			     const std::string &attr3, const std::string &value3,
-			     const std::string &attr4, const std::string &value4)
+    NNNStackHelper::SetContentStore (const std::string &contentStore,
+                                     const std::string &attr1, const std::string &value1,
+                                     const std::string &attr2, const std::string &value2,
+                                     const std::string &attr3, const std::string &value3,
+                                     const std::string &attr4, const std::string &value4)
     {
-      m_nnstFactory.SetTypeId (nnstClass);
+      m_contentStoreFactory.SetTypeId (contentStore);
       if (attr1 != "")
-	m_nnstFactory.Set (attr1, StringValue (value1));
+	m_contentStoreFactory.Set (attr1, StringValue (value1));
       if (attr2 != "")
-	m_nnstFactory.Set (attr2, StringValue (value2));
+	m_contentStoreFactory.Set (attr2, StringValue (value2));
       if (attr3 != "")
-	m_nnstFactory.Set (attr3, StringValue (value3));
+	m_contentStoreFactory.Set (attr3, StringValue (value3));
       if (attr4 != "")
-	m_nnstFactory.Set (attr4, StringValue (value4));
+	m_contentStoreFactory.Set (attr4, StringValue (value4));
     }
 
     void
-    NNNStackHelper::SetDefaultRoutes (bool needSet)
+    NNNStackHelper::SetPit (const std::string &pitClass,
+                            const std::string &attr1, const std::string &value1,
+                            const std::string &attr2, const std::string &value2,
+                            const std::string &attr3, const std::string &value3,
+                            const std::string &attr4, const std::string &value4)
     {
-      NS_LOG_FUNCTION (this << needSet);
-      m_needSetDefaultRoutes = needSet;
+      m_pitFactory.SetTypeId (pitClass);
+      if (attr1 != "")
+	m_pitFactory.Set (attr1, StringValue (value1));
+      if (attr2 != "")
+	m_pitFactory.Set (attr2, StringValue (value2));
+      if (attr3 != "")
+	m_pitFactory.Set (attr3, StringValue (value3));
+      if (attr4 != "")
+	m_pitFactory.Set (attr4, StringValue (value4));
+    }
+
+    void
+    NNNStackHelper::SetFib (const std::string &fibClass,
+                            const std::string &attr1, const std::string &value1,
+                            const std::string &attr2, const std::string &value2,
+                            const std::string &attr3, const std::string &value3,
+                            const std::string &attr4, const std::string &value4)
+    {
+      m_fibFactory.SetTypeId (fibClass);
+      if (attr1 != "")
+	m_fibFactory.Set (attr1, StringValue (value1));
+      if (attr2 != "")
+	m_fibFactory.Set (attr2, StringValue (value2));
+      if (attr3 != "")
+	m_fibFactory.Set (attr3, StringValue (value3));
+      if (attr4 != "")
+	m_fibFactory.Set (attr4, StringValue (value4));
+    }
+
+    Ptr<FaceContainer>
+    NNNStackHelper::InstallAll () const
+    {
+      return Install (NodeContainer::GetGlobal ());
+    }
+
+
+
+    void
+    NNNStackHelper::AddNetDeviceFaceCreateCallback (TypeId netDeviceType, NNNStackHelper::NetDeviceFaceCreateCallback callback)
+    {
+      m_netDeviceCallbacks.push_back (std::make_pair (netDeviceType, callback));
+    }
+
+    void
+    NNNStackHelper::UpdateNetDeviceFaceCreateCallback (TypeId netDeviceType, NetDeviceFaceCreateCallback callback)
+    {
+      for (NetDeviceCallbackList::iterator i = m_netDeviceCallbacks.begin (); i != m_netDeviceCallbacks.end (); i++)
+	{
+	  if (i->first == netDeviceType)
+	    {
+	      i->second = callback;
+	      return;
+	    }
+	}
+    }
+
+    void
+    NNNStackHelper::RemoveNetDeviceFaceCreateCallback (TypeId netDeviceType, NetDeviceFaceCreateCallback callback)
+    {
+      for (NetDeviceCallbackList::iterator i = m_netDeviceCallbacks.begin (); i != m_netDeviceCallbacks.end (); i++)
+	{
+	  if (i->first == netDeviceType)
+	    {
+	      m_netDeviceCallbacks.erase (i);
+	      return;
+	    }
+	}
+    }
+
+    void
+    NNNStackHelper::EnableLimits (bool enable/* = true*/,
+                                  Time avgRtt/*=Seconds(0.1)*/,
+                                  uint32_t avgData/*=1100*/,
+                                  uint32_t avgInterest/*=40*/)
+    {
+      NS_LOG_INFO ("EnableLimits: " << enable);
+      m_limitsEnabled = enable;
+      m_avgRtt = avgRtt;
+      m_avgDataSize = avgData;
+      m_avgInterestSize = avgInterest;
     }
 
     Ptr<FaceContainer>
@@ -151,9 +241,10 @@ namespace ns3 {
     }
 
     Ptr<FaceContainer>
-    NNNStackHelper::InstallAll () const
+    NNNStackHelper::Install (const std::string &nodeName) const
     {
-      return Install (NodeContainer::GetGlobal ());
+      Ptr<Node> node = Names::Find<Node> (nodeName);
+      return Install (node);
     }
 
     Ptr<FaceContainer>
@@ -243,104 +334,20 @@ namespace ns3 {
     }
 
     void
-    NNNStackHelper::AddNetDeviceFaceCreateCallback (TypeId netDeviceType, NNNStackHelper::NetDeviceFaceCreateCallback callback)
-    {
-      m_netDeviceCallbacks.push_back (std::make_pair (netDeviceType, callback));
-    }
-
-    void
-    NNNStackHelper::UpdateNetDeviceFaceCreateCallback (TypeId netDeviceType, NetDeviceFaceCreateCallback callback)
-    {
-      for (NetDeviceCallbackList::iterator i = m_netDeviceCallbacks.begin (); i != m_netDeviceCallbacks.end (); i++)
-	{
-	  if (i->first == netDeviceType)
-	    {
-	      i->second = callback;
-	      return;
-	    }
-	}
-    }
-
-    void
-    NNNStackHelper::RemoveNetDeviceFaceCreateCallback (TypeId netDeviceType, NetDeviceFaceCreateCallback callback)
-    {
-      for (NetDeviceCallbackList::iterator i = m_netDeviceCallbacks.begin (); i != m_netDeviceCallbacks.end (); i++)
-	{
-	  if (i->first == netDeviceType)
-	    {
-	      m_netDeviceCallbacks.erase (i);
-	      return;
-	    }
-	}
-    }
-
-    Ptr<NetDeviceFace>
-    NNNStackHelper::DefaultNetDeviceCallback (Ptr<Node> node, Ptr<L3Protocol> nnn, Ptr<NetDevice> netDevice) const
-    {
-      NS_LOG_DEBUG ("Creating default NetDeviceFace on node " << node->GetId ());
-
-      Ptr<NetDeviceFace> face = CreateObject<NetDeviceFace> (node, netDevice);
-
-      nnn->AddFace (face);
-      NS_LOG_LOGIC ("Node " << node->GetId () << ": added NetDeviceFace as face #" << *face);
-
-      return face;
-    }
-
-    Ptr<NetDeviceFace>
-    NNNStackHelper::PointToPointNetDeviceCallback (Ptr<Node> node, Ptr<L3Protocol> nnn, Ptr<NetDevice> device) const
-    {
-      NS_LOG_DEBUG ("Creating point-to-point NetDeviceFace on node " << node->GetId ());
-
-      Ptr<NetDeviceFace> face = CreateObject<NetDeviceFace> (node, device);
-
-      nnn->AddFace (face);
-      NS_LOG_LOGIC ("Node " << node->GetId () << ": added NetDeviceFace as face #" << *face);
-
-      /*  if (m_limitsEnabled)
-    {
-      Ptr<Limits> limits = face->GetObject<Limits> ();
-      if (limits == 0)
-        {
-          NS_FATAL_ERROR ("Limits are enabled, but the selected forwarding strategy does not support limits. Please revise your scenario");
-          exit (1);
-        }
-
-      NS_LOG_INFO ("Limits are enabled");
-      Ptr<PointToPointNetDevice> p2p = DynamicCast<PointToPointNetDevice> (device);
-      if (p2p != 0)
-        {
-          // Setup bucket filtering
-          // Assume that we know average data packet size, and this size is equal default size
-          // Set maximum buckets (averaging over 1 second)
-
-          DataRateValue dataRate; device->GetAttribute ("DataRate", dataRate);
-          TimeValue linkDelay;   device->GetChannel ()->GetAttribute ("Delay", linkDelay);
-
-          NS_LOG_INFO("DataRate for this link is " << dataRate.Get());
-
-          double maxInterestPackets = 1.0  * dataRate.Get ().GetBitRate () / 8.0 / (m_avgDataSize + m_avgInterestSize);
-          // NS_LOG_INFO ("Max packets per second: " << maxInterestPackets);
-          // NS_LOG_INFO ("Max burst: " << m_avgRtt.ToDouble (Time::S) * maxInterestPackets);
-          NS_LOG_INFO ("MaxLimit: " << (int)(m_avgRtt.ToDouble (Time::S) * maxInterestPackets));
-
-          // Set max to BDP
-          limits->SetLimits (maxInterestPackets, m_avgRtt.ToDouble (Time::S));
-          limits->SetLinkDelay (linkDelay.Get ().ToDouble (Time::S));
-        }
-    }
-       */
-      return face;
-    }
-
-
-    Ptr<FaceContainer>
-    NNNStackHelper::Install (const std::string &nodeName) const
+    NNNStackHelper::AddRoute (const std::string &nodeName, const std::string &prefix, uint32_t faceId, int32_t metric)
     {
       Ptr<Node> node = Names::Find<Node> (nodeName);
-      return Install (node);
-    }
+      NS_ASSERT_MSG (node != 0, "Node [" << nodeName << "] does not exist");
 
+      Ptr<Object> node2 = DynamicCast<Object> (node);
+      Ptr<L3Protocol>     nnn = node2->GetObject<L3Protocol> ();
+      NS_ASSERT_MSG (nnn != 0, "nnn stack should be installed on the node");
+
+      Ptr<Face> face = nnn->GetFace (faceId);
+      NS_ASSERT_MSG (face != 0, "Face with ID [" << faceId << "] does not exist on node [" << nodeName << "]");
+
+      AddRoute (node, prefix, face, metric);
+    }
 
     void
     NNNStackHelper::AddRoute (Ptr<Node> node, const std::string &prefix, Ptr<Face> face, int32_t metric)
@@ -367,22 +374,6 @@ namespace ns3 {
 
       Ptr<Face> face = nnn->GetFace (faceId);
       NS_ASSERT_MSG (face != 0, "Face with ID [" << faceId << "] does not exist on node [" << node->GetId () << "]");
-
-      AddRoute (node, prefix, face, metric);
-    }
-
-    void
-    NNNStackHelper::AddRoute (const std::string &nodeName, const std::string &prefix, uint32_t faceId, int32_t metric)
-    {
-      Ptr<Node> node = Names::Find<Node> (nodeName);
-      NS_ASSERT_MSG (node != 0, "Node [" << nodeName << "] does not exist");
-
-      Ptr<Object> node2 = DynamicCast<Object> (node);
-      Ptr<L3Protocol>     nnn = node2->GetObject<L3Protocol> ();
-      NS_ASSERT_MSG (nnn != 0, "nnn stack should be installed on the node");
-
-      Ptr<Face> face = nnn->GetFace (faceId);
-      NS_ASSERT_MSG (face != 0, "Face with ID [" << faceId << "] does not exist on node [" << nodeName << "]");
 
       AddRoute (node, prefix, face, metric);
     }
@@ -431,6 +422,69 @@ namespace ns3 {
       AddRoute (node, prefix, otherNode, metric);
     }
 
+    void
+    NNNStackHelper::SetDefaultRoutes (bool needSet)
+    {
+      NS_LOG_FUNCTION (this << needSet);
+      m_needSetDefaultRoutes = needSet;
+    }
 
+    Ptr<NetDeviceFace>
+    NNNStackHelper::DefaultNetDeviceCallback (Ptr<Node> node, Ptr<L3Protocol> nnn, Ptr<NetDevice> netDevice) const
+    {
+      NS_LOG_DEBUG ("Creating default NetDeviceFace on node " << node->GetId ());
+
+      Ptr<NetDeviceFace> face = CreateObject<NetDeviceFace> (node, netDevice);
+
+      nnn->AddFace (face);
+      NS_LOG_LOGIC ("Node " << node->GetId () << ": added NetDeviceFace as face #" << *face);
+
+      return face;
+    }
+
+    Ptr<NetDeviceFace>
+    NNNStackHelper::PointToPointNetDeviceCallback (Ptr<Node> node, Ptr<L3Protocol> nnn, Ptr<NetDevice> device) const
+    {
+      NS_LOG_DEBUG ("Creating point-to-point NetDeviceFace on node " << node->GetId ());
+
+      Ptr<NetDeviceFace> face = CreateObject<NetDeviceFace> (node, device);
+
+      nnn->AddFace (face);
+      NS_LOG_LOGIC ("Node " << node->GetId () << ": added NetDeviceFace as face #" << *face);
+
+      if (m_limitsEnabled)
+	{
+	  Ptr<Limits> limits = face->GetObject<Limits> ();
+	  if (limits == 0)
+	    {
+	      NS_FATAL_ERROR ("Limits are enabled, but the selected forwarding strategy does not support limits. Please revise your scenario");
+	      exit (1);
+	    }
+
+	  NS_LOG_INFO ("Limits are enabled");
+	  Ptr<PointToPointNetDevice> p2p = DynamicCast<PointToPointNetDevice> (device);
+	  if (p2p != 0)
+	    {
+	      // Setup bucket filtering
+	      // Assume that we know average data packet size, and this size is equal default size
+	      // Set maximum buckets (averaging over 1 second)
+
+	      DataRateValue dataRate; device->GetAttribute ("DataRate", dataRate);
+	      TimeValue linkDelay;   device->GetChannel ()->GetAttribute ("Delay", linkDelay);
+
+	      NS_LOG_INFO("DataRate for this link is " << dataRate.Get());
+
+	      double maxInterestPackets = 1.0  * dataRate.Get ().GetBitRate () / 8.0 / (m_avgDataSize + m_avgInterestSize);
+	      // NS_LOG_INFO ("Max packets per second: " << maxInterestPackets);
+	      // NS_LOG_INFO ("Max burst: " << m_avgRtt.ToDouble (Time::S) * maxInterestPackets);
+	      NS_LOG_INFO ("MaxLimit: " << (int)(m_avgRtt.ToDouble (Time::S) * maxInterestPackets));
+
+	      // Set max to BDP
+	      limits->SetLimits (maxInterestPackets, m_avgRtt.ToDouble (Time::S));
+	      limits->SetLinkDelay (linkDelay.Get ().ToDouble (Time::S));
+	    }
+	}
+      return face;
+    }
   } // namespace nnn
 } // namespace ns3
