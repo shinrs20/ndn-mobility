@@ -20,9 +20,10 @@
 
 #include "nnn-nnpt-entry.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NNPTEntry::NNPTEntry()
     :m_oldName			(Create<const NNNAddress> ())
     ,m_newName			(Create<const NNNAddress> ())

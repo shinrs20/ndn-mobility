@@ -21,10 +21,12 @@
 
 #include "nnn-nnst-entry-facemetric.h"
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnst {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnst
+    {
       FaceMetric::FaceMetric (Ptr<Face> face, Address addr, Time lease_expire, int32_t cost)
       : m_face         (face)
       , m_dst_addr     (addr)
@@ -74,7 +76,6 @@ namespace ns3 {
 
 	return os;
       }
-
-} /* namespace nnst */
-} /* namespace nnn */
+    } /* namespace nnst */
+  } /* namespace nnn */
 } /* namespace ns3 */

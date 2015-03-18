@@ -29,15 +29,18 @@ namespace ll = boost::lambda;
 
 NS_LOG_COMPONENT_DEFINE ("nnn.nnst");
 
-namespace ns3 {
-  namespace nnn {
+namespace ns3
+{
+  namespace nnn
+  {
+    NS_OBJECT_ENSURE_REGISTERED (NNST);
 
     TypeId
     NNST::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::NNST") // cheating ns3 object system
-    		    .SetParent<Object> ()
-    		    .SetGroupName ("nnn")
+    			.SetParent<Object> ()
+    		    .SetGroupName ("Nnn")
     		    .AddConstructor<NNST> ();
       return tid;
     }

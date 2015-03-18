@@ -31,10 +31,12 @@
 #define NNN_RTO_BETA 0.25
 #define NNN_RTO_K 4
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnst {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnst
+    {
       class FaceMetric {
       public:
 	enum Status { NNN_NNST_GREEN = 1,

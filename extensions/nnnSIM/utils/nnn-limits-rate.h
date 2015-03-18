@@ -22,9 +22,10 @@
 #include "nnn-limits.h"
 #include <ns3-dev/ns3/nstime.h>
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * \ingroup nnn-fw
      * \brief Structure to manage limits for outstanding interests

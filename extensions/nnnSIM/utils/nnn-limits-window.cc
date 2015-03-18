@@ -32,8 +32,8 @@ namespace ns3
     TypeId
     LimitsWindow::GetTypeId ()
     {
-      static TypeId tid = TypeId ("ns3::ndn::Limits::Window")
-	.SetGroupName ("Ndn")
+      static TypeId tid = TypeId ("ns3::nnn::Limits::Window")
+	.SetGroupName ("Nnn")
 	.SetParent <Limits> ()
 	.AddConstructor <LimitsWindow> ()
 

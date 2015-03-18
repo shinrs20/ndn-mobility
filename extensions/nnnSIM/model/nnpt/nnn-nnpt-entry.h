@@ -43,9 +43,10 @@
 #include "../../helper/nnn-face-container.h"
 #include "../nnn-naming.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn-nnpt
      * @brief structure for PIT entry

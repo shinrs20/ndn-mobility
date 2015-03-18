@@ -37,9 +37,10 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     class Pit;
 
     namespace nnnSIM {}

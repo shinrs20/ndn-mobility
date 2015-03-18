@@ -41,9 +41,10 @@
 
 #include "../nnn-face.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     //class Name;
     //typedef Name NameComponents;
 

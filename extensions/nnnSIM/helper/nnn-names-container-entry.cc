@@ -19,9 +19,10 @@
 
 #include "nnn-names-container-entry.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NamesContainerEntry::NamesContainerEntry()
     : m_name            (Create<const NNNAddress> ())
     , m_lease_expire    (Seconds (-1))

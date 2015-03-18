@@ -25,9 +25,10 @@
 
 #include "nnn-face.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * \ingroup Nnn-face
      * \brief Implementation of layer-2 (Ethernet) Nnn face

@@ -31,16 +31,17 @@
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 
-namespace ns3 {
-
-  namespace ndn {
+namespace ns3
+{
+  namespace ndn
+  {
     class Interest;
     class Data;
     class ContentStore;
   }
 
-  namespace nnn {
-
+  namespace nnn
+  {
     /**
      * @ingroup nnn
      * @defgroup nnn-fw NNN forwarding strategies
@@ -51,7 +52,8 @@ namespace ns3 {
      * @ingroup nnn-fw
      * @brief Namespace for Forwarding Strategy operations
      */
-    namespace fw {
+    namespace fw
+    {
     }
 
     class Face;
@@ -75,7 +77,8 @@ namespace ns3 {
     class FaceContainer;
 
     class NNST;
-    namespace nnst {
+    namespace nnst
+    {
       class Entry;
       class FaceMetric;
     }

@@ -36,13 +36,13 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Pit");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NS_OBJECT_ENSURE_REGISTERED (Pit);
 
     TypeId
-
     Pit::GetTypeId ()
     {
       static TypeId tid = TypeId ("ns3::nnn::Pit")
@@ -72,6 +72,5 @@ namespace ns3 {
     Pit::~Pit ()
     {
     }
-
   } // namespace nnn
 } // namespace ns3

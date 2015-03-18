@@ -50,7 +50,7 @@ namespace ns3
       virtual
       ~LimitsWindow () { }
 
-      // from ndn::Limits
+      // from nnn::Limits
 
       virtual void
       SetLimits (double rate, double delay)

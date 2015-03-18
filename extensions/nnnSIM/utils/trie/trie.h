@@ -34,10 +34,12 @@
 #include <boost/foreach.hpp>
 #include <boost/mpl/if.hpp>
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnnSIM {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnnSIM
+    {
       /////////////////////////////////////////////////////
       // Allow customization for payload
       //

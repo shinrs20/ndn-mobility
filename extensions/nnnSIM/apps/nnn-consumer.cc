@@ -48,9 +48,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Consumer");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NS_OBJECT_ENSURE_REGISTERED (Consumer);
 
     TypeId

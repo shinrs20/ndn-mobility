@@ -25,9 +25,12 @@
 
 #include "../naming/nnn-address.h"
 
-namespace ns3 {
-  namespace nnn {
-    namespace pit {
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace pit
+    {
       IncomingFace::IncomingFace (Ptr<Face> face)
       : m_face (face)
       , m_arrivalTime (Simulator::Now ())

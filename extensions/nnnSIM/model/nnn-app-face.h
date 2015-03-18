@@ -30,12 +30,12 @@
 
 #include "nnn-face.h"
 
-namespace ns3 {
-
+namespace ns3
+{
   class Packet;
 
-  namespace nnn {
-
+  namespace nnn
+  {
     class SO;
     class DO;
     class DU;

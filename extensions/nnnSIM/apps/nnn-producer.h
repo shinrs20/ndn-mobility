@@ -30,9 +30,10 @@
 
 #include "nnn-app.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn-apps
      * @brief A simple Interest-sink application

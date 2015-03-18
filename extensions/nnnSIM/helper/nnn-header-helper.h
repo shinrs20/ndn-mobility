@@ -25,13 +25,13 @@
 
 #include "../model/pdus/nnn-pdu.h"
 
-namespace ns3 {
-
+namespace ns3
+{
   class Header;
   class Packet;
 
-  namespace nnn {
-
+  namespace nnn
+  {
     class NNNAddress;
 
     typedef NNNAddress NameComponents;

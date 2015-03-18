@@ -66,16 +66,17 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.StackHelper");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NNNStackHelper::NNNStackHelper ()
     : m_limitsEnabled (false)
     , m_needSetDefaultRoutes (false)
     {
       m_nnnFactory.                    SetTypeId ("ns3::nnn::L3Protocol");
       m_nnnforwardingstrategyFactory.  SetTypeId ("ns3::nnn::ForwardingStrategy");
-      m_nnstFactory.                   SetTypeId ("ns3::nnn::nnst::Default");
+      m_nnstFactory.                   SetTypeId ("ns3::nnn::NNST");
       m_contentStoreFactory.           SetTypeId ("ns3::ndn::cs::Lru");
       m_fibFactory.                    SetTypeId ("ns3::nnn::fib::Default");
       m_pitFactory.                    SetTypeId ("ns3::nnn::pit::Persistent");

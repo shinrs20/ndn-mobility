@@ -23,10 +23,12 @@
 
 #include "nnn-pit-entry-outgoing-face.h"
 
-namespace ns3 {
-  namespace nnn {
-    namespace pit {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace pit
+    {
       OutgoingFace::OutgoingFace (Ptr<Face> face)
       : m_face (face)
       , m_sendTime (Simulator::Now ())

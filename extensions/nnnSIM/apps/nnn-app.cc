@@ -37,9 +37,10 @@ NS_LOG_COMPONENT_DEFINE ("nnn.App");
 
 #include "nnn-app.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NS_OBJECT_ENSURE_REGISTERED (App);
 
     TypeId

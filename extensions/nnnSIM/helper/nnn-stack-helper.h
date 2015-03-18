@@ -30,13 +30,13 @@
 
 #include "nnn-face-container.h"
 
-namespace ns3 {
-
+namespace ns3
+{
   class Node;
   class NodeContainer;
 
-  namespace nnn {
-
+  namespace nnn
+  {
     class FaceContainer;
     class Face;
     class NetDeviceFace;

@@ -39,10 +39,12 @@ namespace ll = boost::lambda;
 
 NS_LOG_COMPONENT_DEFINE ("nnn.pit.Entry");
 
-namespace ns3 {
-  namespace nnn {
-    namespace pit {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace pit
+    {
       Entry::Entry (Pit &container,
                     Ptr<const ndn::Interest> header,
                     Ptr<fib::Entry> fibEntry)

@@ -52,10 +52,12 @@ namespace ll = boost::lambda;
     }                                                   \
     } x_ ## type ## templ ## RegistrationVariable
 
-namespace ns3 {
-  namespace nnn {
-    namespace pit {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace pit
+    {
       template<>
       uint32_t
       PitImpl<ndn::ndnSIM::serialized_size_policy_traits>::GetCurrentSize () const

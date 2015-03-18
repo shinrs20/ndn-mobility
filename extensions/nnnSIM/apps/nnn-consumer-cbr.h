@@ -25,9 +25,10 @@
 
 #include "nnn-consumer.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn-apps
      * @brief Nnn application for sending out Interest packets at a "constant" rate (Poisson process)

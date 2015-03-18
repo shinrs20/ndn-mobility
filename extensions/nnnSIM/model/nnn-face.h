@@ -34,13 +34,13 @@
 #include <ns3-dev/ns3/type-id.h>
 #include <ns3-dev/ns3/traced-callback.h>
 
-namespace ns3 {
-
+namespace ns3
+{
   class Packet;
   class Node;
 
-  namespace nnn {
-
+  namespace nnn
+  {
     class NULLp;
     class SO;
     class DO;
@@ -65,8 +65,7 @@ namespace ns3 {
      * from NNN stack
      *
      */
-    class Face :
-	public Object
+    class Face : public Object
     {
     public:
       static TypeId

@@ -39,10 +39,12 @@ namespace ll = boost::lambda;
 
 NS_LOG_COMPONENT_DEFINE ("nnn.fib.FibImpl");
 
-namespace ns3 {
-  namespace nnn {
-    namespace fib {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace fib
+    {
       NS_OBJECT_ENSURE_REGISTERED (FibImpl);
 
       TypeId

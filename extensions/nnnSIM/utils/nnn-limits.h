@@ -23,10 +23,12 @@
 #include <ns3-dev/ns3/object.h>
 #include <ns3-dev/ns3/traced-value.h>
 
-namespace ns3 {
-  namespace nnn {
+namespace ns3
+{
+  namespace nnn
+  {
     /**
-     * \ingroup ndn-fw
+     * \ingroup nnn-fw
      * \brief Abstract class to manage Interest limits
      */
     class Limits : public Object
@@ -98,7 +100,7 @@ namespace ns3 {
        * @brief Update a current value of the limit
        * @param limit Value of current limit.
        *
-       * Note that interpretation of this value may be different in different ndn::Limit realizations
+       * Note that interpretation of this value may be different in different nnn::Limit realizations
        *
        * All realizations will try to guarantee that if limit is larger than previously set value of maximum limit,
        * then the current limit will be limited to that maximum value
@@ -109,7 +111,7 @@ namespace ns3 {
       /**
        * @brief Get value of the current limit
        *
-       * Note that interpretation of this value may be different in different ndn::Limit realizations
+       * Note that interpretation of this value may be different in different nnn::Limit realizations
        */
       virtual double
       GetCurrentLimit () const = 0;
@@ -189,8 +191,6 @@ namespace ns3 {
 
       double m_linkDelay;
     };
-
-
   } // namespace nnn
 } // namespace ns3
 

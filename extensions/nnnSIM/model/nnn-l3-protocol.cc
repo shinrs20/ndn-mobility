@@ -42,9 +42,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.L3Protocol");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     const uint16_t L3Protocol::ETHERNET_FRAME_TYPE = 0x7786;
 
     NS_OBJECT_ENSURE_REGISTERED (L3Protocol);
@@ -53,7 +54,7 @@ namespace ns3 {
     L3Protocol::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::L3Protocol")
-    		    .SetGroupName ("nnn")
+    		    .SetGroupName ("Nnn")
     		    .SetParent<Object> ()
     		    .AddConstructor<L3Protocol> ()
     		    .AddAttribute ("FaceList", "List of faces associated with nnn stack",

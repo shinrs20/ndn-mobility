@@ -41,9 +41,10 @@
 using boost::multi_index_container;
 using namespace ::boost::multi_index;
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     struct oldname {};
     struct newname {};
     struct st_lease {};

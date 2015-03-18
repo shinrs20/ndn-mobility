@@ -40,9 +40,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.ConsumerCbr");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NS_OBJECT_ENSURE_REGISTERED (ConsumerCbr);
 
     TypeId

@@ -39,10 +39,12 @@ namespace ll = boost::lambda;
 
 NS_LOG_COMPONENT_DEFINE ("nnn.fib.Entry");
 
-namespace ns3 {
-  namespace nnn {
-    namespace fib {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace fib
+    {
       //////////////////////////////////////////////////////////////////////
       // Helpers
       //////////////////////////////////////////////////////////////////////

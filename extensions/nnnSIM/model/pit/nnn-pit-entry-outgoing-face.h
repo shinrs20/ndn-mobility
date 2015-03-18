@@ -27,9 +27,12 @@
 
 #include "../nnn-face.h"
 
-namespace ns3 {
-  namespace nnn {
-    namespace pit {
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace pit
+    {
       /**
        * @ingroup ndn-pit
        * @brief PIT state component for each outgoing interest

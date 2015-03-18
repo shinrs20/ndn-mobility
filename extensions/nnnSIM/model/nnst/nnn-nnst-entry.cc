@@ -38,14 +38,14 @@ namespace ll = boost::lambda;
 
 NS_LOG_COMPONENT_DEFINE ("nnn.nnst.entry");
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnst {
-
-      ///////////////////////////////////////////////////////////////////////////////
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnst
+    {
       Entry::Entry()
       {
-
       }
 
       Entry::Entry(Ptr<NNST> nnst, const Ptr<const NNNAddress> &name)
@@ -440,7 +440,6 @@ namespace ns3 {
 
 	return os;
       }
-
     } /* namespace nnst */
   } /* namespace nnn */
 } /* namespace ns3 */

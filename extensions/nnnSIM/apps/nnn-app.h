@@ -35,12 +35,12 @@
 #include "../model/nnn-face.h"
 #include "../model/nnn-pdus.h"
 
-namespace ns3 {
-
+namespace ns3
+{
   class Packet;
 
-  namespace nnn {
-
+  namespace nnn
+  {
     class NULLp;
     class SO;
     class DO;
@@ -168,9 +168,7 @@ namespace ns3 {
 
       TracedCallback<Ptr<const DU>,
       Ptr<App>, Ptr<Face> > m_transmittedDUs; ///< @brief App-level trace of transmitted DU
-
     };
-
   } // namespace nnn
 } // namespace ns3
 

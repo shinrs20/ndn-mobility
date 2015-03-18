@@ -28,13 +28,14 @@
 #include "../nnn-face.h"
 #include "../addr-aggr/nnn-addr-aggregator.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     class NNNAddress;
 
-    namespace pit {
-
+    namespace pit
+    {
       /**
        * @ingroup nnn-pit
        * @brief PIT state component for each incoming interest (not including duplicates)

@@ -29,10 +29,12 @@
 #include <ns3-dev/ns3/ndnSIM/utils/trie/trie-with-policy.h>
 #include <ns3-dev/ns3/ndnSIM/utils/trie/counting-policy.h>
 
-namespace ns3 {
-  namespace nnn {
-    namespace fib {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace fib
+    {
       /**
        * @ingroup ndn-fib
        * @brief FIB entry implementation with with additional references to the base container

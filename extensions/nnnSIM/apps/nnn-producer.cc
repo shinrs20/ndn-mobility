@@ -44,9 +44,10 @@ namespace ll = boost::lambda;
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Producer");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NS_OBJECT_ENSURE_REGISTERED (Producer);
 
     TypeId

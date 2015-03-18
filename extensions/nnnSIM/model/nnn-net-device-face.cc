@@ -32,9 +32,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.NetDeviceFace");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NS_OBJECT_ENSURE_REGISTERED (NetDeviceFace);
 
     TypeId
@@ -42,7 +43,7 @@ namespace ns3 {
     {
       static TypeId tid = TypeId ("ns3::nnn::NetDeviceFace")
     		    .SetParent<Face> ()
-    		    .SetGroupName ("nnn")
+    		    .SetGroupName ("Nnn")
     		    ;
       return tid;
     }

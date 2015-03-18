@@ -36,9 +36,10 @@
 #include "nnn-names-container-entry.h"
 #include "../model/nnn-naming.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     class NamesContainerEntry : public SimpleRefCount<NamesContainerEntry>
     {
     public:

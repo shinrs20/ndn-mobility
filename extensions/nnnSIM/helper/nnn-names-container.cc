@@ -23,9 +23,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.NamesContainer");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NamesContainer::NamesContainer ()
     : renewName (MakeNullCallback <void> ())
     , hasNoName (MakeNullCallback <void> ())

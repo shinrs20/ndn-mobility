@@ -23,9 +23,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.INF");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     INF::INF () : NNNPDU (INF_NNN, Seconds(0))
     {
     }

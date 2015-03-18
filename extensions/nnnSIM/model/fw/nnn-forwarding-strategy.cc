@@ -68,9 +68,10 @@ namespace ll = boost::lambda;
 // Max label, which is a really the maximum unsigned int
 #define MAX3NLABEL 4294967295
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NS_OBJECT_ENSURE_REGISTERED (ForwardingStrategy);
 
     NS_LOG_COMPONENT_DEFINE (ForwardingStrategy::GetLogName ().c_str ());
@@ -84,7 +85,7 @@ namespace ns3 {
     TypeId ForwardingStrategy::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::ForwardingStrategy")
-	  .SetGroupName ("nnn")
+	  .SetGroupName ("Nnn")
 	  .SetParent<Object> ()
 
 	  ////////////////////////////////////////////////////////////////////

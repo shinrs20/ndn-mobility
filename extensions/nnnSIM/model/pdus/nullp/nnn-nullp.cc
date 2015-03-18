@@ -24,9 +24,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.NULLp");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NULLp::NULLp ()
     : NNNPDU (NULL_NNN, Seconds (0))
     , DATAPDU ()

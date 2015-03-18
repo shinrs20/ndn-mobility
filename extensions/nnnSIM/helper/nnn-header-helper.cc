@@ -28,9 +28,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.HeaderHelper");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NNN_PDU_TYPE
     HeaderHelper::GetNNNHeaderType (Ptr<const Packet> packet)
     {
@@ -77,6 +78,5 @@ namespace ns3 {
       NS_LOG_DEBUG (*packet);
       throw UnknownHeaderException();
     }
-
   } // namespace nnn
 } // namespace ns3

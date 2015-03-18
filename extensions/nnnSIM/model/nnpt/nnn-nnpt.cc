@@ -24,15 +24,16 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.NNPT");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     TypeId
     NNPT::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::NNPT") // cheating ns3 object system
     		    .SetParent<Object> ()
-		    .SetGroupName ("nnn")
+		    .SetGroupName ("Nnn")
 		    ;
       return tid;
     }

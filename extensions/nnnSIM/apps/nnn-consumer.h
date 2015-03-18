@@ -41,9 +41,10 @@
 
 #include "nnn-app.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     /**
      * @ingroup nnn-apps
      * \brief NNN application for sending out Interest packets

@@ -36,5 +36,34 @@
 #include "model/nnn-face.h"
 #include "model/nnn-l3-protocol.h"
 #include "model/nnn-net-device-face.h"
+#include "model/nnn-app-face.h"
+
+// Applications
+#include "apps/nnn-app.h"
+
+// Structures
+#include "model/addr-aggr/nnn-addr-aggregator.h"
+#include "model/buffers/nnn-pdu-buffer.h"
+#include "model/fib/nnn-fib.h"
+#include "model/fib/nnn-fib-entry.h"
+#include "model/fw/nnn-forwarding-strategy.h"
+#include "model/nnpt/nnn-nnpt.h"
+#include "model/nnpt/nnn-nnpt-entry.h"
+#include "model/nnst/nnn-nnst.h"
+#include "model/nnst/nnn-nnst-entry.h"
+#include "model/pit/nnn-pit.h"
+#include "model/pit/nnn-pit-entry.h"
+#include "model/pit/nnn-pit-entry-incoming-face.h"
+#include "model/pit/nnn-pit-entry-outgoing-face.h"
+
+// Helper
+#include "helper/nnn-app-helper.h"
+#include "helper/nnn-face-container.h"
+#include "helper/nnn-header-helper.h"
+#include "helper/nnn-link-control-helper.h"
+#include "helper/nnn-names-container.h"
+#include "helper/nnn-names-container-entry.h"
+#include "helper/nnn-stack-helper.h"
+
 
 #endif /* NNNSIM_MODULE_H_ */

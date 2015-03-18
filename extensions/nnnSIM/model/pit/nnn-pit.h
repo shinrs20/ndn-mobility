@@ -28,14 +28,17 @@
 
 #include "nnn-pit-entry.h"
 
-namespace ns3 {
+namespace ns3
+{
 
-  namespace ndn {
+  namespace ndn
+  {
     class Data;
     class Interest;
   }
-  namespace nnn {
 
+  namespace nnn
+  {
     /**
      * * @ingroup nnn
      * * @defgroup nnn-pit PIT
@@ -45,7 +48,8 @@ namespace ns3 {
      * @ingroup nnn-pit
      * @brief Namespace for PIT operations
      */
-    namespace pit {
+    namespace pit
+    {
     }
 
     class L3Protocol;

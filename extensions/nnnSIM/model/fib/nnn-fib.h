@@ -28,9 +28,10 @@
 
 #include "nnn-fib-entry.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     class Interest;
     typedef Interest InterestHeader;
 

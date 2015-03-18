@@ -32,13 +32,15 @@
 /**
  * @brief NS-3 namespace
  */
-namespace ns3 {
+namespace ns3
+{
 
-/**
- * @brief nnnSIM namespace
- */
-namespace nnn {
-}
+  /**
+   * @brief nnnSIM namespace
+   */
+  namespace nnn
+  {
+  }
 
 }
 
@@ -49,11 +51,11 @@ typedef Time TimeInterval;
 namespace time
 {
 
-inline Time
-NowUnixTimestamp ()
-{
-  return Simulator::Now ();
-}
+  inline Time
+  NowUnixTimestamp ()
+  {
+    return Simulator::Now ();
+  }
 
 }
 

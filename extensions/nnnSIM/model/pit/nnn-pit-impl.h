@@ -35,13 +35,14 @@
 
 #include "../fw/nnn-forwarding-strategy.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     class ForwardingStrategy;
 
-    namespace pit {
-
+    namespace pit
+    {
       /**
        * @ingroup nnn-pit
        * @brief Class implementing Pending Interests Table

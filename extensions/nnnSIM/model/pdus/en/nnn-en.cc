@@ -24,10 +24,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.EN");
 
-namespace ns3 {
-
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     EN::EN ()
     : NNNPDU (EN_NNN, Seconds(0))
     , ENPDU ()
@@ -59,6 +59,5 @@ namespace ns3 {
       ENPDU::Print(os);
       os << "</EN>" << std::endl;
     }
-
   } // namespace nnn
 } // namespace ns3

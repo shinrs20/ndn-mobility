@@ -26,10 +26,12 @@
 #include <boost/intrusive/options.hpp>
 #include <boost/intrusive/list.hpp>
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnnSIM {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnnSIM
+    {
       /**
        * @brief Traits for policy that just keeps track of number of elements
        * It's doing a rather expensive job, but just in case it needs to be extended later

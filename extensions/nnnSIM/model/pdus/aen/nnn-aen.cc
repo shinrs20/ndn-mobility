@@ -25,9 +25,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.AEN");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     AEN::AEN ()
     : NNNPDU (AEN_NNN, Seconds(0))
     , ENPDU ()
@@ -110,6 +111,5 @@ namespace ns3 {
       os << "  <Lease>" << GetLeasetime () << "</Lease>" << std::endl;
       os << "</AEN>"  << std::endl;
     }
-
   } // namespace nnn
 } // namespace ns3

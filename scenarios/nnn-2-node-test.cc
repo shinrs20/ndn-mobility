@@ -300,6 +300,10 @@ int main (int argc, char *argv[])
   // out clients and the mobile node
   NS_LOG_INFO ("------Installing 3N stack on routers------");
 
+  nnn::NNNStackHelper nnnHelper;
+
+  nnnHelper.Install(all3NNodes);
+
   NS_LOG_INFO("Ending time " << endTime);
 
   // If the variable is set, print the trace files

@@ -41,9 +41,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Face");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     NS_OBJECT_ENSURE_REGISTERED (Face);
 
     TypeId
@@ -51,7 +52,7 @@ namespace ns3 {
     {
       static TypeId tid = TypeId ("ns3::nnn::Face")
 	      .SetParent<Object> ()
-	      .SetGroupName ("nnn")
+	      .SetGroupName ("Nnn")
 	      .AddAttribute ("Id", "Face id (unique integer for the Nnn stack on this node)",
 	                     TypeId::ATTR_GET, // allow only getting it.
 	                     UintegerValue (0),

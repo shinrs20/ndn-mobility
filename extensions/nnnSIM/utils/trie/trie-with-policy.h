@@ -25,10 +25,12 @@
 
 #include "trie.h"
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnnSIM {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnnSIM
+    {
       template<typename FullKey,
       typename PayloadTraits,
       typename PolicyTraits

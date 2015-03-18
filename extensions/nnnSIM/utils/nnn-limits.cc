@@ -25,17 +25,17 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.Limits");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     TypeId
     Limits::GetTypeId ()
     {
-      static TypeId tid = TypeId ("ns3::ndn::Limits")
-	.SetGroupName ("Ndn")
-	.SetParent <Object> ()
-
-	;
+      static TypeId tid = TypeId ("ns3::nnn::Limits")
+	    .SetGroupName ("Nnn")
+	    .SetParent <Object> ()
+	    ;
       return tid;
     }
 

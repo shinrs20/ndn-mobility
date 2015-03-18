@@ -25,9 +25,10 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.REN");
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     REN::REN ()
     : NNNPDU (REN_NNN, Seconds (0))
     , ENPDU ()
