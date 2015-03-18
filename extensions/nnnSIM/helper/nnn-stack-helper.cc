@@ -77,6 +77,7 @@ namespace ns3
       m_nnnFactory.                    SetTypeId ("ns3::nnn::L3Protocol");
       m_nnnforwardingstrategyFactory.  SetTypeId ("ns3::nnn::ForwardingStrategy");
       m_nnstFactory.                   SetTypeId ("ns3::nnn::NNST");
+      m_nnptFactory.                   SetTypeId ("ns3::nnn::NNPT");
       m_contentStoreFactory.           SetTypeId ("ns3::ndn::cs::Lru");
       m_fibFactory.                    SetTypeId ("ns3::nnn::fib::Default");
       m_pitFactory.                    SetTypeId ("ns3::nnn::pit::Persistent");
@@ -266,24 +267,17 @@ namespace ns3
       // Create L3Protocol
       Ptr<L3Protocol> nnn = m_nnnFactory.Create<L3Protocol> ();
 
-      // Create and aggregate NNST
-      Ptr<NNST> nnst = m_nnstFactory.Create<NNST> ();
-      nnn->AggregateObject (nnst);
-
-      // Create and aggregate NNPT
-      Ptr<NNPT> nnpt = m_nnstFactory.Create<NNPT> ();
-      nnn->AggregateObject (nnpt);
-
-      // Create and aggregate node names container
-      nnn->AggregateObject(m_nodeNamesFactory.Create<NamesContainer> ());
-      // Create and aggregate leased names container
-      nnn->AggregateObject(m_leasedNamesFactory.Create<NamesContainer> ());
-
       // Create and aggregate PIT
       nnn->AggregateObject (m_pitFactory.Create<Pit> ());
 
       // Create and aggregate FIB
       nnn->AggregateObject (m_fibFactory.Create<Fib> ());
+
+      // Create and aggregate NNPT
+      nnn->AggregateObject (m_nnptFactory.Create<NNPT> ());
+
+      // Create and aggregate NNST
+      nnn->AggregateObject (m_nnstFactory.Create<NNST> ());
 
       // Create and aggregate forwarding strategy
       nnn->AggregateObject (m_nnnforwardingstrategyFactory.Create<ForwardingStrategy> ());

@@ -47,9 +47,10 @@ using namespace ::boost::multi_index;
 #include "../../utils/trie/counting-policy.h"
 #include "../../utils/trie/trie-with-policy.h"
 
-namespace ns3 {
-  namespace nnn {
-
+namespace ns3
+{
+  namespace nnn
+  {
     class L3Protocol;
 
     class NULLp;
@@ -66,7 +67,6 @@ namespace ns3 {
     typedef REN RENHeader;
     class INF;
     typedef INF INFHeader;
-
 
     namespace nnst {
 

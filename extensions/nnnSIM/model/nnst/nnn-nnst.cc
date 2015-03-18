@@ -39,9 +39,10 @@ namespace ns3
     NNST::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::NNST") // cheating ns3 object system
-    			.SetParent<Object> ()
-    		    .SetGroupName ("Nnn")
-    		    .AddConstructor<NNST> ();
+	  .SetParent<Object> ()
+	  .SetGroupName ("Nnn")
+	  .AddConstructor<NNST> ()
+	  ;
       return tid;
     }
 

@@ -17,24 +17,26 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-nnpt.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "nnn-nnpt.h"
 
 #include <ns3-dev/ns3/log.h>
 
-#include "nnn-nnpt.h"
-
-NS_LOG_COMPONENT_DEFINE ("nnn.NNPT");
+NS_LOG_COMPONENT_DEFINE ("nnn.nnpt");
 
 namespace ns3
 {
   namespace nnn
   {
+    NS_OBJECT_ENSURE_REGISTERED (NNPT);
+
     TypeId
     NNPT::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::NNPT") // cheating ns3 object system
-    		    .SetParent<Object> ()
-		    .SetGroupName ("Nnn")
-		    ;
+	  .SetParent<Object> ()
+	  .SetGroupName ("Nnn")
+	  .AddConstructor<NNPT> ()
+	  ;
       return tid;
     }
 
@@ -51,7 +53,7 @@ namespace ns3
 
       if (!foundOldName(oldName) && !foundOldName(newName))
         {
-          container.insert(NNPTEntry(oldName, newName, lease_expire));
+          container.insert(nnpt::Entry(oldName, newName, lease_expire));
 
           Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
         }
@@ -68,7 +70,7 @@ namespace ns3
 
       if (!foundOldName(oldName) && !foundOldName(newName))
         {
-          container.insert(NNPTEntry(oldName, newName, lease_expire, renew));
+          container.insert(nnpt::Entry(oldName, newName, lease_expire, renew));
 
           Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
         }
@@ -80,7 +82,7 @@ namespace ns3
     }
 
     void
-    NNPT::addEntry (NNPTEntry nnptEntry)
+    NNPT::addEntry (nnpt::Entry nnptEntry)
     {
       NS_LOG_FUNCTION (this);
 
@@ -100,12 +102,12 @@ namespace ns3
     NNPT::deleteEntry (Ptr<const NNNAddress> oldName)
     {
       NS_LOG_FUNCTION (this);
-      NNPTEntry tmp = findEntry (oldName);
+      nnpt::Entry tmp = findEntry (oldName);
       container.erase(tmp);
     }
 
     void
-    NNPT::deleteEntry (NNPTEntry nnptEntry)
+    NNPT::deleteEntry (nnpt::Entry nnptEntry)
     {
       NS_LOG_FUNCTION (this);
       container.erase(nnptEntry);
@@ -162,7 +164,7 @@ namespace ns3
 
       if (it != pair_index.end())
 	{
-	  NNPTEntry tmp;
+	  nnpt::Entry tmp;
 	  // Check if there is a newer entry
 	  while (true)
 	    {
@@ -188,7 +190,7 @@ namespace ns3
 
       if (it != pair_index.end ())
 	{
-	  NNPTEntry tmp;
+	  nnpt::Entry tmp;
 	  // Check if there is a newer entry
 	  while (true)
 	    {
@@ -205,7 +207,7 @@ namespace ns3
 	}
     }
 
-    NNPTEntry
+    nnpt::Entry
     NNPT::findEntry (Ptr<const NNNAddress> name)
     {
       NS_LOG_FUNCTION (this);
@@ -218,7 +220,7 @@ namespace ns3
 	}
       else
 	{
-	  return NNPTEntry ();
+	  return nnpt::Entry ();
 	}
     }
 
@@ -231,7 +233,7 @@ namespace ns3
 
       if (it != pair_index.end())
 	{
-	  NNPTEntry tmp = *it;
+	  nnpt::Entry tmp = *it;
 
 	  tmp.m_lease_expire = lease_expire;
 	  tmp.m_renew = lease_expire - Seconds (1);
@@ -252,7 +254,7 @@ namespace ns3
 
       if (it != pair_index.end())
 	{
-	  NNPTEntry tmp = *it;
+	  nnpt::Entry tmp = *it;
 
 	  tmp.m_lease_expire = lease_expire;
 	  tmp.m_renew = renew;
@@ -282,13 +284,13 @@ namespace ns3
     NNPT::findNameExpireTime (Ptr<const NNNAddress> name)
     {
       NS_LOG_FUNCTION (this);
-      NNPTEntry tmp = findEntry(name);
+      nnpt::Entry tmp = findEntry(name);
 
       return tmp.m_lease_expire;
     }
 
     Time
-    NNPT::findNameExpireTime (NNPTEntry nnptEntry)
+    NNPT::findNameExpireTime (nnpt::Entry nnptEntry)
     {
       NS_LOG_FUNCTION (this);
       return nnptEntry.m_lease_expire;

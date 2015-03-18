@@ -47,7 +47,6 @@ namespace ns3
      * @defgroup nnn-fw NNN forwarding strategies
      */
 
-
     /**
      * @ingroup nnn-fw
      * @brief Namespace for Forwarding Strategy operations

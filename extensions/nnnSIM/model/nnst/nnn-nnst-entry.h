@@ -46,10 +46,12 @@
 using namespace ::boost;
 using namespace ::boost::multi_index;
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnst {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnst
+    {
       /// @cond include_hidden
       class i_entry {};
       class i_face {};
@@ -240,7 +242,6 @@ namespace ns3 {
       };
 
       std::ostream& operator<< (std::ostream& os, const Entry &entry);
-
 
     } /* namespace nnst */
   } /* namespace nnn */

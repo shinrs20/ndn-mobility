@@ -221,6 +221,11 @@ namespace ns3
     }
 
     ForwardingStrategy::ForwardingStrategy ()
+    : m_awaiting_response    (Create<NNST> ())
+    , m_faces                (Create<FaceContainer> ())
+    , m_node_names           (Create<NamesContainer> ())
+    , m_leased_names         (Create<NamesContainer> ())
+    , m_node_pdu_buffer      (Create<PDUBuffer> ())
     {
       m_node_names->RegisterCallbacks(
 	  MakeCallback (&ForwardingStrategy::Reenroll, this),

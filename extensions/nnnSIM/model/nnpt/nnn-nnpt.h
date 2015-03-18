@@ -21,7 +21,6 @@
 #ifndef NNN_NNPT_H_
 #define NNN_NNPT_H_
 
-#include <ns3-dev/ns3/simple-ref-count.h>
 #include <ns3-dev/ns3/node.h>
 #include <ns3-dev/ns3/simulator.h>
 
@@ -45,27 +44,32 @@ namespace ns3
 {
   namespace nnn
   {
+    namespace nnpt
+    {
+      class Entry;
+    }
+
     struct oldname {};
     struct newname {};
     struct st_lease {};
 
     typedef multi_index_container<
-	NNPTEntry,
+	nnpt::Entry,
 	indexed_by<
           ordered_unique<
               tag<st_lease>,
-	      identity<NNPTEntry>
+	      identity<nnpt::Entry>
           >,
 
           // sort by less<string> on NNNAddress
           ordered_unique<
               tag<oldname>,
-              member<NNPTEntry,Ptr<const NNNAddress>,&NNPTEntry::m_oldName>
+              member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_oldName>
           >,
 
           ordered_unique<
               tag<newname>,
-              member<NNPTEntry,Ptr<const NNNAddress>,&NNPTEntry::m_newName>
+              member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_newName>
           >
         >
     > pair_set;
@@ -92,13 +96,13 @@ namespace ns3
       addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew);
 
       void
-      addEntry (NNPTEntry nnptEntry);
+      addEntry (nnpt::Entry nnptEntry);
 
       void
       deleteEntry (Ptr<const NNNAddress> oldName);
 
       void
-      deleteEntry (NNPTEntry nnptEntry);
+      deleteEntry (nnpt::Entry nnptEntry);
 
       void
       deleteEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName);
@@ -121,7 +125,7 @@ namespace ns3
       Ptr<const NNNAddress>
       findPairedOldNamePtr (Ptr<const NNNAddress> newName);
 
-      NNPTEntry
+      nnpt::Entry
       findEntry (Ptr<const NNNAddress> name);
 
       void
@@ -140,7 +144,7 @@ namespace ns3
       findNameExpireTime (Ptr<const NNNAddress> name);
 
       Time
-      findNameExpireTime (NNPTEntry nnptEntry);
+      findNameExpireTime (nnpt::Entry nnptEntry);
 
       void
       cleanExpired ();

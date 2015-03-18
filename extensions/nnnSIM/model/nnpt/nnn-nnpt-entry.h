@@ -47,46 +47,42 @@ namespace ns3
 {
   namespace nnn
   {
-    /**
-     * @ingroup nnn-nnpt
-     * @brief structure for PIT entry
-     *
-     * All set-methods are virtual, in case index rearrangement is necessary in the derived classes
-     */
-    class NNPTEntry :  public SimpleRefCount<NNPTEntry>
+    namespace nnpt
     {
-    public:
       /**
-       * \brief PIT entry constructor
-       * \param prefix Prefix of the PIT entry
-       * \param offsetTime Relative time to the current moment, representing PIT entry lifetime
-       * \param fibEntry A FIB entry associated with the PIT entry
+       * @ingroup nnn-nnpt
+       * @brief structure for PIT entry
+       *
+       * All set-methods are virtual, in case index rearrangement is necessary in the derived classes
        */
-      NNPTEntry ();
+      class Entry :  public SimpleRefCount<Entry>
+      {
+      public:
+	Entry ();
 
-      NNPTEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire);
+	Entry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire);
 
-      NNPTEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew);
+	Entry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew);
 
-      virtual
-      ~NNPTEntry ();
+	virtual
+	~Entry ();
 
-      bool
-      operator< (const NNPTEntry e) const { return m_lease_expire < e.m_lease_expire; }
+	bool
+	operator< (const Entry e) const { return m_lease_expire < e.m_lease_expire; }
 
-      Ptr<const NNNAddress> m_oldName;
-      Ptr<const NNNAddress> m_newName;
-      Time m_lease_expire;
-      Time m_renew;
-    };
+	Ptr<const NNNAddress> m_oldName;
+	Ptr<const NNNAddress> m_newName;
+	Time m_lease_expire;
+	Time m_renew;
+      };
 
-    inline std::ostream &
-    operator<< (std::ostream &os, const NNPTEntry &nnpt)
-    {
-      os << *nnpt.m_oldName << "\t" << *nnpt.m_newName  << "\t" << nnpt.m_lease_expire << "\t" << nnpt.m_renew << std::endl;
-      return os;
+      inline std::ostream &
+      operator<< (std::ostream &os, const Entry &nnpt)
+      {
+	os << *nnpt.m_oldName << "\t" << *nnpt.m_newName  << "\t" << nnpt.m_lease_expire << "\t" << nnpt.m_renew << std::endl;
+	return os;
+      }
     }
-
   } /* namespace nnn */
 } /* namespace ns3 */
 

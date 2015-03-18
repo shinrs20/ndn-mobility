@@ -27,6 +27,7 @@
 using namespace ns3;
 using namespace std;
 using namespace nnn;
+using namespace nnpt;
 
 int main (int argc, char *argv[])
 {
@@ -43,10 +44,10 @@ int main (int argc, char *argv[])
 
   Time updateTime = Seconds (80);
 
-  NNPTEntry nnpte_test1 = NNPTEntry (nn_test1, nn_test2, t_test1);
-  NNPTEntry nnpte_test2 = NNPTEntry (nn_test2, nn_test3, t_test2);
-  NNPTEntry nnpte_test3 = NNPTEntry (nn_test3, nn_test1, t_test3);
-  NNPTEntry nnpte_test4 = NNPTEntry (nn_test1, nn_test4, t_test2);
+  Entry nnpte_test1 = Entry (nn_test1, nn_test2, t_test1);
+  Entry nnpte_test2 = Entry (nn_test2, nn_test3, t_test2);
+  Entry nnpte_test3 = Entry (nn_test3, nn_test1, t_test3);
+  Entry nnpte_test4 = Entry (nn_test1, nn_test4, t_test2);
 
   test1.addEntry(nnpte_test1);
   test1.addEntry(nnpte_test2);

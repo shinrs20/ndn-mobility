@@ -304,9 +304,6 @@ namespace ns3
       ObjectFactory m_nnptFactory;
       ObjectFactory m_nnstFactory;
 
-      ObjectFactory m_leasedNamesFactory;
-      ObjectFactory m_nodeNamesFactory;
-
       ObjectFactory m_pitFactory;
       ObjectFactory m_fibFactory;
       ObjectFactory m_contentStoreFactory;
