@@ -87,10 +87,13 @@ namespace ns3
 
     class Pit;
     namespace pit { class Entry; }
-    class FibFaceMetric;
 
     class Fib;
-    namespace fib { class Entry; }
+    namespace fib
+    {
+      class Entry;
+      class FaceMetric;
+    }
 
     namespace name { class Component; }
 

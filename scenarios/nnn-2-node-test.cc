@@ -127,8 +127,8 @@ void SetSSIDviaDistance(uint32_t mtId, Ptr<MobilityModel> node, std::map<std::st
 int main (int argc, char *argv[])
 {
   // These are our scenario arguments
-  uint32_t sectors = 1;                          // Number of wireless sectors
-  uint32_t aps = 1;                              // Number of wireless access nodes in a sector
+  uint32_t sectors = 1;                         // Number of wireless sectors
+  uint32_t aps = 1;                             // Number of wireless access nodes in a sector
   uint32_t mobile = 1;                          // Number of mobile terminals
   uint32_t servers = 1;                         // Number of servers in the network
   uint32_t wnodes = aps * sectors;              // Number of nodes in the network
@@ -137,7 +137,7 @@ int main (int argc, char *argv[])
   double sec = 0.0;                             // Movement start
   bool traceFiles = false;                      // Tells to run the simulation with traceFiles
   char results[250] = "results";                // Directory to place results
-  double endTime = 20;                         // Number of seconds to run the simulation
+  double endTime = 100;                         // Number of seconds to run the simulation
 
   // Variable for buffer
   char buffer[250];
@@ -232,7 +232,7 @@ int main (int argc, char *argv[])
   YansWifiPhyHelper wifiPhyHelper = YansWifiPhyHelper::Default ();
   wifiPhyHelper.SetChannel (wifiChannel.Create ());
   wifiPhyHelper.Set("TxPowerStart", DoubleValue(16.0206));
-  wifiPhyHelper.Set("TxPowerEnd", DoubleValue(1));
+  wifiPhyHelper.Set("TxPowerEnd", DoubleValue(16.0206));
 
   // Add a simple no QoS based card to the Wifi interfaces
   NqosWifiMacHelper wifiMacHelper = NqosWifiMacHelper::Default ();
@@ -300,9 +300,27 @@ int main (int argc, char *argv[])
   // out clients and the mobile node
   NS_LOG_INFO ("------Installing 3N stack on routers------");
 
-  nnn::NNNStackHelper nnnHelper;
+  // Stack for a Node that is given a node name
+  nnn::NNNStackHelper primaryStack;
+  // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
+  primaryStack.SetContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
+  // Set the FIB default routes
+  primaryStack.SetDefaultRoutes (true);
 
-  nnnHelper.Install(all3NNodes);
+  // Install the Stack
+  primaryStack.Install(wirelessAPContainer);
+
+  // Stack for nodes that use fixed connections
+  nnn::NNNStackHelper fixedStack;
+
+  // Stack for nodes that are mobile;
+  nnn::NNNStackHelper mobileStack;
+  // No Content Store for mobile stack
+  mobileStack.SetContentStore ("ns3::ndn::cs::Nocache");
+  // Set the FIB default routes
+  mobileStack.SetDefaultRoutes (true);
+
+  mobileStack.Install(mobileTerminalContainer);
 
   NS_LOG_INFO("Ending time " << endTime);
 

@@ -40,6 +40,7 @@
 #include <ns3-dev/ns3/simulator.h>
 #include <ns3-dev/ns3/string.h>
 
+#include <ns3-dev/ns3/ndn-name.h>
 #include <ns3-dev/ns3/ndn-content-store.h>
 
 #include "nnn-names-container.h"
@@ -349,22 +350,19 @@ namespace ns3
     {
       NS_LOG_LOGIC ("[" << node->GetId () << "]$ route add " << prefix << " via " << *face << " metric " << metric);
 
-      Ptr<Object> node2 = DynamicCast<Object> (node);
+      Ptr<Fib>  fib  = node->GetObject<Fib> ();
 
-      Ptr<NNST>  nnst  = node2->GetObject<NNST> ();
+      using namespace ndn;
 
-      // NS-3 Attribute system usage
-      NNNAddressValue prefixValue;
-
-      prefixValue.DeserializeFromString (prefix, MakeNNNAddressChecker ());
-      nnst->Add (prefixValue.Get (), face, metric);
+      NameValue prefixValue;
+      prefixValue.DeserializeFromString (prefix, MakeNameChecker ());
+      fib->Add (prefixValue.Get (), face, metric);
     }
 
     void
     NNNStackHelper::AddRoute (Ptr<Node> node, const std::string &prefix, uint32_t faceId, int32_t metric)
     {
-      Ptr<Object> node2 = DynamicCast<Object> (node);
-      Ptr<L3Protocol>     nnn = node2->GetObject<L3Protocol> ();
+      Ptr<L3Protocol>     nnn = node->GetObject<L3Protocol> ();
       NS_ASSERT_MSG (nnn != 0, "Nnn stack should be installed on the node");
 
       Ptr<Face> face = nnn->GetFace (faceId);
