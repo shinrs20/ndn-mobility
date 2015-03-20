@@ -298,29 +298,46 @@ int main (int argc, char *argv[])
 
   // Now install content stores and the rest on the middle node. Leave
   // out clients and the mobile node
-  NS_LOG_INFO ("------Installing 3N stack on routers------");
+  NS_LOG_INFO ("------ Installing 3N stack ------");
 
+  NS_LOG_INFO ("------ Installing primary 3N stack ------");
   // Stack for a Node that is given a node name
   nnn::NNNStackHelper primaryStack;
   // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
   primaryStack.SetContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
   // Set the FIB default routes
   primaryStack.SetDefaultRoutes (true);
-
-  // Install the Stack
+  // Install the stack
   primaryStack.Install(wirelessAPContainer);
 
+  // Create the initial 3N name
+  Ptr<nnn::NNNAddress> firstName = Create <nnn::NNNAddress> ("a");
+  // Get the ForwardingStrategy object from the node
+  Ptr<nnn::ForwardingStrategy> fwAP = wirelessAPContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
+  // Give a 3N name for the first AP - ensure it is longer than the actual simulation
+  fwAP->SetNode3NName(firstName, Seconds (endTime + 5));
+
+  ///////////////////////////////////////////////////////
   // Stack for nodes that use fixed connections
   nnn::NNNStackHelper fixedStack;
+  ///////////////////////////////////////////////////////
 
+  NS_LOG_INFO ("------ Installing mobile 3N stack ------");
   // Stack for nodes that are mobile;
   nnn::NNNStackHelper mobileStack;
   // No Content Store for mobile stack
   mobileStack.SetContentStore ("ns3::ndn::cs::Nocache");
+  // Do not produce 3N names for these nodes
+  mobileStack.SetForwardingStrategy("ns3::nnn::ForwardingStrategy", "Produce3Nnames", "false");
   // Set the FIB default routes
   mobileStack.SetDefaultRoutes (true);
-
+  // Install the stack
   mobileStack.Install(mobileTerminalContainer);
+
+  // Get the ForwardingStrategy object from the mobile nodes
+    Ptr<nnn::ForwardingStrategy> fwMN = mobileTerminalContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
+  // Force the enroll procedure of the mobile node
+  Simulator::Schedule (Seconds(3), &nnn::ForwardingStrategy::Enroll, fwMN);
 
   NS_LOG_INFO("Ending time " << endTime);
 
@@ -333,7 +350,7 @@ int main (int argc, char *argv[])
       char fileId[250];
 
       // Create the file identifier
-      sprintf(fileId, "%s-%02d-%03d-%03d.txt", routeType, mobile, servers, wnodes);
+      sprintf(fileId, "%02d-%03d-%03d.txt", mobile, servers, wnodes);
 
       sprintf(filename, "%s/%s-clients-%s", results, scenario, fileId);
 

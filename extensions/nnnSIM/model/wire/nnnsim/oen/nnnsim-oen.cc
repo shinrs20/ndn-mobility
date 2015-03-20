@@ -107,6 +107,7 @@ namespace ns3
 	      2 +                                           /* PoA Type*/
 	      2 +                                           /* Number of PoAs */
 	      poa_num * poatype_size +                      /* Total size of PoAs */
+	      2 +                                           /* Lease time */
 	      NnnSim::SerializedSizeName(m_ptr->GetName()); /* Name size */
 	  return size;
 	}
@@ -162,6 +163,16 @@ namespace ns3
 		start.WriteU8(buffer[j]);
 	    }
 
+	  uint16_t seconds = static_cast<uint16_t> (m_ptr->GetLeasetime ().ToInteger (Time::S));
+
+	  NS_ASSERT_MSG (0 <= seconds &&
+			 seconds < 65535,
+			 "Incorrect Lease time (should not be smaller than 0 and larger than 65535");
+
+	  // Round lease time to seconds and serialize
+	  start.WriteU16 (seconds);
+	  NS_LOG_INFO ("Serialize -> Lease time = " << seconds);
+
 	  // Serialize NNN address
 	  NnnSim::SerializeName(start, m_ptr->GetName());
 
@@ -215,6 +226,13 @@ namespace ns3
 
 	      m_ptr->AddPoa(tmp);
 	    }
+
+	  uint16_t seconds = i.ReadU16 ();
+
+	  NS_LOG_INFO ("Deserialize ->  = Lease time " << seconds);
+
+	  // Deserialize and set the lease time
+	  m_ptr->SetLeasetime (Seconds (seconds));
 
 	  // Deserialize the old name
 	  m_ptr->SetName(NnnSim::DeserializeName(i));

@@ -68,6 +68,7 @@ int main (int argc, char *argv[])
   source1->SetName(addr);
   source1->SetLifetime(ttl);
   source1->SetLeasetime(lease);
+  source1->AddPoa(n1_mac00.operator ns3::Address());
 
   std::cout << std::endl << "Before" << std::endl << *source1 << std::endl;
 

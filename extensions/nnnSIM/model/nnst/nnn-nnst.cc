@@ -406,9 +406,9 @@ namespace ns3
       super::iterator nnstEntry = super::find_exact (*name);
       if (nnstEntry != super::end ())
 	{
-	  // notify forwarding strategy about soon be removed FIB entry
-	  NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
-	  this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (nnstEntry->payload ());
+	  // notify forwarding strategy about soon be removed entry
+	  //NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
+	  //this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (nnstEntry->payload ());
 
 	  super::erase (nnstEntry);
 	}
@@ -688,12 +688,12 @@ namespace ns3
 	  super::modify (result.first,
 	                 ll::bind (&nnst::Entry::AddOrUpdateRoutingMetric, ll::_1, face, metric));
 
-	  if (result.second)
-	    {
-	      // notify forwarding strategy about new NNST entry
-	      NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
-	      this->GetObject<ForwardingStrategy> ()->DidAddNNSTEntry (result.first->payload ());
-	    }
+//	  if (result.second)
+//	    {
+//	      // notify forwarding strategy about new NNST entry
+//	      NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
+//	      this->GetObject<ForwardingStrategy> ()->DidAddNNSTEntry (result.first->payload ());
+//	    }
 
 	  // If this is a new entry, then the PoA has not been added
 	  if (!result.second)

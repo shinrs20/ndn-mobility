@@ -185,8 +185,6 @@ namespace ns3
       return Install (NodeContainer::GetGlobal ());
     }
 
-
-
     void
     NNNStackHelper::AddNetDeviceFaceCreateCallback (TypeId netDeviceType, NNNStackHelper::NetDeviceFaceCreateCallback callback)
     {

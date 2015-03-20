@@ -109,6 +109,7 @@ namespace ns3
       NNNPDU::Print (os);
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
       os << "  <Lease>" << GetLeasetime () << "</Lease>" << std::endl;
+      ENPDU::Print(os);
       os << "</AEN>"  << std::endl;
     }
   } // namespace nnn

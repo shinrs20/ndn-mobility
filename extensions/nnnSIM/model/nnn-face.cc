@@ -77,6 +77,8 @@ namespace ns3
     , m_upstreamRENHandler   (MakeNullCallback< void, Ptr<Face>, Ptr<REN> > ())
     , m_upstreamDENHandler	(MakeNullCallback< void, Ptr<Face>, Ptr<DEN> > ())
     , m_upstreamINFHandler   (MakeNullCallback< void, Ptr<Face>, Ptr<INF> > ())
+    , m_upstreamDUHandler   (MakeNullCallback< void, Ptr<Face>, Ptr<DU> > ())
+    , m_upstreamOENHandler   (MakeNullCallback< void, Ptr<Face>, Ptr<OEN> > ())
     , m_ifup (false)
     , m_id ((uint32_t)-1)
     , m_metric (0)
@@ -108,11 +110,16 @@ namespace ns3
     }
 
     void
-    Face::RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
-                                       const DOHandler &DOHandler, const ENHandler &ENHandler,
-                                       const AENHandler &AENHandler, const RENHandler &RENHandler,
-                                       const DENHandler &DENHandler, const INFHandler &INFHandler,
-				       const DUHandler &DUHandler, const OENHandler &OENHandler)
+    Face::RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler,
+				       const SOHandler &SOHandler,
+				       const DOHandler &DOHandler,
+				       const ENHandler &ENHandler,
+				       const AENHandler &AENHandler,
+				       const RENHandler &RENHandler,
+				       const DENHandler &DENHandler,
+				       const INFHandler &INFHandler,
+				       const DUHandler &DUHandler,
+				       const OENHandler &OENHandler)
     {
       NS_LOG_FUNCTION_NOARGS ();
 
@@ -141,6 +148,7 @@ namespace ns3
       m_upstreamRENHandler = MakeNullCallback< void, Ptr<Face>, Ptr<REN> > ();
       m_upstreamDENHandler = MakeNullCallback< void, Ptr<Face>, Ptr<DEN> > ();
       m_upstreamINFHandler = MakeNullCallback< void, Ptr<Face>, Ptr<INF> > ();
+      m_upstreamDUHandler = MakeNullCallback< void, Ptr<Face>, Ptr<DU> > ();
       m_upstreamOENHandler = MakeNullCallback< void, Ptr<Face>, Ptr<OEN> > ();
     }
 

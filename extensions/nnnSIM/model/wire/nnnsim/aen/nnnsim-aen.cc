@@ -90,8 +90,21 @@ namespace wire {
     uint32_t
     AEN::GetSerializedSize (void) const
     {
+      uint16_t poatype = m_ptr->GetPoaType ();
+      size_t poatype_size = 0;
+      size_t poa_num = 0;
+
+      if (poatype == 0)
+	{
+	  poa_num = m_ptr->GetNumPoa ();
+	  poatype_size = 6; // Hardcoded size of a Mac48Address
+	}
+
       size_t size =
 	  CommonGetSerializedSize () +                    /* Common header */
+	  2 +                                             /* PoA Type */
+	  2 +                                             /* Number of PoAs */
+	  poa_num * poatype_size +                        /* Total size of PoAs */
 	  2 +                                             /* Lease time */
 	  NnnSim::SerializedSizeName (m_ptr->GetName ()); /* Name size */
 
@@ -115,6 +128,39 @@ namespace wire {
 
       // Serialize packet length
       start.WriteU16(GetSerializedSize());
+
+      uint16_t poatype = m_ptr->GetPoaType ();
+
+      NS_LOG_INFO ("Serialize -> PoA Type = " << poatype);
+      size_t bufsize = 0;
+
+      if (poatype == 0)
+	bufsize = 6; // Hardcoded Mac48Address size
+
+      // Create a buffer to be able to serialize PoAs
+      uint8_t buffer[bufsize];
+
+      uint32_t totalpoas = m_ptr->GetNumPoa();
+
+      NS_LOG_INFO ("Serialize -> PoA Num = " << totalpoas);
+
+      // Serialize PoA Type
+      start.WriteU16(poatype);
+
+      // Serialize Number of PoAs
+      start.WriteU16(totalpoas);
+
+      // Serialize PoAs
+      for (int i = 0; i < totalpoas; i++)
+	{
+	  // Use the CopyTo function to get the bit representation
+	  m_ptr->GetOnePoa(i).CopyTo(buffer);
+
+	  // Since the bit representation is in 8 bit chunks, serialize it
+	  // accordingly
+	  for (int j = 0; j < bufsize; j++)
+	    start.WriteU8(buffer[j]);
+	}
 
       uint16_t seconds = static_cast<uint16_t> (m_ptr->GetLeasetime ().ToInteger (Time::S));
 
@@ -150,6 +196,34 @@ namespace wire {
 
       // Move the iterator forward
       i.Next(skip);
+
+      uint16_t poatype = i.ReadU16 ();
+      size_t bufsize = 0;
+
+      NS_LOG_INFO ("Deserialize -> PoA Type = " << poatype);
+
+      if (poatype == 0)
+	bufsize = 6; // Hardcoded Mac48Address size
+
+      uint16_t totalpoas = i.ReadU16 ();
+
+      NS_LOG_INFO ("Deserialize -> PoA Num = " << totalpoas);
+
+      // Create a buffer to be able to deserialize PoAs
+      uint8_t buffer[bufsize];
+
+      for (int k = 0; k < totalpoas; k++)
+	{
+	  for (int j = 0; j < bufsize; j++)
+	    {
+	      buffer[j] = i.ReadU8 ();
+	    }
+
+	  Address tmp = Address ();
+	  tmp.CopyFrom(buffer, bufsize);
+
+	  m_ptr->AddPoa(tmp);
+	}
 
       uint16_t seconds = i.ReadU16 ();
 

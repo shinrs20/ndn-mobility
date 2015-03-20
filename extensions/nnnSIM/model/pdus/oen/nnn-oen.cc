@@ -108,6 +108,7 @@ namespace ns3
       os << "<OEN>" << std::endl;
       NNNPDU::Print(os);
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
+      os << "  <Lease>" << GetLeasetime () << "</Lease>" << std::endl;
       ENPDU::Print(os);
       os << "</OEN>" << std::endl;
     }

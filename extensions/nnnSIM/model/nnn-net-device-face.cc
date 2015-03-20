@@ -127,12 +127,12 @@ namespace ns3
     bool
     NetDeviceFace::Send (Ptr<Packet> packet, Address addr)
     {
-      if (!Face::Send (packet))
+      if (!Face::Send (packet, addr))
 	{
 	  return false;
 	}
 
-      NS_LOG_FUNCTION (this << packet);
+      NS_LOG_FUNCTION (this << packet << " going from " << m_netDevice->GetAddress() << " to " << addr);
 
       NS_ASSERT_MSG (packet->GetSize () <= m_netDevice->GetMtu (),
                      "Packet size " << packet->GetSize () << " exceeds device MTU "

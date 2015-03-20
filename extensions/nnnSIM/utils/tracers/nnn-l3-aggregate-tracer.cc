@@ -131,7 +131,7 @@ namespace ns3
 
       for (NodeContainer::Iterator node = nodes.Begin ();
 	  node != nodes.End ();
-	  node++)
+	  ++node)
 	{
 	  Ptr<L3AggregateTracer> trace = Install (*node, outputStream, averagingPeriod);
 	  tracers.push_back (trace);
@@ -185,7 +185,7 @@ namespace ns3
 
       for (NodeList::Iterator node = NodeList::Begin ();
 	  node != NodeList::End ();
-	  node++)
+	  ++node)
 	{
 	  Ptr<L3AggregateTracer> trace = Install (*node, outputStream, averagingPeriod);
 	  tracers.push_back (trace);
@@ -280,6 +280,26 @@ namespace ns3
 	  PRINTER ("InDUs",   m_inDUs);
 	  PRINTER ("OutDUs",  m_outDUs);
 	  PRINTER ("DropDUs", m_dropDUs);
+
+	  PRINTER ("InENs",   m_inENs);
+	  PRINTER ("OutENs",  m_outENs);
+	  PRINTER ("DropENs", m_dropENs);
+
+	  PRINTER ("InOENs",   m_inOENs);
+	  PRINTER ("OutOENs",  m_outOENs);
+	  PRINTER ("DropOENs", m_dropOENs);
+
+	  PRINTER ("InAENs",   m_inAENs);
+	  PRINTER ("OutAENs",  m_outAENs);
+	  PRINTER ("DropAENs", m_dropAENs);
+
+	  PRINTER ("InRENs",   m_inRENs);
+	  PRINTER ("OutRENs",  m_outRENs);
+	  PRINTER ("DropRENs", m_dropRENs);
+
+	  PRINTER ("InINFs",   m_inINFs);
+	  PRINTER ("OutINFs",  m_outINFs);
+	  PRINTER ("DropINFs", m_dropINFs);
 	}
 
       {

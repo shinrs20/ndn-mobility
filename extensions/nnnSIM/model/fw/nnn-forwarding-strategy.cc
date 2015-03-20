@@ -65,8 +65,8 @@
 
 namespace ll = boost::lambda;
 
-// Max label, which is a really the maximum unsigned int
-#define MAX3NLABEL 4294967295
+// Max label
+#define MAX3NLABEL 429496729
 
 namespace ns3
 {
@@ -238,24 +238,24 @@ namespace ns3
     }
 
     uint64_t
-    ForwardingStrategy::obtain_Num(uint64_t min, uint64_t max)
+    ForwardingStrategy::obtain_Num (uint64_t min, uint64_t max)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << "min " << min << " max " << max);
       // Make sure to seed our random
       Time now = Simulator::Now();
 
       gen.seed((long long)(now.GetMilliSeconds()) + (long long)getpid() << 32);
 
-      boost::random::uniform_int_distribution<> dist(min, max);
+      boost::random::uniform_int_distribution<> dist (min, max);
 
-      return dist(gen);
+      return dist (gen);
     }
 
     void
     ForwardingStrategy::SetNode3NName (Ptr<const NNNAddress> name, Time lease)
     {
       NS_LOG_FUNCTION (this);
-      NS_LOG_INFO("Adding 3N name " << *name << " to node");
+      NS_LOG_INFO("Adding 3N name (" << *name << ") to node");
       m_node_names->addEntry(name, lease);
     }
 
@@ -279,6 +279,7 @@ namespace ns3
       NS_LOG_FUNCTION (this);
       bool produced = false;
 
+      // Create an empty container for the 3N name
       Ptr<NNNAddress> ret;
 
       if (Has3NName ())
@@ -289,12 +290,14 @@ namespace ns3
 	  while (!produced)
 	    {
 	      // Create a random numerical component
-	      name::Component tmp = tmp.fromNumber(obtain_Num(1, MAX3NLABEL));
+	      name::Component tmp = name::Component ();
+	      // Add the information
+	      tmp.fromNumber(obtain_Num(1, MAX3NLABEL));
 
-	      // Append the randomly created number to our 3N name
-	      NNNAddress tmp3 = base.append(tmp);
-
-	      ret = Create<NNNAddress> (tmp3.toDotHex());
+	      // Create a NNNAddress with base
+	      ret = Create <NNNAddress> (base.toDotHex());
+	      // Append the new component
+	      ret->append(tmp);
 
 	      // Check if the random has by unfortunate circumstances created a name
 	      // that has already been leased
@@ -304,7 +307,7 @@ namespace ns3
 		}
 	    }
 
-	  NS_LOG_INFO("Produce 3N name " << *ret);
+	  NS_LOG_INFO("Produced a 3N name (" << *ret << ")");
 	}
       return ret;
     }
@@ -429,10 +432,12 @@ namespace ns3
       if (m_produce3Nnames && Has3NName ())
 	{
 	  NNNAddress myAddr = GetNode3NName ();
-	  NS_LOG_INFO("We are in " << myAddr << " producing 3N name for new node");
+	  NS_LOG_INFO("We are in (" << myAddr << ") producing 3N name for new node");
 
 	  // Get the first Address from the EN PDU
 	  Address destAddr = en_p->GetOnePoa(0);
+
+	  NS_LOG_INFO ("We are in (" << myAddr << ") will return OEN to " << destAddr);
 
 	  // Get all the PoA Address in the EN PDU to fill the NNST
 	  std::vector<Address> poaAddrs = en_p->GetPoas();
@@ -444,6 +449,7 @@ namespace ns3
 	  // Create a 5 second timeout
 	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, m_3n_lease_ack_timeout, m_standardMetric);
 
+	  NS_LOG_INFO("We are in (" << myAddr << ") creating OEN PDU to send");
 	  // Create an OEN PDU to respond
 	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname);
 	  // Ensure that the lease time is set in the PDU
@@ -692,6 +698,10 @@ namespace ns3
 	  face->SendAEN(aen_p);
 
 	  m_outAENs (aen_p, face);
+	}
+      else
+	{
+	  NS_LOG_INFO ("Not using " << *obtainedName);
 	}
     }
 
@@ -1070,7 +1080,7 @@ namespace ns3
     void
     ForwardingStrategy::Enroll ()
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << Simulator::Now ());
       // Check whether this node has a 3N name
       if (!Has3NName ())
 	{
@@ -1086,6 +1096,7 @@ namespace ns3
 	  // Add all the PoA names we found
 	  for (int i = 0; i < poanames.size (); i++)
 	    {
+	      NS_LOG_INFO ("Adding PoA name " << poanames[i]);
 	      en_o->AddPoa (poanames[i]);
 	    }
 
@@ -1111,7 +1122,7 @@ namespace ns3
     void
     ForwardingStrategy::Reenroll ()
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << Simulator::Now ());
       // Check whether this node has a 3N name
       if (Has3NName ())
 	{
@@ -1156,7 +1167,7 @@ namespace ns3
     void
     ForwardingStrategy::Disenroll ()
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << Simulator::Now ());
       // Check whether this node has a 3N name
       if (Has3NName ())
 	{
