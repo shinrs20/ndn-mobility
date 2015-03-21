@@ -51,27 +51,9 @@ namespace ns3
 {
   namespace nnn
   {
-    class L3Protocol;
-
-    class NULLp;
-    typedef NULLp NULLpHeader;
-    class SO;
-    typedef SO SOHeader;
-    class DO;
-    typedef DO DOHeader;
-    class EN;
-    typedef EN ENHeader;
-    class AEN;
-    typedef AEN AENHeader;
-    class REN;
-    typedef REN RENHeader;
-    class INF;
-    typedef INF INFHeader;
-
     namespace nnst {
 
       class Entry;
-
     }
 
     /**
@@ -151,14 +133,6 @@ namespace ns3
 
       Ptr<nnst::Entry>
       Find (const NNNAddress &prefix);
-
-      // This one should be eliminated
-      Ptr<nnst::Entry>
-      Add (const NNNAddress &prefix, Ptr<Face> face, int32_t metric);
-
-      // This one as well
-      Ptr<nnst::Entry>
-      Add (const Ptr<const NNNAddress> &prefix, Ptr<Face> face, int32_t metric);
 
       Ptr<nnst::Entry>
       Add (const NNNAddress &prefix, Ptr<Face> face, Address poa, Time lease_expire, int32_t metric);

@@ -266,69 +266,102 @@ namespace ns3
 	return item->payload ();
     }
 
-    // To be deleted
-    Ptr<nnst::Entry>
-    NNST::Add (const NNNAddress &prefix, Ptr<Face> face, int32_t metric)
-    {
-      return Add (Create<NNNAddress> (prefix), face, metric);
-    }
-
-    // This one to be deleted as well
-    Ptr<nnst::Entry>
-    NNST::Add (const Ptr<const NNNAddress> &name, Ptr<Face> face, int32_t metric)
-    {
-    }
-
     Ptr<nnst::Entry>
     NNST::Add (const NNNAddress &name, Ptr<Face> face, Address poa, Time lease_expire, int32_t metric)
     {
-      NS_LOG_FUNCTION ("const NNNAddress Add" << name);
-      char c;
-      Ptr<nnst::Entry> tmp = Add (Create<NNNAddress> (name), face, poa, lease_expire, metric, c);
+      NS_LOG_FUNCTION ("const NNNAddress Add" << name << lease_expire);
+      // We assume that the lease time gives us the absolute expiry time
+      // We need to calculate the relative time for the Schedule function
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
 
-      Simulator::Schedule(lease_expire, &NNST::cleanExpired, this, tmp);
-      return tmp;
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << name << ") at " << now);
+
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  char c;
+	  Ptr<nnst::Entry> tmp = Add (Create<NNNAddress> (name), face, poa, lease_expire, metric, c);
+
+	  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+	  return tmp;
+	}
+      else
+	return 0;
     }
 
     Ptr<nnst::Entry>
     NNST::Add (const Ptr<const NNNAddress> &prefix, std::vector<Ptr<Face> > faces, Address poa, Time lease_expire, int32_t metric)
     {
-      NS_LOG_FUNCTION ("Face vector Add" << boost::cref(*prefix));
-      Ptr<nnst::Entry> tmp;
-      char c;
-      for (std::vector<Ptr<Face> >::iterator i = faces.begin(); i != faces.end (); ++i)
-	{
-	  tmp = Add(prefix, *i, poa, lease_expire, metric, c);
-	}
+      NS_LOG_FUNCTION ("Face vector Add" << boost::cref(*prefix) << lease_expire);
 
-      Simulator::Schedule(lease_expire, &NNST::cleanExpired, this, tmp);
-      return tmp;
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
+
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << boost::cref(*prefix) << ") at " << now);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  Ptr<nnst::Entry> tmp;
+	  char c;
+	  for (std::vector<Ptr<Face> >::iterator i = faces.begin(); i != faces.end (); ++i)
+	    {
+	      tmp = Add(prefix, *i, poa, lease_expire, metric, c);
+	    }
+
+	  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+	  return tmp;
+	}
+      else
+	return 0;
     }
 
     Ptr<nnst::Entry>
     NNST::Add (const Ptr<const NNNAddress> &prefix, Ptr<Face> face, std::vector<Address> poas, Time lease_expire, int32_t metric)
     {
-      NS_LOG_FUNCTION ("Address vector Add" << boost::cref(*prefix));
-      Ptr<nnst::Entry> tmp;
-      char c;
-      for (std::vector<Address>::iterator i = poas.begin(); i != poas.end (); ++i)
-	{
-	  tmp = Add(prefix, face, *i, lease_expire, metric, c);
-	}
+      NS_LOG_FUNCTION ("Address vector Add" << boost::cref(*prefix) << lease_expire);
 
-      Simulator::Schedule(lease_expire, &NNST::cleanExpired, this, tmp);
-      return tmp;
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
+
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << boost::cref(*prefix) << ") at " << now);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  Ptr<nnst::Entry> tmp;
+	  char c;
+	  for (std::vector<Address>::iterator i = poas.begin(); i != poas.end (); ++i)
+	    {
+	      tmp = Add(prefix, face, *i, lease_expire, metric, c);
+	    }
+
+	  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+	  return tmp;
+	}
+      else
+	return 0;
     }
 
     Ptr<nnst::Entry>
     NNST::Add (const Ptr<const NNNAddress> &name, Ptr<Face> face, Address poa, Time lease_expire, int32_t metric)
     {
-      NS_LOG_FUNCTION ("Unitary Add" << boost::cref(*name));
-      char c;
-      Ptr<nnst::Entry> tmp = Add(name, face, poa, lease_expire, metric, c);
+      NS_LOG_FUNCTION ("Unitary Add" << boost::cref(*name) << lease_expire);
 
-      Simulator::Schedule(lease_expire, &NNST::cleanExpired, this, tmp);
-      return tmp;
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
+
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << boost::cref(*name) << ") at " << now);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  char c;
+	  Ptr<nnst::Entry> tmp = Add(name, face, poa, lease_expire, metric, c);
+
+	  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+	  return tmp;
+	}
+      else
+	return 0;
     }
 
     void
@@ -347,16 +380,24 @@ namespace ns3
     {
       NS_LOG_FUNCTION (this << prefix << n_lease);
 
-      super::iterator item = super::find_exact (prefix);
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = n_lease - now;
 
-      if (item != super::end ())
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << prefix << ") at " << now);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
 	{
-	  bool ok = super::modify (&(*item), ll::bind (&nnst::Entry::UpdateLeaseTime, ll::_1, n_lease));
+	  super::iterator item = super::find_exact (prefix);
 
-	  if (ok)
+	  if (item != super::end ())
 	    {
-	      Ptr<nnst::Entry> tmp = item->payload ();
-	      Simulator::Schedule(n_lease, &NNST::cleanExpired, this, tmp);
+	      bool ok = super::modify (&(*item), ll::bind (&nnst::Entry::UpdateLeaseTime, ll::_1, n_lease));
+
+	      if (ok)
+		{
+		  Ptr<nnst::Entry> tmp = item->payload ();
+		  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+		}
 	    }
 	}
     }
@@ -428,8 +469,8 @@ namespace ns3
 	      Ptr<nnst::Entry> nextEntry = Next (entry);
 
 	      // notify forwarding strategy about soon be removed FIB entry
-	      NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
-	      this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (entry);
+	      //NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
+	      //this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (entry);
 
 	      super::erase (StaticCast<nnst::Entry> (entry)->to_iterator ());
 	      entry = nextEntry;
@@ -455,8 +496,8 @@ namespace ns3
 	      Ptr<nnst::Entry> nextEntry = Next (entry);
 
 	      // notify forwarding strategy about soon be removed NNST entry
-	      NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
-	      this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (entry);
+	      //NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
+	      //this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (entry);
 
 	      super::erase (entry->to_iterator ());
 	      entry = nextEntry;
