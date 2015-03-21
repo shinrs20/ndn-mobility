@@ -29,69 +29,67 @@ using namespace nnn;
 
 int main (int argc, char *argv[])
 {
-	NamesContainer test1;
+  NamesContainer test1;
 
-	Ptr<const NNNAddress> nn_test1 = Create<NNNAddress> ("be.54.32");
-	Ptr<const NNNAddress> nn_test2 = Create<NNNAddress> ("af.67.31");
-	Ptr<const NNNAddress> nn_test3 = Create<NNNAddress> ("ae.34.26");
+  Ptr<const NNNAddress> nn_test1 = Create<NNNAddress> ("be.54.32");
+  Ptr<const NNNAddress> nn_test2 = Create<NNNAddress> ("af.67.31");
+  Ptr<const NNNAddress> nn_test3 = Create<NNNAddress> ("ae.34.26");
 
-	Time t_test1 = Seconds (20);
-	Time t_test2 = Seconds (60);
-	Time t_test3 = Seconds (10);
+  Time t_test1 = Seconds (100);
+  Time t_test2 = Seconds (200);
+  Time t_test3 = Seconds (300);
 
-	Time updateTime = Seconds (80);
+  Time updateTime = Seconds (400);
 
-	Simulator::Stop (Seconds (70));
-	Simulator::Run ();
+  test1.addEntry(nn_test1, t_test1);
+  test1.addEntry(nn_test2, t_test2);
+  test1.addEntry(nn_test3, t_test3);
 
+  std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
-	test1.addEntry(nn_test1, t_test1);
-	test1.addEntry(nn_test2, t_test2);
-	test1.addEntry(nn_test3, t_test3);
+  std::cout << "Printing ordering by address" << std::endl;
+  test1.printByAddress();
 
-	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
+  std::cout << "Printing ordering by lease expire time" << std::endl;
+  test1.printByLease();
 
-	std::cout << "Printing ordering by address" << std::endl;
-	test1.printByAddress();
+  std::cout << "Expire time for " << *nn_test2 << " is " << test1.findNameExpireTime(nn_test2) << std::endl;
+  std::cout << "Updating expire time for " << *nn_test2 << " to " << updateTime << std::endl;
 
-	std::cout << "Printing ordering by lease expire time" << std::endl;
-	test1.printByLease();
+  test1.updateLeaseTime(nn_test2, updateTime);
 
-	std::cout << "Expire time for " << *nn_test2 << " is " << test1.findNameExpireTime(nn_test2) << std::endl;
-	std::cout << "Updating expire time for " << *nn_test2 << " to " << updateTime << std::endl;
+  std::cout << "Deleting " << *nn_test3 << " from container..." << std::endl;
 
-	test1.updateLeaseTime(nn_test2, updateTime);
+  test1.deleteEntry(nn_test3);
 
-	std::cout << "Deleting " << *nn_test3 << " from container..." << std::endl;
+  std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
+  std::cout << "Printing ordering by lease expire time" << std::endl;
+  test1.printByLease();
 
-	test1.deleteEntry(nn_test3);
+  std::cout << "Deleting everything from container..." << std::endl;
+  test1.clear();
 
-	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
-	std::cout << "Printing ordering by lease expire time" << std::endl;
-	test1.printByLease();
+  std::cout << "Printing ordering by lease expire time" << std::endl;
+  test1.printByLease();
 
-	std::cout << "Deleting everything from container..." << std::endl;
-	test1.clear();
+  std::cout << "Reinserting everything into NamesContainer" << std::endl;
 
-	std::cout << "Printing ordering by lease expire time" << std::endl;
-	test1.printByLease();
+  test1.addEntry(nn_test1, t_test1);
+  test1.addEntry(nn_test2, t_test2);
+  test1.addEntry(nn_test3, t_test3);
 
-	std::cout << "Reinserting everything into NamesContainer" << std::endl;
+  std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
-	test1.addEntry(nn_test1, t_test1);
-	test1.addEntry(nn_test2, t_test2);
-	test1.addEntry(nn_test3, t_test3);
+  Ptr<const NNNAddress> tmp = test1.findNewestName();
 
-	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
+  std::cout << "Last address to die will be " << *tmp << " at " << test1.findNameExpireTime(tmp) << std::endl;
+  std::cout << "Printing ordering by address" << std::endl;
+  test1.printByAddress();
 
-	Ptr<const NNNAddress> tmp = test1.findNewestName();
+  std::cout << "Printing ordering by address" << std::endl;
+  test1.printByAddress();
 
-	std::cout << "Last address to die will be " << *tmp << " at " << test1.findNameExpireTime(tmp) << std::endl;
-	std::cout << "Printing ordering by address" << std::endl;
-	test1.printByAddress();
-
-	std::cout << "Printing ordering by address" << std::endl;
-	test1.printByAddress();
-
-	Simulator::Destroy ();
+  Simulator::Stop (Seconds (50));
+  Simulator::Run ();
+  Simulator::Destroy ();
 }

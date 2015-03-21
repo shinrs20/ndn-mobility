@@ -30,7 +30,7 @@ namespace ns3
     NamesContainer::NamesContainer ()
     : renewName (MakeNullCallback <void> ())
     , hasNoName (MakeNullCallback <void> ())
-    , defaultRenewal (Seconds(10))
+    , defaultRenewal (Seconds(30))
     {
     }
 
@@ -57,22 +57,29 @@ namespace ns3
       return defaultRenewal;
     }
 
-    Time
+    void
     NamesContainer::addEntry (Ptr<const NNNAddress> name, Time lease_expire)
     {
-      NS_LOG_FUNCTION (this << name << lease_expire);
+      NS_LOG_FUNCTION (this << *name << lease_expire);
 
-      Time absoluteLeaseTime = Simulator::Now () + lease_expire;
+      // We assume that the lease time gives us the absolute expiry time
+      // We need to calculate the relative time for the Schedule function
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
 
-      // We need to save the lease and renewal time in absolute time
-      container.insert(NamesContainerEntry(name, absoluteLeaseTime, absoluteLeaseTime - defaultRenewal));
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << *name << ") at " << now);
 
-      // The Schedulers are in relative time
-      Simulator::Schedule((lease_expire - defaultRenewal), &NamesContainer::willAttemptRenew, this);
-      Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  NS_LOG_INFO ("Lease time is positive, add (" << *name << "), lease until " << lease_expire );
 
-      // Return the absolute time for the lease expiry
-      return absoluteLeaseTime;
+	  // We need to save the lease and renewal time in absolute time
+	  container.insert(NamesContainerEntry(name, lease_expire, lease_expire - defaultRenewal));
+	  // The Schedulers are in relative time
+	  Simulator::Schedule((relativeExpireTime - defaultRenewal), &NamesContainer::willAttemptRenew, this);
+	  Simulator::Schedule(relativeExpireTime, &NamesContainer::cleanExpired, this);
+	}
     }
 
     void
@@ -85,7 +92,7 @@ namespace ns3
     void
     NamesContainer::deleteEntry (Ptr<const NNNAddress> name)
     {
-      NS_LOG_FUNCTION (this << name);
+      NS_LOG_FUNCTION (this << *name);
 
       if (!isEmpty())
 	{
@@ -98,7 +105,7 @@ namespace ns3
     bool
     NamesContainer::foundName (Ptr<const NNNAddress> name)
     {
-      NS_LOG_FUNCTION (this << name);
+      NS_LOG_FUNCTION (this << *name);
       names_set_by_name& names_index = container.get<address> ();
       names_set_by_name::iterator it = names_index.find(name);
 
@@ -146,16 +153,16 @@ namespace ns3
     Time
     NamesContainer::findNameExpireTime (Ptr<const NNNAddress> name)
     {
-      NS_LOG_FUNCTION (this << name);
+      NS_LOG_FUNCTION (this << *name);
       NamesContainerEntry tmp = findEntry(name);
 
       return tmp.m_lease_expire;
     }
 
-    Time
+    void
     NamesContainer::updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire)
     {
-      NS_LOG_FUNCTION (this << name << lease_expire);
+      NS_LOG_FUNCTION (this << *name << lease_expire);
       names_set_by_name& names_index = container.get<address> ();
       names_set_by_name::iterator it = names_index.find(name);
 
@@ -166,21 +173,20 @@ namespace ns3
 	{
 	  NamesContainerEntry tmp = *it;
 
-	  tmp.m_lease_expire = absoluteLeaseTime;
-	  tmp.m_renew_time = absoluteLeaseTime -defaultRenewal;
+	  tmp.m_lease_expire = lease_expire;
+	  tmp.m_renew_time = lease_expire -defaultRenewal;
 
 	  if (names_index.replace(it, tmp))
 	    {
-	      change = true;
-	      // Remember the scheduler is expressed in relative time
-	      Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
+	      Time relativeExpireTime = lease_expire - Simulator::Now ();
+
+	      if (relativeExpireTime.IsStrictlyPositive())
+		{
+		  // Remember the scheduler is expressed in relative time
+		  Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
+		}
 	    }
 	}
-
-      if (change)
-	return absoluteLeaseTime;
-      else
-	return Seconds (0);
     }
 
     uint32_t

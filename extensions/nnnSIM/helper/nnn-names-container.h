@@ -82,7 +82,7 @@ namespace ns3
       Time
       GetDefaultRenewal ();
 
-      Time
+      void
       addEntry (Ptr<const NNNAddress> name, Time lease_expire);
 
       void
@@ -100,7 +100,7 @@ namespace ns3
       Ptr<const NNNAddress>
       findNewestName ();
 
-      Time
+      void
       updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire);
 
       uint32_t
