@@ -53,48 +53,20 @@ namespace ns3
 
       if (!foundOldName(oldName) && !foundOldName(newName))
         {
+	  // We assume that the lease time gives us the absolute expiry time
+	  // We need to calculate the relative time for the Schedule function
+	  Time relativeExpireTime = lease_expire - Simulator::Now ();
           container.insert(nnpt::Entry(oldName, newName, lease_expire));
 
-          Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
+          // If the relative expire time is above 0, we can save it
+          if (relativeExpireTime.IsStrictlyPositive())
+            {
+              Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
+            }
         }
       else
         {
           NS_LOG_INFO("Found either " << *oldName << " or " << *newName << " already in NNPT");
-        }
-    }
-
-    void
-    NNPT::addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew)
-    {
-      NS_LOG_FUNCTION (this);
-
-      if (!foundOldName(oldName) && !foundOldName(newName))
-        {
-          container.insert(nnpt::Entry(oldName, newName, lease_expire, renew));
-
-          Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
-        }
-      else
-        {
-          NS_LOG_INFO("Found either " << *oldName << " or " << *newName << " already in NNPT");
-        }
-
-    }
-
-    void
-    NNPT::addEntry (nnpt::Entry nnptEntry)
-    {
-      NS_LOG_FUNCTION (this);
-
-      if (!foundOldName(nnptEntry.m_oldName) && !foundOldName(nnptEntry.m_newName))
-        {
-          container.insert(nnptEntry);
-
-          Simulator::Schedule(nnptEntry.m_lease_expire, &NNPT::cleanExpired, this);
-        }
-      else
-        {
-          NS_LOG_INFO("Found either " << *nnptEntry.m_oldName << " or " << *nnptEntry.m_newName << " already in NNPT");
         }
     }
 
@@ -236,32 +208,16 @@ namespace ns3
 	  nnpt::Entry tmp = *it;
 
 	  tmp.m_lease_expire = lease_expire;
-	  tmp.m_renew = lease_expire - Seconds (1);
 
 	  if (pair_index.replace(it, tmp))
 	    {
-	      Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
-	    }
-	}
-    }
+	      Time relativeExpireTime = lease_expire - Simulator::Now ();
 
-    void
-    NNPT::updateLeaseTime (Ptr<const NNNAddress> oldName, Time lease_expire, Time renew)
-    {
-      NS_LOG_FUNCTION (this);
-      pair_set_by_oldname& pair_index = container.get<oldname> ();
-      pair_set_by_oldname::iterator it = pair_index.find(oldName);
-
-      if (it != pair_index.end())
-	{
-	  nnpt::Entry tmp = *it;
-
-	  tmp.m_lease_expire = lease_expire;
-	  tmp.m_renew = renew;
-
-	  if (pair_index.replace(it, tmp))
-	    {
-	      Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
+	      // If the relative expire time is above 0, schedule the next clean
+	      if (relativeExpireTime.IsStrictlyPositive())
+		{
+		  Simulator::Schedule(relativeExpireTime, &NNPT::cleanExpired, this);
+		}
 	    }
 	}
     }
@@ -324,8 +280,8 @@ namespace ns3
       pair_set_by_oldname& pair_index = container.get<oldname> ();
       pair_set_by_oldname::iterator it = pair_index.begin();
 
-      std::cout << "Old Address\t| New Address\t| Lease Expire\t| Renew" << std::endl;
-      std::cout << "--------------------------------------------------------" << std::endl;
+      std::cout << "Old Address\t| New Address\t| Lease Expire" << std::endl;
+      std::cout << "-------------------------------------------------" << std::endl;
 
       while (it != pair_index.end())
 	{
@@ -340,8 +296,8 @@ namespace ns3
       pair_set_by_lease& lease_index = container.get<st_lease> ();
       pair_set_by_lease::iterator it = lease_index.begin();
 
-      std::cout << "NNN Address\t| New Address\t| Lease Expire\t| Renew" << std::endl;
-      std::cout << "--------------------------------------------------------" << std::endl;
+      std::cout << "NNN Address\t| New Address\t| Lease Expire" << std::endl;
+      std::cout << "-------------------------------------------------" << std::endl;
 
       while (it != lease_index.end ())
 	{

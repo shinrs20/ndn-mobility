@@ -93,12 +93,6 @@ namespace ns3
       addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire);
 
       void
-      addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew);
-
-      void
-      addEntry (nnpt::Entry nnptEntry);
-
-      void
       deleteEntry (Ptr<const NNNAddress> oldName);
 
       void
@@ -130,9 +124,6 @@ namespace ns3
 
       void
       updateLeaseTime (Ptr<const NNNAddress> oldName, Time lease_expire);
-
-      void
-      updateLeaseTime (Ptr<const NNNAddress> oldName, Time lease_expire, Time renew);
 
       uint32_t
       size ();

@@ -37,22 +37,25 @@ int main (int argc, char *argv[])
   Ptr<const NNNAddress> nn_test2 = Create<const NNNAddress> ("af.67.31");
   Ptr<const NNNAddress> nn_test3 = Create<const NNNAddress> ("ae.34.26");
   Ptr<const NNNAddress> nn_test4 = Create<const NNNAddress> ("4.23.5.6");
+  Ptr<const NNNAddress> nn_test5 = Create<const NNNAddress> ("90.243.2");
 
   Time t_test1 = Seconds (20);
   Time t_test2 = Seconds (60);
   Time t_test3 = Seconds (10);
+  Time t_test4 = Seconds (120);
 
   Time updateTime = Seconds (80);
 
-  Entry nnpte_test1 = Entry (nn_test1, nn_test2, t_test1);
-  Entry nnpte_test2 = Entry (nn_test2, nn_test3, t_test2);
-  Entry nnpte_test3 = Entry (nn_test3, nn_test1, t_test3);
-  Entry nnpte_test4 = Entry (nn_test1, nn_test4, t_test2);
+  // Designate when the simulator should stop
+  Simulator::Stop (Seconds (70));
 
-  test1.addEntry(nnpte_test1);
-  test1.addEntry(nnpte_test2);
-  test1.addEntry(nnpte_test3);
-  test1.addEntry(nnpte_test4);
+  // Start the simulator
+  Simulator::Run ();
+
+  test1.addEntry(nn_test1, nn_test2, t_test1);
+  test1.addEntry(nn_test2, nn_test3, t_test2);
+  test1.addEntry(nn_test3, nn_test1, t_test3);
+  test1.addEntry(nn_test1, nn_test4, t_test2);
 
   std::cout << "We have a NNPT of size: " << test1.size() << std::endl;
 
@@ -78,8 +81,9 @@ int main (int argc, char *argv[])
   std::cout << "Printing ordering by address" << std::endl;
   test1.printByAddress();
 
-  Simulator::Stop (Seconds (70));
-  Simulator::Run ();
+  std::cout << "Inserting " << *nn_test4 << " with lease expiry time " << t_test4 << std::endl;
+  test1.addEntry(nn_test4, nn_test5, t_test4);
+
   Simulator::Destroy ();
 
   std::cout << "Printing ordering by address" << std::endl;

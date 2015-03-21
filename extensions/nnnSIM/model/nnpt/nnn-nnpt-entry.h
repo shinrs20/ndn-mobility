@@ -62,8 +62,6 @@ namespace ns3
 
 	Entry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire);
 
-	Entry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew);
-
 	virtual
 	~Entry ();
 
@@ -73,13 +71,12 @@ namespace ns3
 	Ptr<const NNNAddress> m_oldName;
 	Ptr<const NNNAddress> m_newName;
 	Time m_lease_expire;
-	Time m_renew;
       };
 
       inline std::ostream &
       operator<< (std::ostream &os, const Entry &nnpt)
       {
-	os << *nnpt.m_oldName << "\t" << *nnpt.m_newName  << "\t" << nnpt.m_lease_expire << "\t" << nnpt.m_renew << std::endl;
+	os << *nnpt.m_oldName << "\t" << *nnpt.m_newName  << "\t" << nnpt.m_lease_expire << std::endl;
 	return os;
       }
     }

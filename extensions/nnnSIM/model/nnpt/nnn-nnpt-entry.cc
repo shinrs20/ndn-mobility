@@ -27,10 +27,9 @@ namespace ns3
     namespace nnpt
     {
       Entry::Entry()
-      :m_oldName			(Create<const NNNAddress> ())
-      ,m_newName			(Create<const NNNAddress> ())
-      ,m_lease_expire	(Seconds (1))
-      ,m_renew			(Seconds (1))
+      :m_oldName        (Create<const NNNAddress> ())
+      ,m_newName        (Create<const NNNAddress> ())
+      ,m_lease_expire   (Seconds (0))
       {
       }
 
@@ -38,22 +37,10 @@ namespace ns3
       }
 
       Entry::Entry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire)
-      :m_oldName			(oldName)
-      ,m_newName			(newName)
-      ,m_lease_expire		(lease_expire)
-      ,m_renew			(lease_expire - Seconds (1))
+      :m_oldName        (oldName)
+      ,m_newName        (newName)
+      ,m_lease_expire   (lease_expire)
       {
-      }
-
-      Entry::Entry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire, Time renew)
-      :m_oldName			(oldName)
-      ,m_newName			(newName)
-      ,m_lease_expire		(lease_expire)
-      {
-        if(renew < m_lease_expire)
-	  m_renew = renew;
-        else
-	  m_renew = lease_expire - Seconds(1);
       }
     } /* namespace nnpt */
   } /* namespace nnn */
