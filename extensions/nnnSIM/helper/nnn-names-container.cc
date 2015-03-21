@@ -30,6 +30,7 @@ namespace ns3
     NamesContainer::NamesContainer ()
     : renewName (MakeNullCallback <void> ())
     , hasNoName (MakeNullCallback <void> ())
+    , defaultRenewal (Seconds(10))
     {
     }
 
@@ -45,32 +46,33 @@ namespace ns3
     }
 
     void
-    NamesContainer::addEntry (NamesContainerEntry nameEntry)
+    NamesContainer::SetDefaultRenewal (Time renew)
     {
-      NS_LOG_FUNCTION (this);
-      container.insert(nameEntry);
-
-      Simulator::Schedule(nameEntry.m_lease_expire, &NamesContainer::cleanExpired, this);
+      defaultRenewal = renew;
     }
 
-    void
+    Time
+    NamesContainer::GetDefaultRenewal ()
+    {
+      return defaultRenewal;
+    }
+
+    Time
     NamesContainer::addEntry (Ptr<const NNNAddress> name, Time lease_expire)
     {
       NS_LOG_FUNCTION (this << name << lease_expire);
-      container.insert(NamesContainerEntry(name, lease_expire));
 
-      Simulator::Schedule(lease_expire - Seconds(10), &NamesContainer::willAttemptRenew, this);
+      Time absoluteLeaseTime = Simulator::Now () + lease_expire;
+
+      // We need to save the lease and renewal time in absolute time
+      container.insert(NamesContainerEntry(name, absoluteLeaseTime, absoluteLeaseTime - defaultRenewal));
+
+      // The Schedulers are in relative time
+      Simulator::Schedule((lease_expire - defaultRenewal), &NamesContainer::willAttemptRenew, this);
       Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
-    }
 
-    void
-    NamesContainer::addEntry (Ptr<const NNNAddress> name, Time lease_expire, Time renew)
-    {
-      NS_LOG_FUNCTION (this << name << lease_expire << renew);
-      container.insert(NamesContainerEntry(name, lease_expire, renew));
-
-      Simulator::Schedule(renew, &NamesContainer::willAttemptRenew, this);
-      Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
+      // Return the absolute time for the lease expiry
+      return absoluteLeaseTime;
     }
 
     void
@@ -150,46 +152,35 @@ namespace ns3
       return tmp.m_lease_expire;
     }
 
-    void
+    Time
     NamesContainer::updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire)
     {
       NS_LOG_FUNCTION (this << name << lease_expire);
       names_set_by_name& names_index = container.get<address> ();
       names_set_by_name::iterator it = names_index.find(name);
 
-      if (it != names_index.end())
-	{
-	  NamesContainerEntry tmp = *it;
-
-	  tmp.m_lease_expire = lease_expire;
-	  tmp.m_renew = lease_expire - Seconds (1);
-
-	  if (names_index.replace(it, tmp))
-	    {
-	      Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
-	    }
-	}
-    }
-
-    void
-    NamesContainer::updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire, Time renew)
-    {
-      NS_LOG_FUNCTION (this << name << lease_expire << renew);
-      names_set_by_name& names_index = container.get<address> ();
-      names_set_by_name::iterator it = names_index.find(name);
+      Time absoluteLeaseTime = Simulator::Now () + lease_expire;
+      bool change = false;
 
       if (it != names_index.end())
 	{
 	  NamesContainerEntry tmp = *it;
 
-	  tmp.m_lease_expire = lease_expire;
-	  tmp.m_renew = renew;
+	  tmp.m_lease_expire = absoluteLeaseTime;
+	  tmp.m_renew_time = absoluteLeaseTime -defaultRenewal;
 
 	  if (names_index.replace(it, tmp))
 	    {
+	      change = true;
+	      // Remember the scheduler is expressed in relative time
 	      Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
 	    }
 	}
+
+      if (change)
+	return absoluteLeaseTime;
+      else
+	return Seconds (0);
     }
 
     uint32_t
@@ -210,8 +201,6 @@ namespace ns3
       NS_LOG_FUNCTION (this);
       names_set_by_lease& lease_index = container.get<lease> ();
       Time now = Simulator::Now();
-
-      //std::cout << "Deleting expired entries at " << now << std::endl;
 
       names_set_by_lease::iterator it = lease_index.begin();
 

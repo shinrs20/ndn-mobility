@@ -41,13 +41,13 @@ int main (int argc, char *argv[])
 
 	Time updateTime = Seconds (80);
 
-	NamesContainerEntry nce_test1 = NamesContainerEntry (nn_test1, t_test1);
-	NamesContainerEntry nce_test2 = NamesContainerEntry (nn_test2, t_test2);
-	NamesContainerEntry nce_test3 = NamesContainerEntry (nn_test3, t_test3);
+	Simulator::Stop (Seconds (70));
+	Simulator::Run ();
 
-	test1.addEntry(nce_test1);
-	test1.addEntry(nce_test2);
-	test1.addEntry(nce_test3);
+
+	test1.addEntry(nn_test1, t_test1);
+	test1.addEntry(nn_test2, t_test2);
+	test1.addEntry(nn_test3, t_test3);
 
 	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
@@ -66,6 +66,10 @@ int main (int argc, char *argv[])
 
 	test1.deleteEntry(nn_test3);
 
+	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
+	std::cout << "Printing ordering by lease expire time" << std::endl;
+	test1.printByLease();
+
 	std::cout << "Deleting everything from container..." << std::endl;
 	test1.clear();
 
@@ -73,9 +77,10 @@ int main (int argc, char *argv[])
 	test1.printByLease();
 
 	std::cout << "Reinserting everything into NamesContainer" << std::endl;
-	test1.addEntry(nce_test1);
-	test1.addEntry(nce_test2);
-	test1.addEntry(nce_test3);
+
+	test1.addEntry(nn_test1, t_test1);
+	test1.addEntry(nn_test2, t_test2);
+	test1.addEntry(nn_test3, t_test3);
 
 	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
@@ -85,11 +90,8 @@ int main (int argc, char *argv[])
 	std::cout << "Printing ordering by address" << std::endl;
 	test1.printByAddress();
 
-	Simulator::Stop (Seconds (70));
-	Simulator::Run ();
-	Simulator::Destroy ();
-
 	std::cout << "Printing ordering by address" << std::endl;
 	test1.printByAddress();
 
+	Simulator::Destroy ();
 }

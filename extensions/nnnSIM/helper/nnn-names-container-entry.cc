@@ -25,8 +25,8 @@ namespace ns3
   {
     NamesContainerEntry::NamesContainerEntry()
     : m_name            (Create<const NNNAddress> ())
-    , m_lease_expire    (Seconds (-1))
-    , m_renew           (Seconds (-1))
+    , m_lease_expire    (Seconds (0))
+    , m_renew_time      (Seconds (0))
     {
     }
 
@@ -34,22 +34,11 @@ namespace ns3
 
     }
 
-    NamesContainerEntry::NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire)
+    NamesContainerEntry::NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire, Time renew_time)
     : m_name           (name)
     , m_lease_expire   (lease_expire)
-    , m_renew          (lease_expire - Seconds(5))
+    , m_renew_time     (renew_time)
     {
-
-    }
-
-    NamesContainerEntry::NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire, Time renew)
-    : m_name           (name)
-    , m_lease_expire   (lease_expire)
-    {
-      if (renew < m_lease_expire)
-	m_renew = renew;
-      else
-	m_renew = lease_expire - Seconds(1);
     }
 
   } /* namespace nnn */

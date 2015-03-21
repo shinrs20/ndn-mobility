@@ -77,13 +77,13 @@ namespace ns3
       RegisterCallbacks (const Callback<void> renewal, const Callback<void> leaseagain);
 
       void
-      addEntry (NamesContainerEntry nameEntry);
+      SetDefaultRenewal (Time renew);
 
-      void
+      Time
+      GetDefaultRenewal ();
+
+      Time
       addEntry (Ptr<const NNNAddress> name, Time lease_expire);
-
-      void
-      addEntry (Ptr<const NNNAddress> name, Time lease_expire, Time renew);
 
       void
       deleteEntry (NamesContainerEntry nameEntry);
@@ -100,11 +100,8 @@ namespace ns3
       Ptr<const NNNAddress>
       findNewestName ();
 
-      void
+      Time
       updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire);
-
-      void
-      updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire, Time renew);
 
       uint32_t
       size ();
@@ -130,10 +127,12 @@ namespace ns3
       void
       printByLease ();
 
-      names_set container;
+    private:
+      names_set container;         ///< \brief Internal structure holding the 3N names
+      Time defaultRenewal;         ///< \brief Default negative default time to fire renewal callback
 
-      Callback<void> renewName;
-      Callback<void> hasNoName;
+      Callback<void> renewName;    ///< \brief Renewal callback
+      Callback<void> hasNoName;    ///< \brief Enroll callback - done when container is empty
     };
 
   } /* namespace nnn */
