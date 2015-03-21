@@ -255,7 +255,10 @@ namespace ns3
     ForwardingStrategy::SetNode3NName (Ptr<const NNNAddress> name, Time lease)
     {
       NS_LOG_FUNCTION (this);
-      NS_LOG_INFO("Adding 3N name (" << *name << ") to node");
+      // Modification to know which node if being called
+      Ptr<Node> node = this->GetObject<Node> ();
+
+      NS_LOG_INFO("Adding 3N name (" << *name << ") to node " << node->GetId());
       m_node_names->addEntry(name, lease);
     }
 
@@ -437,7 +440,7 @@ namespace ns3
 	  // Get the first Address from the EN PDU
 	  Address destAddr = en_p->GetOnePoa(0);
 
-	  NS_LOG_INFO ("We are in (" << myAddr << ") will return OEN to " << destAddr);
+	  NS_LOG_INFO ("We are in (" << myAddr << "), will return OEN to " << destAddr);
 
 	  // Get all the PoA Address in the EN PDU to fill the NNST
 	  std::vector<Address> poaAddrs = en_p->GetPoas();
@@ -574,7 +577,7 @@ namespace ns3
 	  // Get the 3N name that the node was using
 	  Ptr<NNNAddress> reenroll = Create<NNNAddress> (ren_p->GetName ());
 
-	  NS_LOG_INFO("We are in " << myAddr << " producing 3N name for " << *reenroll);
+	  NS_LOG_INFO("We are in (" << myAddr << ") producing 3N name for reenrolling " << *reenroll);
 
 	  // Get the first Address from the REN PDU
 	  Address destAddr = ren_p->GetOnePoa(0);

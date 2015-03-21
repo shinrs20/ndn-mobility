@@ -66,12 +66,14 @@ namespace ns3
 	case 4:
 	  return EN_NNN;
 	case 5:
-	  return AEN_NNN;
+	  return OEN_NNN;
 	case 6:
-	  return REN_NNN;
+	  return AEN_NNN;
 	case 7:
-	  return DEN_NNN;
+	  return REN_NNN;
 	case 8:
+	  return DEN_NNN;
+	case 9:
 	  return INF_NNN;
       }
 
