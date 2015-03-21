@@ -27,7 +27,6 @@
 #include "../pit/nnn-pit-entry.h"
 #include "../fib/nnn-fib.h"
 #include "../nnn-face.h"
-#include "../nnn-naming.h"
 #include "../nnn-pdus.h"
 #include "../nnst/nnn-nnst.h"
 #include "../nnst/nnn-nnst-entry.h"
@@ -437,7 +436,7 @@ namespace ns3
 	  NNNAddress myAddr = GetNode3NName ();
 	  NS_LOG_INFO("We are in (" << myAddr << ") producing 3N name for new node");
 
-	  // Get the first Address from the EN PDU
+	  // Get the first Address from the EN PDU (this probably requires more tuning)
 	  Address destAddr = en_p->GetOnePoa(0);
 
 	  NS_LOG_INFO ("We are in (" << myAddr << "), will return OEN to " << destAddr);
@@ -449,19 +448,24 @@ namespace ns3
 	  Ptr<NNNAddress> produced3Nname = produce3NName ();
 
 	  // Add the new information into the Awaiting Response NNST type structure
-	  // Create a 5 second timeout
-	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, m_3n_lease_ack_timeout, m_standardMetric);
+	  // Create a 5 second timeout - remember absolute time
+	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, Simulator::Now () + m_3n_lease_ack_timeout, m_standardMetric);
 
 	  NS_LOG_INFO("We are in (" << myAddr << ") creating OEN PDU to send");
 	  // Create an OEN PDU to respond
 	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname);
 	  // Ensure that the lease time is set in the PDU
-	  oen_p->SetLeasetime(m_3n_lease_time);
+	  // We send the lease out in absolute simulator time
+	  Time absoluteLease = Simulator::Now () + m_3n_lease_time;
+	  oen_p->SetLeasetime(absoluteLease);
 	  // Add the PoA names to the PDU
 	  oen_p->AddPoa(poaAddrs);
 
 	  // Send the create OEN PDU out the way it came
 	  face->SendOEN(oen_p, destAddr);
+
+	  // Maintain the lease time given to the 3N name for further checking
+	  m_node_lease_times[oen_p->GetNamePtr()] = absoluteLease;
 
 	  m_outOENs (oen_p, face);
 	}
@@ -512,13 +516,30 @@ namespace ns3
 		  if (diff.size () == 0)
 		    {
 		      NS_LOG_INFO("We found no differences in PoAs for (" << tmp << ")");
-		      NS_LOG_INFO("Adding NNST information for (" << tmp << ") for " << aen_p->GetLeasetime());
+
+		      Time absoluteLeaseTime = aen_p->GetLeasetime();
+		      Time recordedLeaseTime = m_node_lease_times[newName];
+
+		      // Check that the lease times coincide with what was recorded
+		      if (recordedLeaseTime != absoluteLeaseTime)
+			{
+			  NS_LOG_INFO ("Found discrepancy between " << "recordedLeaseTime " << " and " << absoluteLeaseTime << " for (" << tmp << ")");
+			  return;
+			}
+		      else
+			{
+			  // No issues
+			  NS_LOG_INFO ("Lease time checks out for (" << tmp << ")");
+			  m_node_lease_times.erase(newName);
+			}
+
+		      NS_LOG_INFO("Adding NNST information for (" << tmp << ") until " << absoluteLeaseTime);
 
 		      // Add the new information to the NNST
-		      m_nnst->Add(newName, face, storedPoas, m_3n_lease_time, m_standardMetric);
+		      m_nnst->Add(newName, face, storedPoas, absoluteLeaseTime, m_standardMetric);
 
 		      // Add the information the the leased NodeNameContainer
-		      m_leased_names->addEntry(newName, m_3n_lease_time);
+		      m_leased_names->addEntry(newName, absoluteLeaseTime);
 
 		      // If there is an NNPT entry, it means we had a REN before. We need to
 		      // ensure the network of this change
@@ -591,14 +612,14 @@ namespace ns3
 	  Ptr<NNNAddress> produced3Nname = produce3NName ();
 
 	  // Add the new information into the Awaiting Response NNST type structure
-	  // Create a 5 second timeout
-	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, m_3n_lease_ack_timeout, m_standardMetric);
+	  // Create a 5 second timeout - must be in absolute simulator time
+	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, Simulator::Now () + m_3n_lease_ack_timeout, m_standardMetric);
 
 	  NS_LOG_INFO("We are in (" << myAddr << ") creating OEN PDU to send");
 	  // Create an OEN PDU to respond
 	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname);
 	  // Ensure that the lease time is set in the PDU
-	  oen_p->SetLeasetime(m_3n_lease_time);
+	  oen_p->SetLeasetime(Simulator::Now () + m_3n_lease_time);
 	  // Add the PoA names to the PDU
 	  oen_p->AddPoa(poaAddrs);
 
@@ -672,21 +693,24 @@ namespace ns3
 
       bool willUseName = false;
 
+      // The OEN PDU sends the lease expiry time in absolute simulator time
+      Time lease = oen_p->GetLeasetime();
+
       // Check if we have a 3N name
       if (Has3NName ())
 	{
 	  // As long as the name is not the same, we can use the name
 	  if (*GetNode3NNamePtr() != *obtainedName)
 	    {
-	      NS_LOG_INFO("Node had " << GetNode3NName () << " now taking (" << *obtainedName << ")");
-	      SetNode3NName(obtainedName, oen_p->GetLeasetime());
+	      NS_LOG_INFO("Node had " << GetNode3NName () << " now taking (" << *obtainedName << ") for " << lease);
+	      SetNode3NName(obtainedName, lease);
 	      willUseName = true;
 	    }
 	}
       else
 	{
-	  NS_LOG_INFO("Node has no name, taking (" << *obtainedName << ")");
-	  SetNode3NName(obtainedName, oen_p->GetLeasetime());
+	  NS_LOG_INFO("Node has no name, taking (" << *obtainedName << ") for " << lease);
+	  SetNode3NName(obtainedName, lease);
 	  willUseName = true;
 	}
 
@@ -696,7 +720,7 @@ namespace ns3
 	  NS_LOG_INFO("Pushing AEN with Node name (" << *obtainedName << ")");
 	  // Now create the AEN PDU to respond
 	  Ptr<AEN> aen_p = Create<AEN> (*obtainedName);
-	  // Ensure that the lease time is set right
+	  // Ensure that the lease time is set right (continues to be in absolute simulator time)
 	  aen_p->SetLeasetime(oen_p->GetLeasetime());
 	  // Add the PoAs to the response PDU
 	  aen_p->AddPoa(GetAllPoANames());

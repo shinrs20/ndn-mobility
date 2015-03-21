@@ -31,6 +31,8 @@
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 
+#include "../nnn-naming.h"
+
 namespace ns3
 {
   namespace ndn
@@ -109,6 +111,13 @@ namespace ns3
     class ForwardingStrategy : public Object
     {
     public:
+      struct PtrNNNComp
+      {
+	bool operator () (const Ptr<const NNNAddress> &lhs , const Ptr<const NNNAddress>  &rhs) const  {
+	  return *lhs < *rhs;
+	}
+      };
+
       static TypeId GetTypeId ();
 
       /**
@@ -659,6 +668,8 @@ namespace ns3
       Ptr<Pit> m_pit; ///< \brief Reference to PIT to which this forwarding strategy is associated
       Ptr<Fib> m_fib; ///< \brief Reference to FIB to which this forwarding strategy is associated
       Ptr<ndn::ContentStore> m_contentStore; ///< \brief Content store (for caching purposes only)
+
+      std::map <Ptr<const NNNAddress>, Time, PtrNNNComp> m_node_lease_times;
 
       bool m_cacheUnsolicitedDataFromApps;
       bool m_cacheUnsolicitedData;
