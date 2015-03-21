@@ -43,7 +43,7 @@ namespace ns3
     uint16_t
     NNNAddrAggregator::GetNumDestinations(Ptr<NNNAddress> sector)
     {
-      return m_sectorNum[*sector];
+      return m_sectorNum[sector];
     }
 
     uint16_t
@@ -158,7 +158,7 @@ namespace ns3
 
 	      m_totaldest++;
 	      m_totaladdr++;
-	      m_sectorNum[*sector] = 1;
+	      m_sectorNum[sector] = 1;
 	    }
 	  else
 	    {
@@ -170,7 +170,7 @@ namespace ns3
 		{
 		  result.first->payload()->AddAddress(lastlabel);
 		  m_totaladdr++;
-		  m_sectorNum[*sector]++;
+		  m_sectorNum[sector]++;
 		}
 	    }
 	}

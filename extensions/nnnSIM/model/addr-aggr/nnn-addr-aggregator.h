@@ -15,7 +15,6 @@
  *
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-addr-aggregator.h.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 #ifndef NNN_ADDR_AGGREGATOR_H_
 #define NNN_ADDR_AGGREGATOR_H_
@@ -28,6 +27,7 @@ namespace ns3
 {
   namespace nnn
   {
+
     class NNNAddrEntry : public Object
     {
     public:
@@ -175,6 +175,13 @@ namespace ns3
 	  nnnSIM::counting_policy_traits
       > super;
 
+      struct PtrNNNComp
+      {
+	bool operator () (const Ptr<NNNAddress> &lhs , const Ptr<NNNAddress>  &rhs) const  {
+	  return *lhs < *rhs;
+	}
+      };
+
       NNNAddrAggregator ();
       virtual
       ~NNNAddrAggregator ();
@@ -227,7 +234,7 @@ namespace ns3
     private:
       uint16_t m_totaladdr;
       uint16_t m_totaldest;
-      std::map<NNNAddress,uint16_t> m_sectorNum;
+      std::map<Ptr<NNNAddress>,uint16_t, PtrNNNComp> m_sectorNum;
     };
 
     std::ostream& operator<< (std::ostream& os, const NNNAddrAggregator &addraggr);
