@@ -55,12 +55,15 @@ namespace ns3
         {
 	  // We assume that the lease time gives us the absolute expiry time
 	  // We need to calculate the relative time for the Schedule function
-	  Time relativeExpireTime = lease_expire - Simulator::Now ();
-          container.insert(nnpt::Entry(oldName, newName, lease_expire));
+	  Time now = Simulator::Now ();
+	  Time relativeExpireTime = lease_expire - now;
+
+	  NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << *newName << ") at " << now);
 
           // If the relative expire time is above 0, we can save it
           if (relativeExpireTime.IsStrictlyPositive())
             {
+              container.insert(nnpt::Entry(oldName, newName, lease_expire));
               Simulator::Schedule(lease_expire, &NNPT::cleanExpired, this);
             }
         }
@@ -203,18 +206,18 @@ namespace ns3
       pair_set_by_oldname& pair_index = container.get<oldname> ();
       pair_set_by_oldname::iterator it = pair_index.find(oldName);
 
-      if (it != pair_index.end())
+      Time relativeExpireTime = lease_expire - Simulator::Now ();
+
+      // If the relative expire time is above 0, schedule the next clean
+      if (relativeExpireTime.IsStrictlyPositive())
 	{
-	  nnpt::Entry tmp = *it;
-
-	  tmp.m_lease_expire = lease_expire;
-
-	  if (pair_index.replace(it, tmp))
+	  if (it != pair_index.end())
 	    {
-	      Time relativeExpireTime = lease_expire - Simulator::Now ();
+	      nnpt::Entry tmp = *it;
 
-	      // If the relative expire time is above 0, schedule the next clean
-	      if (relativeExpireTime.IsStrictlyPositive())
+	      tmp.m_lease_expire = lease_expire;
+
+	      if (pair_index.replace(it, tmp))
 		{
 		  Simulator::Schedule(relativeExpireTime, &NNPT::cleanExpired, this);
 		}
