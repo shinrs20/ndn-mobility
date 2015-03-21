@@ -115,8 +115,8 @@ namespace ns3
       REN &
       operator = (const REN &other) { return *this; }
 
-      Time m_re_lease;          ///< @brief Packet Remaining lease time
-      Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address used in the packet
+      Time m_re_lease;          ///< @brief Lease absolute time for 3N name
+      Ptr<NNNAddress> m_name;   ///< @brief Destination 3N name used in the PDU
     };
 
     inline std::ostream &

@@ -117,7 +117,7 @@ namespace ns3
       operator = (const AEN &other) { return *this; }
 
     private:
-      Time m_lease;             ///< @brief Lease time for NNN Address
+      Time m_lease;             ///< @brief Lease absolute time for NNN Address
       Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address handed
 
     };
