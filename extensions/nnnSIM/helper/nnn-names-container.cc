@@ -59,7 +59,7 @@ namespace ns3
       NS_LOG_FUNCTION (this << name << lease_expire);
       container.insert(NamesContainerEntry(name, lease_expire));
 
-      Simulator::Schedule(lease_expire - Seconds(5), &NamesContainer::willAttemptRenew, this);
+      Simulator::Schedule(lease_expire - Seconds(10), &NamesContainer::willAttemptRenew, this);
       Simulator::Schedule(lease_expire, &NamesContainer::cleanExpired, this);
     }
 
@@ -228,7 +228,10 @@ namespace ns3
 
       // The container is actually empty, callback
       if (isEmpty ())
-	hasNoName ();
+	{
+	  if (!hasNoName.IsNull())
+	    hasNoName ();
+	}
     }
 
     void
@@ -251,7 +254,8 @@ namespace ns3
     {
       NS_LOG_FUNCTION (this);
       if (size () == 1)
-	renewName ();
+	if (!renewName.IsNull())
+	  renewName ();
     }
 
     void

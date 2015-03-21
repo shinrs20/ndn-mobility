@@ -303,6 +303,8 @@ int main (int argc, char *argv[])
   NS_LOG_INFO ("------ Installing primary 3N stack ------");
   // Stack for a Node that is given a node name
   nnn::NNNStackHelper primaryStack;
+  // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
+  primaryStack.SetForwardingStrategy("ns3::nnn::ForwardingStrategy", "3NLeasetime", "50s");
   // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
   primaryStack.SetContentStore("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
   // Set the FIB default routes
