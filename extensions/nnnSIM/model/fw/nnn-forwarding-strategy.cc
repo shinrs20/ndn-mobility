@@ -23,6 +23,8 @@
 // nnnSIM - 3N data
 #include "nnn-forwarding-strategy.h"
 
+#include <ns3-dev/ns3/nstime.h>
+
 #include "../pit/nnn-pit.h"
 #include "../pit/nnn-pit-entry.h"
 #include "../fib/nnn-fib.h"
@@ -434,12 +436,12 @@ namespace ns3
       if (m_produce3Nnames && Has3NName ())
 	{
 	  NNNAddress myAddr = GetNode3NName ();
-	  NS_LOG_INFO("We are in (" << myAddr << ") producing 3N name for new node");
+	  NS_LOG_INFO("OnEN : are in (" << myAddr << ") producing 3N name for new node");
 
 	  // Get the first Address from the EN PDU (this probably requires more tuning)
 	  Address destAddr = en_p->GetOnePoa(0);
 
-	  NS_LOG_INFO ("We are in (" << myAddr << "), will return OEN to " << destAddr);
+	  NS_LOG_INFO ("OnEN : are in (" << myAddr << "), will return OEN to " << destAddr);
 
 	  // Get all the PoA Address in the EN PDU to fill the NNST
 	  std::vector<Address> poaAddrs = en_p->GetPoas();
@@ -451,7 +453,7 @@ namespace ns3
 	  // Create a 5 second timeout - remember absolute time
 	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, Simulator::Now () + m_3n_lease_ack_timeout, m_standardMetric);
 
-	  NS_LOG_INFO("We are in (" << myAddr << ") creating OEN PDU to send");
+	  NS_LOG_INFO ("OnEN : are in (" << myAddr << ") creating OEN PDU to send");
 	  // Create an OEN PDU to respond
 	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname);
 	  // Ensure that the lease time is set in the PDU
@@ -463,6 +465,8 @@ namespace ns3
 
 	  // Send the create OEN PDU out the way it came
 	  face->SendOEN(oen_p, destAddr);
+
+	  NS_LOG_INFO ("OnEN : making a lease entry in (" << myAddr << ") for (" <<*produced3Nname << ") until " << absoluteLease);
 
 	  // Maintain the lease time given to the 3N name for further checking
 	  m_node_lease_times[oen_p->GetNamePtr()] = absoluteLease;
@@ -489,14 +493,14 @@ namespace ns3
 	  NNNAddress tmp = aen_p->GetName ();
 	  NNNAddress myAddr = GetNode3NName ();
 
-	  NS_LOG_INFO("We got an AEN on (" << myAddr << ") with (" << tmp << ")");
+	  NS_LOG_INFO("OnAEN : on (" << myAddr << ") obtained AEN for (" << tmp << ")");
 	  // Assure that the name in the AEN is under the delegated 3N name
 	  if (myAddr == tmp.getSectorName ())
 	    {
 	      // Check if we have this entry in the waiting list
 	      if (m_awaiting_response->FoundName(tmp))
 		{
-		  NS_LOG_INFO("We found the name (" << tmp << ") waiting for a response");
+		  NS_LOG_INFO("OnAEN : found the name (" << tmp << ") waiting for a response");
 		  // Get the list of PoAs in the AEN PDU
 		  std::vector<Address> receivedPoas = aen_p->GetPoas ();
 		  // Get the list of stored PoAs
@@ -515,29 +519,34 @@ namespace ns3
 		  // There has to be no differences
 		  if (diff.size () == 0)
 		    {
-		      NS_LOG_INFO("We found no differences in PoAs for (" << tmp << ")");
+		      NS_LOG_INFO("OnAEN : found no differences in PoAs for (" << tmp << ")");
 
 		      Time absoluteLeaseTime = aen_p->GetLeasetime();
 		      Time recordedLeaseTime = m_node_lease_times[newName];
 
+		      NS_LOG_INFO ("OnAEN : Checking discrepancies between recorded time " << recordedLeaseTime << " and obtained time " << absoluteLeaseTime << " in (" << myAddr << ") for (" << tmp << ")");
+
 		      // Check that the lease times coincide with what was recorded
-		      if (recordedLeaseTime != absoluteLeaseTime)
+		      // Remember that the Wire classes round to Time values to uint16_t so we
+		      // will not have the femtoseconds
+		      if (absoluteLeaseTime <= recordedLeaseTime)
 			{
-			  NS_LOG_INFO ("Found discrepancy between " << "recordedLeaseTime " << " and " << absoluteLeaseTime << " for (" << tmp << ")");
-			  return;
+			  // No issues
+			  NS_LOG_INFO ("OnAEN : Lease time checks out for (" << tmp << ")");
+			  m_node_lease_times.erase(newName);
 			}
 		      else
 			{
-			  // No issues
-			  NS_LOG_INFO ("Lease time checks out for (" << tmp << ")");
-			  m_node_lease_times.erase(newName);
+			  NS_LOG_INFO ("OnAEN : Found discrepancy between recorded time and obtained for (" << tmp << ")");
+			  return;
 			}
 
-		      NS_LOG_INFO("Adding NNST information for (" << tmp << ") until " << absoluteLeaseTime);
+		      NS_LOG_INFO("OnAEN : Adding NNST information for (" << tmp << ") until " << absoluteLeaseTime);
 
 		      // Add the new information to the NNST
 		      m_nnst->Add(newName, face, storedPoas, absoluteLeaseTime, m_standardMetric);
 
+		      NS_LOG_INFO("OnAEN : Adding lease information for (" << tmp << ") until " << absoluteLeaseTime);
 		      // Add the information the the leased NodeNameContainer
 		      m_leased_names->addEntry(newName, absoluteLeaseTime);
 
@@ -548,8 +557,8 @@ namespace ns3
 			  Ptr<NNNAddress> registeredOldName = Create<NNNAddress> (m_nnpt->findPairedOldName(newName));
 			  Ptr<NNNAddress> registeredNewName = Create<NNNAddress> (newName->getName());
 
-			  NS_LOG_INFO("We have had a reenrolling node in (" << tmp << ") used to go by (" << *registeredOldName << ") now uses (" << *registeredNewName << ")");
-			  NS_LOG_INFO("Attempting to flush buffer");
+			  NS_LOG_INFO("OnAEN : We have had a reenrolling node used to go by (" << *registeredOldName << ") now uses (" << *registeredNewName << ")");
+			  NS_LOG_INFO("OnAEN : Attempting to flush buffer");
 			  // If we happen to be in the same subsector, the buffer will have something
 			  // the check is good practice
 			  flushBuffer (registeredOldName, registeredNewName);
@@ -598,9 +607,9 @@ namespace ns3
 	  NNNAddress myAddr = GetNode3NName ();
 
 	  // Get the 3N name that the node was using
-	  Ptr<NNNAddress> reenroll = Create<NNNAddress> (ren_p->GetName ());
+	  Ptr<const NNNAddress> reenroll = ren_p->GetNamePtr();
 
-	  NS_LOG_INFO("We are in (" << myAddr << ") producing 3N name for reenrolling (" << *reenroll << ")");
+	  NS_LOG_INFO("OnREN : are in (" << myAddr << ") producing 3N name for reenrolling node (" << *reenroll << ")");
 
 	  // Get the first Address from the REN PDU
 	  Address destAddr = ren_p->GetOnePoa(0);
@@ -609,17 +618,19 @@ namespace ns3
 	  std::vector<Address> poaAddrs = ren_p->GetPoas ();
 
 	  // Produce a new 3N name
-	  Ptr<NNNAddress> produced3Nname = produce3NName ();
+	  Ptr<const NNNAddress> produced3Nname = produce3NName ();
 
 	  // Add the new information into the Awaiting Response NNST type structure
 	  // Create a 5 second timeout - must be in absolute simulator time
 	  m_awaiting_response->Add(produced3Nname, face, poaAddrs, Simulator::Now () + m_3n_lease_ack_timeout, m_standardMetric);
 
-	  NS_LOG_INFO("We are in (" << myAddr << ") creating OEN PDU to send");
+	  NS_LOG_INFO("OnREN : are in (" << myAddr << ") creating OEN PDU to send");
 	  // Create an OEN PDU to respond
-	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname);
+	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname->getName());
 	  // Ensure that the lease time is set in the PDU
-	  oen_p->SetLeasetime(Simulator::Now () + m_3n_lease_time);
+	  // We send the lease out in absolute simulator time
+	  Time absoluteLease = Simulator::Now () + m_3n_lease_time;
+	  oen_p->SetLeasetime(absoluteLease);
 	  // Add the PoA names to the PDU
 	  oen_p->AddPoa(poaAddrs);
 
@@ -628,11 +639,15 @@ namespace ns3
 
 	  m_outOENs (oen_p, face);
 
-	  NS_LOG_INFO("We are in (" << myAddr << ") creating an NNPT entry for (" << *reenroll << ") -> (" << *produced3Nname << ")");
 	  Time remaining = ren_p->GetRemainLease ();
+	  NS_LOG_INFO("OnREN : are in (" << myAddr << ") creating an NNPT entry for (" << *reenroll << ") -> (" << *produced3Nname << ") until " << remaining);
 
 	  // Regardless of the name, we need to update the NNPT
 	  m_nnpt->addEntry (reenroll, produced3Nname, remaining);
+
+	  NS_LOG_INFO ("OnREN : making a lease entry in (" << myAddr << ") for (" <<*produced3Nname << ") until " << absoluteLease);
+	  // Maintain the lease time given to the 3N name for further checking
+	  m_node_lease_times[oen_p->GetNamePtr()] = absoluteLease;
 	}
       else
 	{
@@ -688,13 +703,12 @@ namespace ns3
       m_inOENs (oen_p, face);
 
       Ptr<const NNNAddress> obtainedName = oen_p->GetNamePtr();
-
-      NS_LOG_INFO("Obtained OEN with (" << *obtainedName << ") with lease for " << oen_p->GetLeasetime());
-
-      bool willUseName = false;
-
       // The OEN PDU sends the lease expiry time in absolute simulator time
       Time lease = oen_p->GetLeasetime();
+
+      NS_LOG_INFO("OnOEN : obtained with (" << *obtainedName << ") with lease until " << lease);
+
+      bool willUseName = false;
 
       // Check if we have a 3N name
       if (Has3NName ())
@@ -702,14 +716,14 @@ namespace ns3
 	  // As long as the name is not the same, we can use the name
 	  if (*GetNode3NNamePtr() != *obtainedName)
 	    {
-	      NS_LOG_INFO("Node had " << GetNode3NName () << " now taking (" << *obtainedName << ") for " << lease);
+	      NS_LOG_INFO("OnOEN : Node had (" << GetNode3NName () << ") now taking (" << *obtainedName << ") until " << lease);
 	      SetNode3NName(obtainedName, lease);
 	      willUseName = true;
 	    }
 	}
       else
 	{
-	  NS_LOG_INFO("Node has no name, taking (" << *obtainedName << ") for " << lease);
+	  NS_LOG_INFO("OnOEN : Node has no name, taking (" << *obtainedName << ") until " << lease);
 	  SetNode3NName(obtainedName, lease);
 	  willUseName = true;
 	}
@@ -717,11 +731,11 @@ namespace ns3
       // If you start using the 3N name, execute the following
       if (willUseName)
 	{
-	  NS_LOG_INFO("Pushing AEN with Node name (" << *obtainedName << ")");
+	  NS_LOG_INFO("OnOEN : Pushing AEN with Node name (" << *obtainedName << ") with lease until " << lease);
 	  // Now create the AEN PDU to respond
 	  Ptr<AEN> aen_p = Create<AEN> (*obtainedName);
 	  // Ensure that the lease time is set right (continues to be in absolute simulator time)
-	  aen_p->SetLeasetime(oen_p->GetLeasetime());
+	  aen_p->SetLeasetime(lease);
 	  // Add the PoAs to the response PDU
 	  aen_p->AddPoa(GetAllPoANames());
 
@@ -732,7 +746,7 @@ namespace ns3
 	}
       else
 	{
-	  NS_LOG_INFO ("Will not be using (" << *obtainedName << ")");
+	  NS_LOG_INFO ("OnOEN : Will not be using (" << *obtainedName << ")");
 	}
     }
 
@@ -2159,6 +2173,8 @@ namespace ns3
     void
     ForwardingStrategy::NotifyNewAggregate ()
     {
+      NS_LOG_FUNCTION(this);
+
       if (m_nnpt == 0)
 	{
 	  m_nnpt = GetObject<NNPT> ();
@@ -2174,11 +2190,6 @@ namespace ns3
       if (m_fib == 0)
 	{
 	  m_fib = GetObject<Fib> ();
-	}
-
-      if (m_contentStore == 0)
-	{
-	  m_contentStore = GetObject<ndn::ContentStore> ();
 	}
 
       Object::NotifyNewAggregate ();
