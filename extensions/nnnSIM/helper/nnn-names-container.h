@@ -41,33 +41,38 @@ namespace ns3
 {
   namespace nnn
   {
-    struct address {};
-    struct lease {};
-
-    typedef multi_index_container<
-	NamesContainerEntry,
-	indexed_by<
-	    // sort by NamesContainer::operator<
-	    ordered_unique<
-	        tag<lease>,
-		identity<NamesContainerEntry>
-            >,
-
-            // sort by less<string> on NNNAddress
-	    ordered_unique<
-	        tag<address>,
-		member<NamesContainerEntry,Ptr<const NNNAddress>,&NamesContainerEntry::m_name>
-            >
-        >
-    > names_set;
-
-    typedef names_set::index<address>::type names_set_by_name;
-    typedef names_set::index<lease>::type names_set_by_lease;
-
     class NamesContainer : public Object
     {
-
     public:
+      struct PtrNNNComp
+      {
+	bool operator () (const Ptr<const NNNAddress> &lhs , const Ptr<const NNNAddress>  &rhs) const  {
+	  return *lhs < *rhs;
+	}
+      };
+
+      struct address {};
+      struct lease {};
+
+      typedef multi_index_container<
+	  NamesContainerEntry,
+	  indexed_by<// sort by NamesContainer::operator<
+	    ordered_unique<
+	      tag<lease>,
+	      identity<NamesContainerEntry>
+            >,
+
+            ordered_unique<
+              tag<address>,
+              member<NamesContainerEntry,Ptr<const NNNAddress>,&NamesContainerEntry::m_name>,
+              PtrNNNComp
+            >
+          >
+      > names_set;
+
+      typedef names_set::index<address>::type names_set_by_name;
+      typedef names_set::index<lease>::type names_set_by_lease;
+
       NamesContainer();
 
       virtual
