@@ -49,39 +49,45 @@ namespace ns3
       class Entry;
     }
 
-    struct oldname {};
-    struct newname {};
-    struct st_lease {};
-
-    typedef multi_index_container<
-	nnpt::Entry,
-	indexed_by<
-          ordered_unique<
-              tag<st_lease>,
-	      identity<nnpt::Entry>
-          >,
-
-          // sort by less<string> on NNNAddress
-          ordered_unique<
-              tag<oldname>,
-              member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_oldName>
-          >,
-
-          ordered_unique<
-              tag<newname>,
-              member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_newName>
-          >
-        >
-    > pair_set;
-
-    typedef pair_set::index<oldname>::type pair_set_by_oldname;
-    typedef pair_set::index<newname>::type pair_set_by_newname;
-    typedef pair_set::index<st_lease>::type pair_set_by_lease;
-
     class NNPT : public Object
     {
-
     public:
+      struct PtrNNNComp
+      {
+	bool operator () (const Ptr<const NNNAddress> &lhs , const Ptr<const NNNAddress>  &rhs) const  {
+	  return *lhs < *rhs;
+	}
+      };
+
+      struct oldname {};
+      struct newname {};
+      struct st_lease {};
+
+      typedef multi_index_container<
+      	nnpt::Entry,
+      	indexed_by<
+          ordered_unique<
+            tag<st_lease>,
+      	    identity<nnpt::Entry>
+          >,
+
+          ordered_unique<
+            tag<oldname>,
+            member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_oldName>
+          >,
+
+          ordered_unique<
+            tag<newname>,
+            member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_newName>,
+            PtrNNNComp
+          >
+        >
+      > pair_set;
+
+      typedef pair_set::index<oldname>::type pair_set_by_oldname;
+      typedef pair_set::index<newname>::type pair_set_by_newname;
+      typedef pair_set::index<st_lease>::type pair_set_by_lease;
+
       static TypeId GetTypeId ();
 
       NNPT();
@@ -141,6 +147,9 @@ namespace ns3
       cleanExpired ();
 
       void
+      Print (std::ostream &os) const;
+
+      void
       printByAddress ();
 
       void
@@ -148,6 +157,8 @@ namespace ns3
 
       pair_set container;
     };
+
+    std::ostream& operator<< (std::ostream& os, const NNPT &nnpt);
 
   } /* namespace nnn */
 } /* namespace ns3 */
