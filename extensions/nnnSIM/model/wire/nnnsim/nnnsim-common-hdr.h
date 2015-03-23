@@ -16,7 +16,6 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnnsim-common-hdr.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <ns3-dev/ns3/ptr.h>
 
 #include "nnnsim-common.h"

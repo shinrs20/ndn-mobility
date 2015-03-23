@@ -92,7 +92,7 @@ namespace wire {
     {
       size_t size =
 	  CommonGetSerializedSize() +                         /* Common header */
-	  2 +                                                 /* re Lease time */
+	  8 +                                                 /* re Lease time */
 	  NnnSim::SerializedSizeName (m_ptr->GetOldName ()) + /* Name size */
 	  NnnSim::SerializedSizeName (m_ptr->GetNewName ());  /* Name size */
       return size;
@@ -116,12 +116,14 @@ namespace wire {
       // Serialize the packet size
       start.WriteU16(GetSerializedSize());
 
-      NS_ASSERT_MSG (0 <= m_ptr->GetRemainLease ().ToInteger (Time::S) &&
-		     m_ptr->GetRemainLease ().ToInteger (Time::S) < 65535,
-		     "Incorrect Lease time (should not be smaller than 0 and larger than 65535");
+      uint64_t lease = static_cast<uint64_t> (m_ptr->GetRemainLease ().ToInteger (Time::S));
+
+      NS_ASSERT_MSG (0 <= lease &&
+		     lease < 0x7fffffffffffffffLL,
+		     "Incorrect Lease time (should not be smaller than 0 and larger than UINT64_MAX");
 
       // Round lease time to seconds and serialize
-      start.WriteU16 (static_cast<uint16_t> (m_ptr->GetRemainLease ().ToInteger (Time::S)));
+      start.WriteU64 (lease);
 
       // Serialize NNN address
       NnnSim::SerializeName(start, m_ptr->GetOldName());
@@ -151,8 +153,12 @@ namespace wire {
       // Move the iterator forward
       i.Next(skip);
 
+      uint64_t lease = i.ReadU64 ();
+
+      NS_LOG_INFO ("Deserialize -> = Lease time " << lease);
+
       // Read the PoA Type
-      m_ptr->SetRemainLease (Seconds (i.ReadU16 ()));
+      m_ptr->SetRemainLease (Seconds (lease));
 
       // Deserialize the old name
       m_ptr->SetOldName(NnnSim::DeserializeName(i));
