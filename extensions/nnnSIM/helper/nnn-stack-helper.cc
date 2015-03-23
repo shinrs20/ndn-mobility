@@ -254,9 +254,7 @@ namespace ns3
       // NS_ASSERT_MSG (m_forwarding, "SetForwardingHelper() should be set prior calling Install() method");
       Ptr<FaceContainer> faces = Create<FaceContainer> ();
 
-      Ptr<Object> node2 = DynamicCast<Object> (node);
-
-      if (node2->GetObject<L3Protocol> () != 0)
+      if (node->GetObject<L3Protocol> () != 0)
 	{
 	  NS_FATAL_ERROR ("NNNStackHelper::Install (): Installing "
 	      "a NnnStack to a node with an existing Nnn object");
@@ -278,14 +276,14 @@ namespace ns3
       // Create and aggregate NNST
       nnn->AggregateObject (m_nnstFactory.Create<NNST> ());
 
-      // Create and aggregate forwarding strategy
-      nnn->AggregateObject (m_nnnforwardingstrategyFactory.Create<ForwardingStrategy> ());
-
       // Create and aggregate content store
       nnn->AggregateObject (m_contentStoreFactory.Create<ndn::ContentStore> ());
 
+      // Create and aggregate forwarding strategy
+      nnn->AggregateObject (m_nnnforwardingstrategyFactory.Create<ForwardingStrategy> ());
+
       // Aggregate L3Protocol on node
-      node2->AggregateObject (nnn);
+      node->AggregateObject (nnn);
 
       for (uint32_t index=0; index < node->GetNDevices (); index++)
 	{
