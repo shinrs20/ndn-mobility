@@ -2058,6 +2058,7 @@ namespace ns3
       Address destAddr;
       NNNAddress newdst;
       Ptr<NNNAddress> newdstPtr;
+      Ptr<const NNNAddress> constdstPtr;
       Ptr<DO> do_o_spec;
       Ptr<DU> du_o_spec;
       bool nnptRedirect = false;
@@ -2067,25 +2068,28 @@ namespace ns3
 	{
 	  // First obtain the name
 	  if (wasDO)
-	    newdst = do_i->GetName ();
+	    {
+	      newdst = do_i->GetName ();
+	      constdstPtr = do_i->GetNamePtr();
+	    }
 	  else if (wasDU)
-	    newdst = du_i->GetDstName ();
+	    {
+	      newdst = du_i->GetDstName ();
+	      constdstPtr = du_i->GetDstNamePtr();
+	    }
 
-	  // Check if we are already at the destination
-	  if (newdst == GetNode3NName ())
+	  // Check if we are already at the destination (search through all the node names acquired)
+	  if (m_node_names->foundName(constdstPtr))
 	    {
 	      // We have reached the destination return
 	      return true;
 	    }
 
-	  // Need to update the NNNAddress Ptr to use the newdst
-	  newdstPtr = Create<NNNAddress> (newdst);
-
 	  // Check if the NNPT has any information for this particular 3N name
-	  if (m_nnpt->foundOldName(newdstPtr))
+	  if (m_nnpt->foundOldName(constdstPtr))
 	    {
 	      // Retrieve the new 3N name destination and update variable
-	      newdst = m_nnpt->findPairedNamePtr (newdstPtr)->getName ();
+	      newdst = m_nnpt->findPairedNamePtr (constdstPtr)->getName ();
 	      // Flag that the NNPT made a change
 	      nnptRedirect = true;
 	    }
