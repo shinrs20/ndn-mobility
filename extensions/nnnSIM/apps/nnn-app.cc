@@ -30,6 +30,7 @@
 #include "../model/nnn-app-face.h"
 #include "../model/nnn-l3-protocol.h"
 #include "../model/fw/nnn-forwarding-strategy.h"
+#include "../helper/nnn-header-helper.h"
 #include "../model/buffers/nnn-pdu-buffer-queue.h"
 
 //#include "ns3/ndn-fib.h"
@@ -186,12 +187,52 @@ namespace ns3
 
       // Flag the change
       m_has3Nname = true;
+
+      Ptr<SO> so_o;
+      Ptr<DO> do_o;
+      Ptr<DU> du_o;
+
+      // Proceed to flush the queue we have built
+      while (!m_app_pdu_buffer->isEmpty ())
+	{
+	  try
+	  {
+	      Ptr<Packet> pdu = m_app_pdu_buffer->pop();
+	      NNN_PDU_TYPE type = HeaderHelper::GetNNNHeaderType (pdu);
+	      switch (type)
+	      {
+		case nnn::SO_NNN:
+		  so_o = Wire::ToSO(pdu, Wire::WIRE_FORMAT_NNNSIM);
+		  m_face->SendSO (so_o);
+		  m_transmittedSOs (so_o, this, m_face);
+		  break;
+		case nnn::DO_NNN:
+		  do_o = Wire::ToDO (pdu, Wire::WIRE_FORMAT_NNNSIM);
+		  m_face->SendDO (do_o);
+		  m_transmittedDOs (do_o, this, m_face);
+		  break;
+		case nnn::DU_NNN:
+		  du_o = Wire::ToDU (pdu, Wire::WIRE_FORMAT_NNNSIM);
+		  m_face->SendDU (du_o);
+		  m_transmittedDUs (du_o, this, m_face);
+		  break;
+		default:
+		  NS_FATAL_ERROR ("Not supported NNN header");
+	      }
+	      // exception will be thrown if packet is not recognized
+	  }
+	  catch (UnknownHeaderException)
+	  {
+	      NS_FATAL_ERROR ("Unknown NNN header. Should not happen");
+	  }
+	}
     }
 
     void
     App::NamePending()
     {
-
+      // Flag the change
+      m_has3Nname = false;
     }
 
     // Application Methods
