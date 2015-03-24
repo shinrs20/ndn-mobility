@@ -27,7 +27,6 @@
 
 #include "../nnn-pdus.h"
 #include "../nnn-naming.h"
-#include "../nnn-nnnsim-wire.h"
 #include "../../utils/trie/trie.h"
 #include "../../utils/trie/counting-policy.h"
 #include "../../utils/trie/trie-with-policy.h"

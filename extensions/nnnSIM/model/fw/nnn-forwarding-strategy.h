@@ -155,7 +155,7 @@ namespace ns3
       GoesBy3NName (Ptr<NNNAddress> addr);
 
       virtual void
-      flushBuffer (Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName);
+      flushBuffer (Ptr<Face> face, Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName);
 
       /**
        * \brief Actual processing of incoming Nnn content objects
@@ -821,6 +821,10 @@ namespace ns3
 
       TracedCallback< Ptr<const pit::Entry> > m_satisfiedInterests;
       TracedCallback< Ptr<const pit::Entry> > m_timedOutInterests;
+
+      TracedCallback<> m_got3Nname;
+      TracedCallback<> m_waitObtainingName;
+
     private:
       // Number generator
       boost::random::mt19937_64 gen;

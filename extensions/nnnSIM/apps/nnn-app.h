@@ -48,6 +48,8 @@ namespace ns3
 
     class Face;
 
+    class PDUQueue;
+
     /**
      * \ingroup nnn
      * \defgroup nnn-apps NDN applications
@@ -111,6 +113,12 @@ namespace ns3
       virtual void
       OnNULLp (Ptr<const NULLp> nullpObject);
 
+      virtual void
+      GotName ();
+
+      virtual void
+      NamePending ();
+
     protected:
       /**
        * @brief Do cleanup when application is destroyed
@@ -168,6 +176,9 @@ namespace ns3
 
       TracedCallback<Ptr<const DU>,
       Ptr<App>, Ptr<Face> > m_transmittedDUs; ///< @brief App-level trace of transmitted DU
+
+      bool m_has3Nname; ///< @brief Flag to indicate that the underlying layer has a 3N name
+      Ptr<PDUQueue> m_app_pdu_buffer; ///< @brief Application level PDU buffer
     };
   } // namespace nnn
 } // namespace ns3

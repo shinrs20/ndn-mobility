@@ -30,6 +30,7 @@
 #include "../model/nnn-app-face.h"
 #include "../model/nnn-l3-protocol.h"
 #include "../model/fw/nnn-forwarding-strategy.h"
+#include "../model/buffers/nnn-pdu-buffer-queue.h"
 
 //#include "ns3/ndn-fib.h"
 
@@ -51,7 +52,7 @@ namespace ns3
 	.SetParent<Application> ()
 	.AddConstructor<App> ()
 	.AddAttribute ("3NLifetime", "LifeTime for 3N PDUs",
-		       StringValue ("2s"),
+		       StringValue ("3s"),
 		       MakeTimeAccessor (&App::m_3n_lifetime),
 		       MakeTimeChecker ())
 
@@ -98,8 +99,10 @@ namespace ns3
     }
 
     App::App ()
-    : m_active (false)
-    , m_face (0)
+    : m_face           (0)
+    , m_active         (false)
+    , m_has3Nname      (false)
+    , m_app_pdu_buffer (Create<PDUQueue> ())
     {
     }
 
@@ -176,6 +179,21 @@ namespace ns3
       m_receivedNULLps (nullpObject, this, m_face);
     }
 
+    void
+    App::GotName ()
+    {
+      // We know that the underlying ForwardingStrategy has a name
+
+      // Flag the change
+      m_has3Nname = true;
+    }
+
+    void
+    App::NamePending()
+    {
+
+    }
+
     // Application Methods
     void
     App::StartApplication () // Called at time specified by Start
@@ -196,6 +214,12 @@ namespace ns3
 
       // step 3. Enable face
       m_face->SetUp (true);
+
+      // Step 4. Obtain information about the name
+      Ptr<ForwardingStrategy> fw = GetNode ()->GetObject<ForwardingStrategy> ();
+
+      fw->TraceConnectWithoutContext("Got3NName", MakeCallback (&App::GotName, this));
+      fw->TraceConnectWithoutContext("Obtaining3NName", MakeCallback (&App::NamePending, this));
     }
 
     void

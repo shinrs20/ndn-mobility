@@ -382,8 +382,6 @@ namespace ns3
 	      NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
 	  }
 	}
-
-
     }
   } // namespace nnn
 } // namespace ns3

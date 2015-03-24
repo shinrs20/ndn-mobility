@@ -22,6 +22,7 @@
 
 #include <queue>
 
+#include "../nnn-nnnsim-wire.h"
 #include "../nnn-pdus.h"
 
 namespace ns3
@@ -47,6 +48,15 @@ namespace ns3
 
       void
       push (Ptr<Packet> pdu);
+
+      void
+      pushSO (Ptr<const SO> so_p);
+
+      void
+      pushDO (Ptr<const DO> do_p);
+
+      void
+      pushDU (Ptr<const DU> du_p);
 
       std::queue<Ptr<Packet> >
       popQueue ();

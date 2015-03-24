@@ -104,7 +104,7 @@ namespace ns3
 	  NS_LOG_INFO("PushPDU SO, found " << *addr << " inserting");
 	  Ptr<PDUQueue> tmp = item->payload();
 
-	  tmp->push(Wire::FromSO(so_p, Wire::WIRE_FORMAT_NNNSIM));
+	  tmp->pushSO(so_p);
 	}
     }
 
@@ -122,7 +122,7 @@ namespace ns3
 	  NS_LOG_INFO("PushPDU DO, found " << *addr << " inserting");
 	  Ptr<PDUQueue> tmp = item->payload();
 
-	  tmp->push(Wire::FromDO(do_p, Wire::WIRE_FORMAT_NNNSIM));
+	  tmp->pushDO(do_p);
 	}
     }
 
@@ -140,7 +140,7 @@ namespace ns3
 	  NS_LOG_INFO("PushPDU DU, found " << *addr << " inserting ToWire " << *du_p);
 	  Ptr<PDUQueue> tmp = item->payload();
 
-	  tmp->push(Wire::FromDU(du_p, Wire::WIRE_FORMAT_NNNSIM));
+	  tmp->pushDU(du_p);
 	}
     }
 

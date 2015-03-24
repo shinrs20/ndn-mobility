@@ -206,7 +206,7 @@ namespace ns3
 	                 MakeTimeChecker ())
 
 	  .AddAttribute ("3NLifetime", "LifeTime for 3N PDUs",
-	                 StringValue ("2s"),
+	                 StringValue ("3s"),
 	                 MakeTimeAccessor (&ForwardingStrategy::m_3n_lifetime),
 	                 MakeTimeChecker ())
 
@@ -214,6 +214,12 @@ namespace ns3
 	                 IntegerValue (6),
 	                 MakeIntegerAccessor (&ForwardingStrategy::m_standardMetric),
 	                 MakeIntegerChecker<int32_t>())
+
+	  .AddTraceSource ("Got3NName", "Traces when the forwarding strategy has a 3N name",
+			   MakeTraceSourceAccessor (&ForwardingStrategy::m_got3Nname))
+
+	  .AddTraceSource ("Obtaining3NName", "Traces when the forwarding strategy is waiting for a 3N name",
+			   MakeTraceSourceAccessor (&ForwardingStrategy::m_waitObtainingName))
 
 	  // Required for testing at this moment
 	  .AddConstructor <ForwardingStrategy> ()
@@ -329,7 +335,7 @@ namespace ns3
     }
 
     void
-    ForwardingStrategy::flushBuffer(Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName)
+    ForwardingStrategy::flushBuffer(Ptr<Face> face, Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName)
     {
       NS_LOG_FUNCTION (this << *oldName << " to " << *newName);
       if (m_node_pdu_buffer->DestinationExists(oldName))
@@ -363,10 +369,11 @@ namespace ns3
 		  // Change the SO 3N name to the new name
 		  so_o_orig->SetName(newName);
 
-		  //
-		  // I will have to define a particular routing method for SO PDUs
-		  // in this area.
-		  //
+		  NS_LOG_INFO ("flushBuffer : flushing SO using " << *newName);
+		  // The SO PDU is a little more complicated, so we pass it through
+		  // the normal OnSO flow, using the modified SO
+		  OnSO (face, so_o_orig);
+
 		  break;
 		case DO_NNN:
 		  // Convert the Packet back to a DO for manipulation
@@ -383,6 +390,7 @@ namespace ns3
 		  outFace = closestSector.first;
 		  destAddr = closestSector.second;
 
+		  NS_LOG_INFO ("flushBuffer : flushing DO using " << *newName);
 		  // Send the created DO PDU
 		  outFace->SendDO(do_o_orig, destAddr);
 		  // Log the DO sending
@@ -408,6 +416,7 @@ namespace ns3
 		  outFace = closestSector.first;
 		  destAddr = closestSector.second;
 
+		  NS_LOG_INFO ("flushBuffer : flushing DU using " << *newName);
 		  // Send the created DU PDU
 		  outFace->SendDU(du_o_orig, destAddr);
 		  // Log the DU sending
@@ -561,7 +570,7 @@ namespace ns3
 			  NS_LOG_INFO("OnAEN : Attempting to flush buffer");
 			  // If we happen to be in the same subsector, the buffer will have something
 			  // the check is good practice
-			  flushBuffer (registeredOldName, registeredNewName);
+			  flushBuffer (face, registeredOldName, registeredNewName);
 
 			  // Check if the Node was in our subsector
 			  if (! registeredOldName->isSubSector (myAddr))
@@ -767,7 +776,7 @@ namespace ns3
       Ptr<NNNAddress> newName = Create<NNNAddress> (inf_p->GetNewName ());
 
       // We have inserted the INF information. Now flush the relevant buffer
-      flushBuffer (oldName, newName);
+      flushBuffer (face, oldName, newName);
 
       if (myAddr != endSector)
 	{

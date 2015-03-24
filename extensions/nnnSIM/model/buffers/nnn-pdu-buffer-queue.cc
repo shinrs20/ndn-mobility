@@ -62,6 +62,24 @@ namespace ns3
       buffer.push (pdu);
     }
 
+    void
+    PDUQueue::pushSO (Ptr<const SO> so_p)
+    {
+      buffer.push(Wire::FromSO(so_p, Wire::WIRE_FORMAT_NNNSIM));
+    }
+
+    void
+    PDUQueue::pushDO (Ptr<const DO> do_p)
+    {
+      buffer.push(Wire::FromDO(do_p, Wire::WIRE_FORMAT_NNNSIM));
+    }
+
+    void
+    PDUQueue::pushDU (Ptr<const DU> du_p)
+    {
+      buffer.push(Wire::FromDU(du_p, Wire::WIRE_FORMAT_NNNSIM));
+    }
+
     std::queue<Ptr<Packet> >
     PDUQueue::popQueue ()
     {

@@ -72,7 +72,6 @@ namespace ns3
       RandomVariable      *m_random;
       std::string         m_randomType;
     };
-
   } // namespace nnn
 } // namespace ns3
 
