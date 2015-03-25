@@ -48,8 +48,6 @@ namespace ns3
 
     class Face;
 
-    class PDUQueue;
-
     /**
      * \ingroup nnn
      * \defgroup nnn-apps NDN applications
@@ -117,7 +115,7 @@ namespace ns3
       GotName ();
 
       virtual void
-      NamePending ();
+      NoName ();
 
     protected:
       /**
@@ -178,7 +176,7 @@ namespace ns3
       Ptr<App>, Ptr<Face> > m_transmittedDUs; ///< @brief App-level trace of transmitted DU
 
       bool m_has3Nname; ///< @brief Flag to indicate that the underlying layer has a 3N name
-      Ptr<PDUQueue> m_app_pdu_buffer; ///< @brief Application level PDU buffer
+      Ptr<const NNNAddress> current3Nname; ///< Keeps the current 3N name able to be used by the App
     };
   } // namespace nnn
 } // namespace ns3

@@ -823,7 +823,7 @@ namespace ns3
       TracedCallback< Ptr<const pit::Entry> > m_timedOutInterests;
 
       TracedCallback<> m_got3Nname;
-      TracedCallback<> m_waitObtainingName;
+      TracedCallback<> m_no3Nname;
 
     private:
       // Number generator

@@ -224,13 +224,12 @@ namespace ns3
 
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 
-		  if (m_useDU)
+		  if (m_useDU && m_has3Nname)
 		    {
 		      // We don't have all the information for a DU, so send a SO
 		      Ptr<SO> so_o = Create<SO> ();
 		      so_o->SetPDUPayloadType(pdutype);
-		      Ptr<NNNAddress> tmp = Create<NNNAddress> (GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NName ());
-		      so_o->SetName(tmp);
+		      so_o->SetName(*current3Nname);
 		      so_o->SetLifetime(m_3n_lifetime);
 
 		      m_face->ReceiveSO(so_o);
@@ -292,15 +291,13 @@ namespace ns3
 
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 
-		  if (m_useDU)
+		  if (m_useDU && m_has3Nname)
 		    {
 		      // We can use DU packets now
 		      Ptr<DU> du_o = Create<DU> ();
 		      du_o->SetPDUPayloadType(pdutype);
-		      Ptr<NNNAddress> tmp = Create<NNNAddress> (GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NName ());
-		      du_o->SetSrcName(tmp);
-		      Ptr<NNNAddress> tmp2 = Create<NNNAddress> (soObject->GetName());
-		      du_o->SetDstName(tmp2);
+		      du_o->SetSrcName(*current3Nname);
+		      du_o->SetDstName(soObject->GetName ());
 		      du_o->SetLifetime(m_3n_lifetime);
 
 		      m_face->ReceiveDU(du_o);
@@ -364,8 +361,11 @@ namespace ns3
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 
 		  Ptr<DU> du_o = Create<DU> ();
+		  if (m_has3Nname)
+		    du_o->SetSrcName(*current3Nname);
+		  else
+		    du_o->SetSrcName (duObject->GetDstName ());
 
-		  du_o->SetSrcName (duObject->GetDstName ());
 		  du_o->SetDstName (duObject->GetSrcName ());
 		  du_o->SetPDUPayloadType (pdutype);
 		  du_o->SetPayload (retPkt);

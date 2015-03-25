@@ -218,8 +218,8 @@ namespace ns3
 	  .AddTraceSource ("Got3NName", "Traces when the forwarding strategy has a 3N name",
 			   MakeTraceSourceAccessor (&ForwardingStrategy::m_got3Nname))
 
-	  .AddTraceSource ("Obtaining3NName", "Traces when the forwarding strategy is waiting for a 3N name",
-			   MakeTraceSourceAccessor (&ForwardingStrategy::m_waitObtainingName))
+	  .AddTraceSource ("No3NName", "Traces when the forwarding strategy is waiting for a 3N name",
+			   MakeTraceSourceAccessor (&ForwardingStrategy::m_no3Nname))
 
 	  // Required for testing at this moment
 	  .AddConstructor <ForwardingStrategy> ()
@@ -267,6 +267,8 @@ namespace ns3
 
       NS_LOG_INFO("Adding 3N name (" << *name << ") to node " << node->GetId());
       m_node_names->addEntry(name, lease);
+      // TracedCallback to let Apps know we have a name
+      m_got3Nname ();
     }
 
     const NNNAddress&
@@ -1158,6 +1160,9 @@ namespace ns3
       // Check whether this node has a 3N name
       if (!Has3NName ())
 	{
+	  // Temporary test - an enroll means we have no name, fire the traced callback
+	  m_no3Nname ();
+	  // Obtain all the node's PoA names
 	  std::vector<Address> poanames = GetAllPoANames ();
 	  bool ok = false;
 

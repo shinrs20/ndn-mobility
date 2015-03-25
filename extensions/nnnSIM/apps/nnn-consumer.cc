@@ -94,7 +94,7 @@ namespace ns3
     , m_seq (0)
     , m_seqMax (0) // don't request anything
     , m_useSO (false)
-    , m_possibleDestination (0)
+    , m_possibleDestination (Create<NNNAddress> ())
     {
       NS_LOG_FUNCTION_NOARGS ();
 
@@ -223,12 +223,12 @@ namespace ns3
       Ptr<Packet> retPkt = ndn::Wire::FromInterest(interest, ndn::Wire::WIRE_FORMAT_NDNSIM);
 
       // If not mobile, then we can send NULLp packets
-      if (m_useSO)
+      if (m_useSO && m_has3Nname)
 	{
 	  Ptr<SO> so_o = Create<SO> ();
 	  so_o->SetPDUPayloadType(NDN_NNN);
 	  so_o->SetPayload(retPkt);
-	  so_o->SetName(GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NName ());
+	  so_o->SetName(*current3Nname);
 	  so_o->SetLifetime(m_3n_lifetime);
 
 	  m_face->ReceiveSO(so_o);

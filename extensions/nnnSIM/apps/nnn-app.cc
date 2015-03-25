@@ -103,7 +103,7 @@ namespace ns3
     : m_face           (0)
     , m_active         (false)
     , m_has3Nname      (false)
-    , m_app_pdu_buffer (Create<PDUQueue> ())
+    , current3Nname    (Create<NNNAddress> ())
     {
     }
 
@@ -183,55 +183,23 @@ namespace ns3
     void
     App::GotName ()
     {
+      NS_LOG_FUNCTION (this);
       // We know that the underlying ForwardingStrategy has a name
 
       // Flag the change
       m_has3Nname = true;
 
-      Ptr<SO> so_o;
-      Ptr<DO> do_o;
-      Ptr<DU> du_o;
+      // Update the 3N name used by the application to create PDUs
+      current3Nname = GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NNamePtr();
 
-      // Proceed to flush the queue we have built
-      while (!m_app_pdu_buffer->isEmpty ())
-	{
-	  try
-	  {
-	      Ptr<Packet> pdu = m_app_pdu_buffer->pop();
-	      NNN_PDU_TYPE type = HeaderHelper::GetNNNHeaderType (pdu);
-	      switch (type)
-	      {
-		case nnn::SO_NNN:
-		  so_o = Wire::ToSO(pdu, Wire::WIRE_FORMAT_NNNSIM);
-		  m_face->SendSO (so_o);
-		  m_transmittedSOs (so_o, this, m_face);
-		  break;
-		case nnn::DO_NNN:
-		  do_o = Wire::ToDO (pdu, Wire::WIRE_FORMAT_NNNSIM);
-		  m_face->SendDO (do_o);
-		  m_transmittedDOs (do_o, this, m_face);
-		  break;
-		case nnn::DU_NNN:
-		  du_o = Wire::ToDU (pdu, Wire::WIRE_FORMAT_NNNSIM);
-		  m_face->SendDU (du_o);
-		  m_transmittedDUs (du_o, this, m_face);
-		  break;
-		default:
-		  NS_FATAL_ERROR ("Not supported NNN header");
-	      }
-	      // exception will be thrown if packet is not recognized
-	  }
-	  catch (UnknownHeaderException)
-	  {
-	      NS_FATAL_ERROR ("Unknown NNN header. Should not happen");
-	  }
-	}
+      NS_LOG_INFO ("App will now use 3N name " << *current3Nname << ")");
     }
 
     void
-    App::NamePending()
+    App::NoName ()
     {
-      // Flag the change
+      NS_LOG_FUNCTION (this);
+
       m_has3Nname = false;
     }
 
@@ -245,22 +213,22 @@ namespace ns3
       m_active = true;
 
       NS_ASSERT_MSG (GetNode ()->GetObject<L3Protocol> () != 0,
-		     "Nnn stack should be installed on the node " << GetNode ());
+		     "3N stack should be installed on the node " << GetNode ());
 
       // step 1. Create a face
       m_face = CreateObject<AppFace> (/*Ptr<App> (this)*/this);
 
-      // step 2. Add face to the Ndn stack
+      // step 2. Add face to the 3N stack
       GetNode ()->GetObject<L3Protocol> ()->AddFace (m_face);
 
       // step 3. Enable face
       m_face->SetUp (true);
 
-      // Step 4. Obtain information about the name
+      // Step 4. Obtain information about the underlying forwarding strategy
       Ptr<ForwardingStrategy> fw = GetNode ()->GetObject<ForwardingStrategy> ();
 
       fw->TraceConnectWithoutContext("Got3NName", MakeCallback (&App::GotName, this));
-      fw->TraceConnectWithoutContext("Obtaining3NName", MakeCallback (&App::NamePending, this));
+      fw->TraceConnectWithoutContext("No3NName", MakeCallback (&App::NoName, this));
     }
 
     void
