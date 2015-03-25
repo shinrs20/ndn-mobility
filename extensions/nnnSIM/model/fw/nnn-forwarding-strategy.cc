@@ -2209,6 +2209,10 @@ namespace ns3
 	{
 	  m_fib = GetObject<Fib> ();
 	}
+      if (m_contentStore == 0)
+	{
+	  m_contentStore = GetObject<ndn::ContentStore> ();
+	}
 
       Object::NotifyNewAggregate ();
     }
