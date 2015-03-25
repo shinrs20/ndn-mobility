@@ -164,6 +164,8 @@ namespace ns3
     Ptr<Packet>
     Producer::CreateReturnData (Ptr<ndn::Interest> interest)
     {
+      NS_LOG_FUNCTION (this << interest);
+
       Ptr<ndn::Data> data = Create<ndn::Data> (Create<Packet> (m_virtualPayloadSize));
       Ptr<ndn::Name> dataName = Create<ndn::Name> (interest->GetName ());
       dataName->append (m_postfix);
@@ -226,24 +228,26 @@ namespace ns3
 
 		  if (m_useDU && m_has3Nname)
 		    {
+		      NS_LOG_INFO ("Responding NULLp with SO");
 		      // We don't have all the information for a DU, so send a SO
 		      Ptr<SO> so_o = Create<SO> ();
-		      so_o->SetPDUPayloadType(pdutype);
-		      so_o->SetName(*current3Nname);
-		      so_o->SetLifetime(m_3n_lifetime);
+		      so_o->SetPDUPayloadType (pdutype);
+		      so_o->SetName (*current3Nname);
+		      so_o->SetLifetime (m_3n_lifetime);
 
-		      m_face->ReceiveSO(so_o);
+		      m_face->ReceiveSO (so_o);
 		      m_transmittedSOs (so_o, this, m_face);
 		    }
 		  else
 		    {
+		      NS_LOG_INFO ("Responding NULLp with NULLp");
 		      Ptr<NULLp> nullp_o = Create<NULLp> ();
 
 		      nullp_o->SetPDUPayloadType (pdutype);
 		      nullp_o->SetPayload (retPkt);
-		      nullp_o->SetLifetime(m_3n_lifetime);
+		      nullp_o->SetLifetime (m_3n_lifetime);
 
-		      m_face->ReceiveNULLp(nullp_o);
+		      m_face->ReceiveNULLp (nullp_o);
 		      m_transmittedNULLps (nullp_o, this, m_face);
 		    }
 		}
@@ -293,6 +297,7 @@ namespace ns3
 
 		  if (m_useDU && m_has3Nname)
 		    {
+		      NS_LOG_INFO ("Responding SO with DU");
 		      // We can use DU packets now
 		      Ptr<DU> du_o = Create<DU> ();
 		      du_o->SetPDUPayloadType(pdutype);
@@ -305,6 +310,7 @@ namespace ns3
 		    }
 		  else
 		    {
+		      NS_LOG_INFO ("Responding SO with DO");
 		      Ptr<DO> do_o = Create<DO> ();
 
 		      do_o->SetName (soObject->GetName ());
@@ -360,6 +366,7 @@ namespace ns3
 
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 
+		  NS_LOG_INFO ("Responding DU with DU");
 		  Ptr<DU> du_o = Create<DU> ();
 		  if (m_has3Nname)
 		    du_o->SetSrcName(*current3Nname);
