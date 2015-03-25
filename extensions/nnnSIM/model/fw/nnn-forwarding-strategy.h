@@ -441,7 +441,8 @@ namespace ns3
        * @see DetectRetransmittedInterest
        */
       virtual void
-      DidExhaustForwardingOptions (Ptr<Face> inFace,
+      DidExhaustForwardingOptions (Ptr<NNNPDU> pdu,
+                                   Ptr<Face> inFace,
                                    Ptr<const ndn::Interest> interest,
                                    Ptr<pit::Entry> pitEntry);
 

@@ -339,7 +339,7 @@ namespace ns3
     void
     ForwardingStrategy::flushBuffer(Ptr<Face> face, Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName)
     {
-      NS_LOG_FUNCTION (this << *oldName << " to " << *newName);
+      NS_LOG_FUNCTION (this << face->GetId () << *oldName << " to " << *newName);
       if (m_node_pdu_buffer->DestinationExists(oldName))
 	{
 	  // The actual queue
@@ -439,7 +439,7 @@ namespace ns3
     void
     ForwardingStrategy::OnEN (Ptr<Face> face, Ptr<EN> en_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inENs (en_p, face);
 
@@ -493,7 +493,7 @@ namespace ns3
     void
     ForwardingStrategy::OnAEN (Ptr<Face> face, Ptr<AEN> aen_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inAENs (aen_p, face);
 
@@ -608,7 +608,7 @@ namespace ns3
     void
     ForwardingStrategy::OnREN (Ptr<Face> face, Ptr<REN> ren_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inRENs (ren_p, face);
 
@@ -669,7 +669,7 @@ namespace ns3
     void
     ForwardingStrategy::OnDEN (Ptr<Face> face, Ptr<DEN> den_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inDENs (den_p, face);
 
@@ -709,7 +709,7 @@ namespace ns3
     void
     ForwardingStrategy::OnOEN (Ptr<Face> face, Ptr<OEN> oen_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inOENs (oen_p, face);
 
@@ -764,7 +764,7 @@ namespace ns3
     void
     ForwardingStrategy::OnINF (Ptr<Face> face, Ptr<INF> inf_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inINFs (inf_p, face);
 
@@ -800,7 +800,7 @@ namespace ns3
     void
     ForwardingStrategy::OnNULLp (Ptr<Face> face, Ptr<NULLp> null_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId () << face->GetFlags());
 
       m_inNULLps (null_p, face);
 
@@ -816,7 +816,7 @@ namespace ns3
     void
     ForwardingStrategy::OnSO (Ptr<Face> face, Ptr<SO> so_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inSOs (so_p, face);
 
@@ -842,7 +842,7 @@ namespace ns3
     void
     ForwardingStrategy::OnDO (Ptr<Face> face, Ptr<DO> do_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inDOs (do_p, face);
 
@@ -858,7 +858,7 @@ namespace ns3
     void
     ForwardingStrategy::OnDU (Ptr<Face> face, Ptr<DU> du_p)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inDUs (du_p, face);
 
@@ -884,7 +884,7 @@ namespace ns3
     void
     ForwardingStrategy::ProcessICNPDU (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<Packet> icn_pdu)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
       bool receivedInterest =false;
       bool receivedData = false;
       Ptr<ndn::Interest> interest;
@@ -972,7 +972,7 @@ namespace ns3
     void
     ForwardingStrategy::ProcessInterest (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<ndn::Interest> interest)
     {
-      NS_LOG_FUNCTION (face << interest->GetName ());
+      NS_LOG_FUNCTION (this << face->GetId () << interest->GetName ());
       // Log the Interest PDU
       m_inInterests (interest, face);
 
@@ -1057,7 +1057,7 @@ namespace ns3
     void
     ForwardingStrategy::ProcessData (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<ndn::Data> data)
     {
-      NS_LOG_FUNCTION (face << data->GetName ());
+      NS_LOG_FUNCTION (this << face->GetId () << data->GetName ());
       // Log the Data PDU
       m_inData (data, face);
 
@@ -1113,7 +1113,7 @@ namespace ns3
     void
     ForwardingStrategy::AddFace (Ptr<Face> face)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_faces->Add (face);
     }
@@ -1121,7 +1121,7 @@ namespace ns3
     void
     ForwardingStrategy::RemoveFace (Ptr<Face> face)
     {
-      NS_LOG_FUNCTION (this);
+      NS_LOG_FUNCTION (this << face->GetId ());
 
       m_faces->Remove (face);
     }
@@ -1368,14 +1368,61 @@ namespace ns3
     }
 
     void
-    ForwardingStrategy::DidExhaustForwardingOptions (Ptr<Face> inFace,
+    ForwardingStrategy::DidExhaustForwardingOptions (Ptr<NNNPDU> pdu,
+                                                     Ptr<Face> inFace,
                                                      Ptr<const ndn::Interest> interest,
                                                      Ptr<pit::Entry> pitEntry)
     {
       NS_LOG_FUNCTION (this << boost::cref (*inFace));
       if (pitEntry->AreAllOutgoingInVain ())
 	{
+	  // Pointers and flags for PDU types
+	  Ptr<NULLp> nullp_i;
+	  bool wasNULL = false;
+	  Ptr<SO> so_i;
+	  bool wasSO = false;
+	  Ptr<DO> do_i;
+	  bool wasDO = false;
+	  Ptr<DU> du_i;
+	  bool wasDU = false;
+
+	  uint32_t pduid = pdu->GetPacketId();
+	  switch(pduid)
+	  {
+	    case NULL_NNN:
+	      // Convert pointer to NULLp PDU
+	      nullp_i = DynamicCast<NULLp> (pdu);
+	      wasNULL = true;
+	      break;
+	    case SO_NNN:
+	      // Convert pointer to SO PDU
+	      so_i = DynamicCast<SO> (pdu);
+	      wasSO = true;
+	      break;
+	    case DO_NNN:
+	      // Convert pointer to DO PDU
+	      do_i = DynamicCast<DO> (pdu);
+	      wasDO = true;
+	      break;
+	    case DU_NNN:
+	      // Convert pointer to DU PDU
+	      du_i = DynamicCast<DU> (pdu);
+	      wasDU = true;
+	      break;
+	    default:
+	      break;
+	  }
+
 	  m_dropInterests (interest, inFace);
+
+	  if (wasNULL)
+	    m_dropNULLps (nullp_i, inFace);
+	  else if (wasSO)
+	    m_dropSOs (so_i, inFace);
+	  else if (wasDO)
+	    m_dropDOs (do_i, inFace);
+	  else if (wasDU)
+	    m_dropDUs (du_i, inFace);
 
 	  // All incoming interests cannot be satisfied. Remove them
 	  pitEntry->ClearIncoming ();
@@ -1439,6 +1486,8 @@ namespace ns3
       if (inFace != 0)
 	pitEntry->RemoveIncoming (inFace);
 
+      NS_LOG_INFO ("Satisfying pending Interests for " << data->GetName());
+
       // Convert the Data PDU into a NS-3 Packet
       Ptr<Packet> icn_pdu = ndn::Wire::FromData (data);
 
@@ -1459,21 +1508,25 @@ namespace ns3
 	  // Convert pointer to NULLp PDU
 	  nullp_i = DynamicCast<NULLp> (pdu);
 	  wasNULL = true;
+	  NS_LOG_INFO ("Received a NULLp");
 	  break;
 	case SO_NNN:
 	  // Convert pointer to SO PDU
 	  so_i = DynamicCast<SO> (pdu);
 	  wasSO = true;
+	  NS_LOG_INFO ("Received a SO");
 	  break;
 	case DO_NNN:
 	  // Convert pointer to DO PDU
 	  do_i = DynamicCast<DO> (pdu);
 	  wasDO = true;
+	  NS_LOG_INFO ("Received a DO");
 	  break;
 	case DU_NNN:
 	  // Convert pointer to DU PDU
 	  du_i = DynamicCast<DU> (pdu);
 	  wasDU = true;
+	  NS_LOG_INFO ("Received a DU");
 	  break;
 	default:
 	  break;
@@ -1485,10 +1538,15 @@ namespace ns3
 	bool ok = false;
 	bool sentSomething = false;
 
+	NS_LOG_INFO ("Satisfying for Face " << incoming.m_face->GetId() << " of type " << incoming.m_face->GetFlags());
+
+	/////////////////////////////////////////////////////////////////////////////////////////
 	// Obtain the distinct 3N names associated to this Face and go through them
 	std::vector<Ptr<NNNAddress> > distinct = incoming.m_addrs->GetDistinctDestinations ();
 	BOOST_FOREACH (Ptr<NNNAddress> j, distinct)
 	{
+	  NS_LOG_INFO ("Satisfying for 3N subsector " << *j);
+
 	  bool subSector = (*j == GetNode3NName ());
 	  // Obtain all the 3N names aggregated in this sector
 	  std::vector<Ptr<NNNAddress> > addrs = incoming.m_addrs->GetCompleteDestinations (j);
@@ -1500,6 +1558,7 @@ namespace ns3
 	      // Obtain all the 3N names associated to this Face and Sector and go through them
 	      BOOST_FOREACH (Ptr<NNNAddress> i, addrs)
 		  {
+
 		NNNAddress newdst;
 
 		// Check if the NNPT has any information for this particular 3N name
@@ -1521,6 +1580,7 @@ namespace ns3
 
 		if (wasNULL || wasSO || wasDO)
 		  {
+		    NS_LOG_INFO ("Satisfying for 3N name " << *i << "using DO");
 		    // Since we don't have more information about this 3N name, create a DO to push the
 		    // Data to a new location
 		    Ptr<DO> do_o_spec = Create<DO> ();
@@ -1559,6 +1619,7 @@ namespace ns3
 		  }
 		else if (wasDU)
 		  {
+		    NS_LOG_INFO ("Satisfying for 3N name " << *i << "using DU");
 		    // We know that the Data was brought by a DU PDU, meaning we know the origin
 		    // Create a new DU PDU to send the data
 		    Ptr<DU> du_o_spec = Create<DU> ();
@@ -1629,6 +1690,7 @@ namespace ns3
 		    }
 		}
 	    }
+	  // If we are not dealing with a subsector, the process is a little different
 	  else
 	    {
 	      // In this case, we are not dealing with a subsector
@@ -1762,6 +1824,8 @@ namespace ns3
 		  }
 	    }
 	}
+	// This ends the search via 3N names
+	/////////////////////////////////////////////////////////////////////////////////////////
       }
 
       // All incoming interests are satisfied. Remove them
@@ -1929,9 +1993,9 @@ namespace ns3
 
       // Depending on the PDU type, send
       if (wasNULL)
-	successSend = outFace->SendNULLp(nullp_i);
+	successSend = outFace->SendNULLp (nullp_i);
       else if (wasSO)
-	successSend = outFace->SendSO(so_i);
+	successSend = outFace->SendSO (so_i);
       else if (wasDO)
 	successSend = outFace->SendDO (do_i, addr);
       else if (wasDU)
@@ -2015,7 +2079,7 @@ namespace ns3
       // ForwardingStrategy failed to find it.
       if (!propagated && pitEntry->AreAllOutgoingInVain ())
 	{
-	  DidExhaustForwardingOptions (inFace, interest, pitEntry);
+	  DidExhaustForwardingOptions (pdu, inFace, interest, pitEntry);
 	}
     }
 
@@ -2083,11 +2147,13 @@ namespace ns3
 	  // First obtain the name
 	  if (wasDO)
 	    {
+	      NS_LOG_INFO ("DoPropagateInterest : was DO");
 	      newdst = do_i->GetName ();
 	      constdstPtr = do_i->GetNamePtr();
 	    }
 	  else if (wasDU)
 	    {
+	      NS_LOG_INFO ("DoPropagateInterest : was DU");
 	      newdst = du_i->GetDstName ();
 	      constdstPtr = du_i->GetDstNamePtr();
 	    }
@@ -2168,6 +2234,8 @@ namespace ns3
       // For everything else, propagate like always
       else
 	{
+	  NS_LOG_INFO ("DoPropagateInterest : Propagating SO or NULLp");
+
 	  // Here we pick the next place to forward to using the ICN strategy
 	  BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())
 	      {
@@ -2181,7 +2249,27 @@ namespace ns3
 		continue;
 	      }
 
+	    propagatedCount++;
 	    break; // propagate only one interest
+	    }
+
+	  // If filtering the Yellow and Red Faces, didn't let us send anything out, attempt the
+	  // using the Yellow Faces.
+	  if (!(propagatedCount > 0))
+	    {
+	      BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())
+	      {
+		NS_LOG_DEBUG ("Trying " << boost::cref(metricFace));
+		if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED) // all non-read faces are in the front of the list
+		  break;
+
+		if (!TrySendOutInterest (pdu, inFace, metricFace.GetFace (), Address(), interest, pitEntry))
+		  {
+		    continue;
+		  }
+
+		propagatedCount++;
+	      }
 	    }
 	}
 
