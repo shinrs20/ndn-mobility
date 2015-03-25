@@ -77,6 +77,9 @@ namespace ns3
       SendData (Ptr<const ndn::Data> data);
 
       virtual bool
+      SendNULLp (Ptr<const NULLp> nullpObject);
+
+      virtual bool
       SendSO (Ptr<const SO> soObject);
 
       virtual bool

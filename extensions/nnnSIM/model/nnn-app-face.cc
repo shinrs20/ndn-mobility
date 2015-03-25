@@ -130,6 +130,20 @@ namespace ns3
     }
 
     bool
+    AppFace::SendNULLp (Ptr<const NULLp> nullpObject)
+    {
+      NS_LOG_FUNCTION (this << nullpObject);
+
+      if (!IsUp ())
+	{
+	  return false;
+	}
+
+      m_app->OnNULLp (nullpObject);
+      return true;
+    }
+
+    bool
     AppFace::SendDO (Ptr<const DO> doObject)
     {
       NS_LOG_FUNCTION (this << doObject);
