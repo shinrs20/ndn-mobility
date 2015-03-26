@@ -131,7 +131,7 @@ namespace ns3
       Entry::in_iterator
       Entry::AddIncoming(Ptr<Face> face, Ptr<const NNNAddress> addr)
       {
-	std::pair<in_iterator, bool> ret = m_incoming.insert (IncomingFace(face));
+	std::pair<in_iterator, bool> ret = m_incoming.insert (IncomingFace(face, addr));
 
 	if (!ret.second)
 	  { // Incoming face already exists

@@ -23,22 +23,30 @@
 // nnnSIM - 3N data
 #include "nnn-forwarding-strategy.h"
 
-#include <ns3-dev/ns3/nstime.h>
+#include "../nnn-face.h"
+#include "../nnn-naming.h"
+
+#include "../nnn-pdus.h"
+#include "../nnn-nnnsim-wire.h"
 
 #include "../pit/nnn-pit.h"
 #include "../pit/nnn-pit-entry.h"
+#include "../pit/nnn-pit-entry-incoming-face.h"
+#include "../pit/nnn-pit-entry-outgoing-face.h"
 #include "../fib/nnn-fib.h"
-#include "../nnn-face.h"
-#include "../nnn-pdus.h"
+
 #include "../nnst/nnn-nnst.h"
 #include "../nnst/nnn-nnst-entry.h"
 #include "../nnst/nnn-nnst-entry-facemetric.h"
 #include "../nnpt/nnn-nnpt.h"
+
 #include "../../helper/nnn-names-container.h"
 #include "../../helper/nnn-face-container.h"
 #include "../buffers/nnn-pdu-buffer.h"
 #include "../addr-aggr/nnn-addr-aggregator.h"
 #include "../../helper/nnn-header-helper.h"
+
+#include "../../helper/nnn-face-container.h"
 
 // ndnSIM - NDN data
 #include <ns3-dev/ns3/name.h>
@@ -54,15 +62,30 @@
 #include <boost/lambda/bind.hpp>
 #include <boost/tuple/tuple.hpp>
 
-#include <algorithm>
 #include <ns3-dev/ns3/assert.h>
 #include <ns3-dev/ns3/boolean.h>
 #include <ns3-dev/ns3/integer.h>
 #include <ns3-dev/ns3/log.h>
+#include <ns3-dev/ns3/node.h>
+#include <ns3-dev/ns3/object-base.h>
 #include <ns3-dev/ns3/ptr.h>
-
 #include <ns3-dev/ns3/simulator.h>
 #include <ns3-dev/ns3/string.h>
+#include <ns3-dev/ns3/type-id.h>
+#include <ns3-dev/ns3/trace-source-accessor.h>
+#include <ns3-dev/ns3/nstime.h>
+
+#include <sys/types.h>
+#include <unistd.h>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <map>
+#include <queue>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ll = boost::lambda;
 
@@ -2061,7 +2084,37 @@ namespace ns3
       bool isRetransmitted = m_detectRetransmissions && // a small guard
 	  DetectRetransmittedInterest (inFace, interest, pitEntry);
 
+      // Update the PIT information with the PDU information
+
+      // Add the Incoming face as normal
       pitEntry->AddIncoming (inFace/*, interest->GetInterestLifetime ()*/);
+      // Pointers and flags for PDU types
+      Ptr<SO> so_i;
+      Ptr<DU> du_i;
+
+      uint32_t pduid = pdu->GetPacketId();
+      switch(pduid)
+      {
+	case NULL_NNN:
+	  // Flag the PIT to know that we had a NULLp
+	  pitEntry->SetReceivedNULLPDU(true);
+	  break;
+	case SO_NNN:
+	  // Convert pointer to SO PDU
+	  so_i = DynamicCast<SO> (pdu);
+	  // Add the 3N name in the SO
+	  pitEntry->AddIncoming(inFace, so_i->GetNamePtr());
+	  break;
+	case DU_NNN:
+	  // Convert pointer to DU PDU
+	  du_i = DynamicCast<DU> (pdu);
+	  // Add the 3N name in the DU
+	  pitEntry->AddIncoming(inFace, du_i->GetSrcNamePtr());
+	  break;
+	default:
+	  break;
+      }
+
       /// @todo Make lifetime per incoming interface
       pitEntry->UpdateLifetime (interest->GetInterestLifetime ());
 
