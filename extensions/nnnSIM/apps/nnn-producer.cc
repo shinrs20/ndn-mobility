@@ -204,6 +204,8 @@ namespace ns3
       Ptr<Packet> packet = nullpObject->GetPayload ()->Copy ();
       uint16_t pdutype = nullpObject->GetPDUPayloadType ();
 
+      NS_LOG_INFO (this << " obtained pdu type " << pdutype);
+
       if (pdutype == NDN_NNN)
 	{
 	  try
@@ -272,6 +274,8 @@ namespace ns3
 
       Ptr<Packet> packet = soObject->GetPayload ()->Copy ();
       uint16_t pdutype = soObject->GetPDUPayloadType ();
+
+      NS_LOG_INFO (this << " obtained pdu type " << pdutype);
 
       if (pdutype == NDN_NNN)
 	{
@@ -343,6 +347,8 @@ namespace ns3
 
       Ptr<Packet> packet = duObject->GetPayload ()->Copy ();
       uint16_t pdutype = duObject->GetPDUPayloadType ();
+
+      NS_LOG_INFO (this << " obtained pdu type " << pdutype);
 
       if (pdutype == NDN_NNN)
 	{

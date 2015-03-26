@@ -1581,7 +1581,7 @@ namespace ns3
 		// Configure payload for PDU
 		null_p_o->SetPayload (icn_pdu);
 		// Signal that the PDU had an ICN PDU as payload
-		null_p_o->SetPDUPayloadType (NNN_NNN);
+		null_p_o->SetPDUPayloadType (NDN_NNN);
 
 		// Send out the NULL PDU
 		ok = incoming.m_face->SendNULLp (null_p_o);
@@ -1651,7 +1651,7 @@ namespace ns3
 			// Configure payload for PDU
 			do_o_spec->SetPayload (icn_pdu);
 			// Signal that the PDU had an ICN PDU as payload
-			do_o_spec->SetPDUPayloadType (NNN_NNN);
+			do_o_spec->SetPDUPayloadType (NDN_NNN);
 
 			// Send the DO PDU out the selected Face
 			ok = outFace->SendDO (do_o_spec, destAddr);
@@ -1692,7 +1692,7 @@ namespace ns3
 			// Configure payload for PDU
 			du_o_spec->SetPayload (icn_pdu);
 			// Signal that the PDU had an ICN PDU as payload
-			du_o_spec->SetPDUPayloadType (NNN_NNN);
+			du_o_spec->SetPDUPayloadType (NDN_NNN);
 
 			// Send the DU PDU out the selected Face
 			ok = outFace->SendDU (du_o_spec, destAddr);
@@ -1755,7 +1755,7 @@ namespace ns3
 			    // Configure payload for PDU
 			    do_o_spec->SetPayload (icn_pdu);
 			    // Signal that the PDU had an ICN PDU as payload
-			    do_o_spec->SetPDUPayloadType (NNN_NNN);
+			    do_o_spec->SetPDUPayloadType (NDN_NNN);
 
 			    // Send the DO PDU out the selected Face
 			    ok = outFace->SendDO (do_o_spec, destAddr);
@@ -1796,7 +1796,7 @@ namespace ns3
 			    // Configure payload for PDU
 			    du_o_spec->SetPayload (icn_pdu);
 			    // Signal that the PDU had an ICN PDU as payload
-			    du_o_spec->SetPDUPayloadType (NNN_NNN);
+			    du_o_spec->SetPDUPayloadType (NDN_NNN);
 
 			    // Send the DU PDU out the selected Face
 			    ok = outFace->SendDU (du_o_spec, destAddr);
@@ -1835,7 +1835,7 @@ namespace ns3
 		  // Configure payload for PDU
 		  null_p_o->SetPayload (icn_pdu);
 		  // Signal that the PDU had an ICN PDU as payload
-		  null_p_o->SetPDUPayloadType (NNN_NNN);
+		  null_p_o->SetPDUPayloadType (NDN_NNN);
 
 		  // Send out the NULL PDU
 		  ok = incoming.m_face->SendNULLp (null_p_o);
