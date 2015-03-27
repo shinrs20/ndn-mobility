@@ -209,8 +209,7 @@ namespace ns3
       interest->SetName                (nameWithSequence);
       interest->SetInterestLifetime    (m_interestLifeTime);
 
-      // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
-      NS_LOG_INFO ("> Interest for " << seq);
+
 
       WillSendOutInterest (seq);
 
@@ -225,6 +224,7 @@ namespace ns3
       // If not mobile, then we can send NULLp packets
       if (m_useSO && m_has3Nname)
 	{
+	  NS_LOG_INFO ("> Interest for " << seq << " using SO PDU");
 	  Ptr<SO> so_o = Create<SO> ();
 	  so_o->SetPDUPayloadType(NDN_NNN);
 	  so_o->SetPayload(retPkt);
@@ -236,6 +236,7 @@ namespace ns3
 	}
       else
 	{
+	  NS_LOG_INFO ("> Interest for " << seq << " using NULLp PDU");
 	  Ptr<NULLp> nullp_o = Create<NULLp> ();
 
 	  nullp_o->SetPDUPayloadType (NDN_NNN);

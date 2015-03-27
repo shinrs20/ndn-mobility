@@ -839,7 +839,7 @@ namespace ns3
     void
     ForwardingStrategy::OnSO (Ptr<Face> face, Ptr<SO> so_p)
     {
-      NS_LOG_FUNCTION (this << face->GetId ());
+      NS_LOG_FUNCTION (this << face->GetId () << face->GetFlags());
 
       m_inSOs (so_p, face);
 
@@ -865,7 +865,7 @@ namespace ns3
     void
     ForwardingStrategy::OnDO (Ptr<Face> face, Ptr<DO> do_p)
     {
-      NS_LOG_FUNCTION (this << face->GetId ());
+      NS_LOG_FUNCTION (this << face->GetId () << face->GetFlags());
 
       m_inDOs (do_p, face);
 
@@ -881,7 +881,7 @@ namespace ns3
     void
     ForwardingStrategy::OnDU (Ptr<Face> face, Ptr<DU> du_p)
     {
-      NS_LOG_FUNCTION (this << face->GetId ());
+      NS_LOG_FUNCTION (this << face->GetId () << face->GetFlags());
 
       m_inDUs (du_p, face);
 
@@ -1561,7 +1561,7 @@ namespace ns3
 	bool ok = false;
 	bool sentSomething = false;
 
-	NS_LOG_INFO ("Satisfying for Face " << incoming.m_face->GetId() << " of type " << incoming.m_face->GetFlags());
+	NS_LOG_INFO ("Satisfying for Face " << incoming.m_face->GetId() << " of type " << incoming.m_face->GetFlags() << " at (" << GetNode3NName () << ")");
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// Obtain the distinct 3N names associated to this Face and go through them
@@ -1604,23 +1604,78 @@ namespace ns3
 	else
 	  {
 	    NS_LOG_INFO ("Our PIT has 3N names aggregated");
+
 	    // There is at least one 3N name in this list - go through the code
 	    BOOST_FOREACH (Ptr<NNNAddress> j, distinct)
 	    {
-	      NS_LOG_INFO ("Satisfying for 3N subsector " << *j);
-
-	      bool subSector = (*j == GetNode3NName ());
+	      bool subSector = m_node_names->foundName(j);
+	      NNNAddress newdst;
 	      // Obtain all the 3N names aggregated in this sector
 	      std::vector<Ptr<NNNAddress> > addrs = incoming.m_addrs->GetCompleteDestinations (j);
 
-	      // If the aggregation is the same as the 3N Name the node is using, then
-	      // everything aggregated is probably connected to it
-	      if (subSector)
-		{
-		  // Obtain all the 3N names associated to this Face and Sector and go through them
-		  BOOST_FOREACH (Ptr<NNNAddress> i, addrs)
+	      BOOST_FOREACH (Ptr<NNNAddress> i, addrs)
+	      {
+		// First check to see if we happen to be the destination
+		if (m_node_names->foundName(i))
 		  {
-		    NNNAddress newdst;
+		    NS_LOG_INFO ("We are the desired 3N named node destination");
+		    // This also happens to mean that we satisfying an Application - do not know if
+		    // this holds in future references
+		    if (wasNULL)
+		      {
+			ok = incoming.m_face->SendNULLp (nullp_i);
+			// Log that a DO PDU was sent
+			m_outNULLps (nullp_i, incoming.m_face);
+		      }
+		    else if (wasSO)
+		      {
+			ok = incoming.m_face->SendSO (so_i);
+			// Log that a DO PDU was sent
+			m_outSOs (so_i, incoming.m_face);
+		      }
+		    else if (wasDO)
+		      {
+			ok = incoming.m_face->SendDO (do_i);
+			// Log that a DO PDU was sent
+			m_outDOs (do_i, incoming.m_face);
+		      }
+		    else if (wasDU)
+		      {
+			ok = incoming.m_face->SendDU (du_i);
+			// Log that a DO PDU was sent
+			m_outDUs (du_i, incoming.m_face);
+		      }
+
+		    // Log that a Data PDU was sent
+		    DidSendOutData (inFace, incoming.m_face, data, pitEntry);
+
+		    // Something caused an error
+		    if (!ok)
+		      {
+			// Log Data drops
+			m_dropData (data, incoming.m_face);
+			// Log the type of 3N Data transfer PDU that was dropped
+			if (wasNULL)
+			  m_dropNULLps (nullp_i, incoming.m_face);
+			else if (wasSO)
+			  m_dropSOs (so_i, incoming.m_face);
+			else if (wasDO)
+			  m_dropDOs (do_i, incoming.m_face);
+			else if (wasDU)
+			  m_dropDUs (du_i, incoming.m_face);
+
+			NS_LOG_DEBUG ("Cannot satisfy data to " << *i << " via "<< *incoming.m_face);
+		      }
+
+		    sentSomething = true;
+		  }
+
+		// If the aggregation is the same as the 3N Name the node is using, then
+		// everything aggregated is probably connected to it
+		if (subSector)
+		  {
+		    NS_LOG_INFO ("We are satisfying Interests to nodes that are directly connected to us");
+
 		    // Check if the NNPT has any information for this particular 3N name
 		    if (m_nnpt->foundOldName (i))
 		      {
@@ -1640,7 +1695,7 @@ namespace ns3
 
 		    if (wasNULL || wasSO || wasDO)
 		      {
-			NS_LOG_INFO ("Satisfying for 3N name " << *i << "using DO in subsector");
+			NS_LOG_INFO ("Satisfying for 3N name " << *i << " using DO in subsector");
 			// Since we don't have more information about this 3N name, create a DO to push the
 			// Data to a new location
 			Ptr<DO> do_o_spec = Create<DO> ();
@@ -1679,7 +1734,7 @@ namespace ns3
 		      }
 		    else if (wasDU)
 		      {
-			NS_LOG_INFO ("Satisfying for 3N name " << *i << "using DU in subsector");
+			NS_LOG_INFO ("Satisfying for 3N name " << *i << " using DU in subsector");
 			// We know that the Data was brought by a DU PDU, meaning we know the origin
 			// Create a new DU PDU to send the data
 			Ptr<DU> du_o_spec = Create<DU> ();
@@ -1719,15 +1774,10 @@ namespace ns3
 			  }
 		      }
 		  }
-		}
-	      // If we are not dealing with a subsector, the process is a little different
-	      else
-		{
-		  // In this case, we are not dealing with a subsector
-		  // Obtain all the 3N names associated to this Face and Sector and go through them
-		  BOOST_FOREACH(Ptr<NNNAddress> i, addrs)
+
+		if (!subSector && !sentSomething)
 		  {
-		    NNNAddress newdst;
+		    NS_LOG_INFO ("Satisfying for 3N names in different subsector (" << *j << "), destination: (" << *i << ")");
 
 		    // Only push a new PDU if the 3N name has changed
 		    // Check if the NNPT has any information for this particular 3N name
@@ -1824,39 +1874,40 @@ namespace ns3
 			  }
 		      }
 		  }
-		}
-	      // If we had received a NULL PDU with this Interest at some point, and have no 3N names
-	      // saved, return a NULL PDU with the information
-	      if (pitEntry->GetReceivedNULLPDU() && !sentSomething)
-		{
-		  Ptr<NULLp> null_p_o = Create<NULLp> ();
-		  // Set the lifetime of the 3N PDU
-		  null_p_o->SetLifetime (m_3n_lifetime);
-		  // Configure payload for PDU
-		  null_p_o->SetPayload (icn_pdu);
-		  // Signal that the PDU had an ICN PDU as payload
-		  null_p_o->SetPDUPayloadType (NDN_NNN);
 
-		  // Send out the NULL PDU
-		  ok = incoming.m_face->SendNULLp (null_p_o);
+		// If we had received a NULL PDU with this Interest at some point, and still
+		// haven't pushed anything in previous sections, we should do it now
+		if (pitEntry->GetReceivedNULLPDU() && !sentSomething)
+		  {
+		    Ptr<NULLp> null_p_o = Create<NULLp> ();
+		    // Set the lifetime of the 3N PDU
+		    null_p_o->SetLifetime (m_3n_lifetime);
+		    // Configure payload for PDU
+		    null_p_o->SetPayload (icn_pdu);
+		    // Signal that the PDU had an ICN PDU as payload
+		    null_p_o->SetPDUPayloadType (NDN_NNN);
 
-		  // Log that a Data PDU was sent
-		  DidSendOutData (inFace, incoming.m_face, data, pitEntry);
-		  // Log that a DO PDU was sent
-		  m_outNULLps (null_p_o, incoming.m_face);
+		    // Send out the NULL PDU
+		    ok = incoming.m_face->SendNULLp (null_p_o);
 
-		  NS_LOG_DEBUG ("Satisfy " << *incoming.m_face);
+		    // Log that a Data PDU was sent
+		    DidSendOutData (inFace, incoming.m_face, data, pitEntry);
+		    // Log that a DO PDU was sent
+		    m_outNULLps (null_p_o, incoming.m_face);
 
-		  if (!ok)
-		    {
-		      m_dropData (data, incoming.m_face);
-		      m_dropNULLps (null_p_o, incoming.m_face);
-		      NS_LOG_DEBUG ("Cannot satisfy data to " << *incoming.m_face);
-		    }
-		}
+		    NS_LOG_DEBUG ("Satisfy " << *incoming.m_face);
+
+		    if (!ok)
+		      {
+			m_dropData (data, incoming.m_face);
+			m_dropNULLps (null_p_o, incoming.m_face);
+			NS_LOG_DEBUG ("Cannot satisfy data to " << *incoming.m_face);
+		      }
+		  }
+	      }
+	      // Reset for each distinct 3N subsector
+	      sentSomething = false;
 	    }
-	    // This ends the search via 3N names
-	    /////////////////////////////////////////////////////////////////////////////////////////
 	  }
       }
 

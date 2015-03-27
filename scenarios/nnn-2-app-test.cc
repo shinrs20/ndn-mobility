@@ -137,6 +137,7 @@ int main (int argc, char *argv[])
   uint32_t yaxis = 100;                         // Size of the Y axis
   double sec = 0.0;                             // Movement start
   bool traceFiles = false;                      // Tells to run the simulation with traceFiles
+  bool useMobility = false;                     // Tells to run the simulation with mobility support
   char results[250] = "results";                // Directory to place results
   double endTime = 100;                         // Number of seconds to run the simulation
 
@@ -149,6 +150,7 @@ int main (int argc, char *argv[])
   cmd.AddValue ("results", "Directory to place results", results);
   cmd.AddValue ("start", "Starting second", sec);
   cmd.AddValue ("trace", "Enable trace files", traceFiles);
+  cmd.AddValue ("mobility", "Enable mobility support", useMobility);
   cmd.Parse (argc,argv);
 
   NS_LOG_INFO ("------Creating nodes------");
@@ -358,6 +360,11 @@ int main (int argc, char *argv[])
   consumerHelper.SetAttribute ("Frequency", DoubleValue (0.05));
   consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(4)));
   consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
+  if (useMobility)
+    {
+      NS_LOG_INFO ("Consumer is using mobility 3N SO support");
+      consumerHelper.SetAttribute("UseSO", BooleanValue(true));
+    }
   consumerHelper.Install (mobileTerminalContainer);
 
   NS_LOG_INFO("Ending time " << endTime);
