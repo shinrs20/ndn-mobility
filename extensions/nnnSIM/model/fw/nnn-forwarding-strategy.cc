@@ -699,7 +699,8 @@ namespace ns3
       NNNAddress myAddr = GetNode3NName ();
       Ptr<NNNAddress> leavingAddr = Create<NNNAddress> (den_p->GetNamePtr ()->getName ());
 
-      NS_LOG_INFO("We are in " << myAddr << ", " << *leavingAddr << " is leaving");
+      NS_LOG_INFO ("We are in (" << myAddr << "), (" << *leavingAddr << ") is leaving");
+      NS_LOG_INFO ("Adding (" << *leavingAddr << ") to buffers");
 
       // We know the node sending the DEN is moving. His lease time will be maintained
       // All we need to do is tell the buffer to keep the packets to that destination
@@ -709,6 +710,7 @@ namespace ns3
       // forward the DEN packet to the parent of this node
       if (leavingAddr->distance (myAddr) <= 2 && leavingAddr->isSubSector (myAddr))
 	{
+	  NS_LOG_INFO ("We can still propagate the DEN");
 	  // Now we forward the DEN information to the higher hierarchical nodes
 	  std::vector<std::pair<Ptr<Face>, Address> > hierarchicalFaces = m_nnst->OneHopParentSectorFaceInfo (myAddr, 0);
 	  std::vector<std::pair<Ptr<Face>, Address> >::iterator it;
