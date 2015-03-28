@@ -50,7 +50,7 @@ namespace ns3
 
       virtual ~NamesContainerEntry();
 
-      bool operator< (const NamesContainerEntry e) const { return m_lease_expire < e.m_lease_expire; }
+      bool operator< (const NamesContainerEntry e) const { return m_lease_expire > e.m_lease_expire; }
 
       Ptr<const NNNAddress> m_name;
       Time m_lease_expire;

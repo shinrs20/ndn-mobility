@@ -136,18 +136,13 @@ namespace ns3
     NamesContainer::findNewestName ()
     {
       NS_LOG_FUNCTION (this);
-      names_set_by_name& names_index = container.get<address> ();
-      names_set_by_name::iterator it = names_index.end();
+      names_set_by_lease& lease_index = container.get<lease> ();
+      names_set_by_lease::iterator it = lease_index.begin();
 
-      if (!isEmpty())
-	{
-	  it--;
-	  return it->m_name;
-	}
+      if (it != lease_index.end ())
+	return it->m_name;
       else
-	{
-	  return Create<const NNNAddress> ();
-	}
+	return Create<const NNNAddress> ();
     }
 
     Time

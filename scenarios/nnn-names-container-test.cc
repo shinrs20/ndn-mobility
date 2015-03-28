@@ -34,16 +34,19 @@ int main (int argc, char *argv[])
   Ptr<const NNNAddress> nn_test1 = Create<NNNAddress> ("be.54.32");
   Ptr<const NNNAddress> nn_test2 = Create<NNNAddress> ("af.67.31");
   Ptr<const NNNAddress> nn_test3 = Create<NNNAddress> ("ae.34.26");
+  Ptr<const NNNAddress> nn_test4 = Create<NNNAddress> ("6.8.9.3.2");
 
   Time t_test1 = Seconds (100);
-  Time t_test2 = Seconds (200);
-  Time t_test3 = Seconds (300);
+  Time t_test2 = Seconds (300);
+  Time t_test3 = Seconds (350);
+  Time t_test4 = Seconds (200);
 
   Time updateTime = Seconds (400);
 
   test1.addEntry(nn_test1, t_test1);
   test1.addEntry(nn_test2, t_test2);
   test1.addEntry(nn_test3, t_test3);
+  test1.addEntry(nn_test4, t_test4);
 
   std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
@@ -77,6 +80,7 @@ int main (int argc, char *argv[])
   test1.addEntry(nn_test1, t_test1);
   test1.addEntry(nn_test2, t_test2);
   test1.addEntry(nn_test3, t_test3);
+  test1.addEntry(nn_test4, t_test4);
 
   std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
@@ -86,8 +90,8 @@ int main (int argc, char *argv[])
   std::cout << "Printing ordering by address" << std::endl;
   test1.printByAddress();
 
-  std::cout << "Printing ordering by address" << std::endl;
-  test1.printByAddress();
+  std::cout << "Printing ordering by lease expire time" << std::endl;
+  test1.printByLease();
 
   Simulator::Stop (Seconds (50));
   Simulator::Run ();
