@@ -118,7 +118,6 @@ namespace ns3
                      << m_netDevice->GetMtu ()
                      << " for Nnn; fragmentation not supported");
 
-      // Here is where I think we can use anything other than broadcast
       bool ok = m_netDevice->Send (packet, m_netDevice->GetBroadcast (),
                                    L3Protocol::ETHERNET_FRAME_TYPE);
       return ok;
@@ -139,7 +138,6 @@ namespace ns3
                      << m_netDevice->GetMtu ()
                      << " for Nnn; fragmentation not supported");
 
-      // Here is where I think we can use anything other than broadcast
       bool ok = m_netDevice->Send (packet, addr, L3Protocol::ETHERNET_FRAME_TYPE);
       return ok;
     }

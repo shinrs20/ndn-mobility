@@ -138,6 +138,9 @@ int main (int argc, char *argv[])
   double sec = 0.0;                             // Movement start
   bool traceFiles = false;                      // Tells to run the simulation with traceFiles
   bool useMobility = false;                     // Tells to run the simulation with mobility support
+  bool useCSMA = false;                         // Tells to run the simulation using CSMA
+  bool useP2P  = false;                         // Tells to run the simulation using P2P links
+  bool useWIFI = false;                         // Tells to run the simulation using WIFI links
   char results[250] = "results";                // Directory to place results
   double endTime = 100;                         // Number of seconds to run the simulation
 
@@ -151,38 +154,48 @@ int main (int argc, char *argv[])
   cmd.AddValue ("start", "Starting second", sec);
   cmd.AddValue ("trace", "Enable trace files", traceFiles);
   cmd.AddValue ("mobility", "Enable mobility support", useMobility);
+  cmd.AddValue ("csma", "Enable CSMA links", useCSMA);
+  cmd.AddValue ("p2p", "Enable P2P links", useP2P);
+  cmd.AddValue ("wifi", "Enable WIFI links", useWIFI);
   cmd.Parse (argc,argv);
+
+
+  if (!(useCSMA || useP2P || useWIFI))
+    {
+      NS_LOG_ERROR ("Must use P2P, CSMA or WIFI links! If all are flagged, they will be used respectively");
+      return 1;
+    }
 
   NS_LOG_INFO ("------Creating nodes------");
   NS_LOG_INFO ("Creating " << mobile << " nodes");
   // Node definitions for mobile terminals
-  NodeContainer mobileTerminalContainer;
-  mobileTerminalContainer.Create(mobile);
+  NodeContainer MNContainer;
+  MNContainer.Create(mobile);
 
   std::vector<uint32_t> mobileNodeIds;
 
   // Save all the mobile Node IDs
   for (int i = 0; i < mobile; i++)
     {
-      mobileNodeIds.push_back(mobileTerminalContainer.Get (i)->GetId ());
+      mobileNodeIds.push_back(MNContainer.Get (i)->GetId ());
     }
 
   NS_LOG_INFO ("Creating " << wnodes << " AP nodes");
   // Wireless access Nodes
-  NodeContainer wirelessAPContainer;
-  wirelessAPContainer.Create (wnodes);
+  NodeContainer APContainer;
+  APContainer.Create (wnodes);
 
   // Container for all 3N capable nodes
   NodeContainer all3NNodes;
-  all3NNodes.Add (mobileTerminalContainer);
-  all3NNodes.Add (wirelessAPContainer);
+  all3NNodes.Add (MNContainer);
+  all3NNodes.Add (APContainer);
 
   std::vector<uint32_t> wirelessAPNodeIds;
 
   // Save all the mobile Node IDs
   for (int i = 0; i < aps; i++)
     {
-      wirelessAPNodeIds.push_back(wirelessAPContainer.Get (i)->GetId ());
+      wirelessAPNodeIds.push_back(APContainer.Get (i)->GetId ());
     }
 
   // Make sure to seed our random
@@ -204,7 +217,7 @@ int main (int argc, char *argv[])
 
   centralStations.SetPositionAllocator(initialCenter);
   centralStations.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
-  centralStations.Install(wirelessAPContainer);
+  centralStations.Install(APContainer);
 
   NS_LOG_INFO ("------Placing Mobile nodes-------");
   sprintf(buffer, "0|%d|0|%d", xaxis, yaxis);
@@ -218,83 +231,122 @@ int main (int argc, char *argv[])
                                    "Distance", StringValue ("500"),
                                    "Bounds", StringValue (bounds));
 
-  mobileStations.Install(mobileTerminalContainer);
+  mobileStations.Install(MNContainer);
 
-  NS_LOG_INFO ("------Creating Wireless cards------");
-
-  // Use the Wifi Helper to define the wireless interfaces for APs
-  WifiHelper wifi;
-  wifi.SetRemoteStationManager ("ns3::ArfWifiManager");
-
-  YansWifiChannelHelper wifiChannel;
-  wifiChannel.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
-  wifiChannel.AddPropagationLoss ("ns3::ThreeLogDistancePropagationLossModel");
-  wifiChannel.AddPropagationLoss("ns3::NakagamiPropagationLossModel");
-
-  // All interfaces are placed on the same channel. Makes AP changes easy.
-  YansWifiPhyHelper wifiPhyHelper = YansWifiPhyHelper::Default ();
-  wifiPhyHelper.SetChannel (wifiChannel.Create ());
-  wifiPhyHelper.Set("TxPowerStart", DoubleValue(16.0206));
-  wifiPhyHelper.Set("TxPowerEnd", DoubleValue(16.0206));
-
-  // Add a simple no QoS based card to the Wifi interfaces
-  NqosWifiMacHelper wifiMacHelper = NqosWifiMacHelper::Default ();
-
-  // Create SSIDs for all the APs
-  std::vector<Ssid> ssidV;
-
-  NS_LOG_INFO ("------Creating ssids for wireless cards------");
-
-  // We store the Wifi AP mobility models in a map, ordered by the ssid string. Will be easier to manage when
-  // calling the modified StaMApWifiMac
-  std::map<std::string, Ptr<MobilityModel> > apTerminalMobility;
-
-  for (int i = 0; i < wnodes; i++)
+  if (useP2P)
     {
-      // Temporary string containing our SSID
-      std::string ssidtmp("ap-" + boost::lexical_cast<std::string>(i));
+      NS_LOG_INFO ("------ Creating P2P links ------");
+      NS_LOG_INFO("------ Connecting P2P links ------");
+      PointToPointHelper p2p_100mbps5ms;
+      p2p_100mbps5ms.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
+      p2p_100mbps5ms.SetChannelAttribute ("Delay", StringValue ("1ms"));
 
-      // Push the newly created SSID into a vector
-      ssidV.push_back (Ssid (ssidtmp));
+      vector <NetDeviceContainer> ptpWLANCenterDevices;
 
-      // Get the mobility model for wnode i
-      Ptr<MobilityModel> tmp = (wirelessAPContainer.Get (i))->GetObject<MobilityModel> ();
+      for (int i = 0; i < sectors; i++)
+	{
+	  NetDeviceContainer ptpWirelessCenterDevices;
 
-      // Store the information into our map
-      apTerminalMobility[ssidtmp] = tmp;
+	  for (int j = 0; j < mobile; j++)
+	    {
+	      ptpWirelessCenterDevices.Add (p2p_100mbps5ms.Install (APContainer.Get (i), MNContainer.Get (j) ));
+	    }
+
+	  ptpWLANCenterDevices.push_back (ptpWirelessCenterDevices);
+	}
     }
 
-  NS_LOG_INFO ("------Assigning mobile terminal wireless cards------");
-
-  NS_LOG_INFO ("Assigning AP wireless cards");
-  std::vector<NetDeviceContainer> wifiAPNetDevices;
-  for (int i = 0; i < wnodes; i++)
+  if (useCSMA)
     {
-      wifiMacHelper.SetType ("ns3::ApWifiMac",
-                             "Ssid", SsidValue (ssidV[i]),
-                             "BeaconGeneration", BooleanValue (true),
-                             "BeaconInterval", TimeValue (Seconds (0.102)));
+      NS_LOG_INFO ("------ Creating CSMA links ------");
+      CsmaHelper csma;
+      csma.SetChannelAttribute ("DataRate", StringValue ("100Mbps"));
+      csma.SetChannelAttribute ("Delay", TimeValue (MilliSeconds (4)));
 
-      wifiAPNetDevices.push_back (wifi.Install (wifiPhyHelper, wifiMacHelper, wirelessAPContainer.Get (i)));
+      NetDeviceContainer csmaDevices;
+
+      csmaDevices = csma.Install(all3NNodes);
     }
 
-  // Create a Wifi for the mobile node
-  wifiMacHelper.SetType("ns3::StaWifiMac",
-                        "Ssid", SsidValue (ssidV[0]),
-                        "ActiveProbing", BooleanValue (true));
-
-  NetDeviceContainer wifiMTNetDevices = wifi.Install (wifiPhyHelper, wifiMacHelper, mobileTerminalContainer);
-
-  // Using the same calculation from the Yans-wifi-Channel, we obtain the Mobility Models for the
-  // mobile node as well as all the Wifi capable nodes
-  Ptr<MobilityModel> mobileTerminalMobility = (mobileTerminalContainer.Get (0))->GetObject<MobilityModel> ();
-
-  std::vector<Ptr<MobilityModel> > mobileTerminalsMobility;
-
-  // Get the list of mobile node mobility models
-  for (int i = 0; i < mobile; i++)
+  if (useWIFI)
     {
-      mobileTerminalsMobility.push_back((mobileTerminalContainer.Get (i))->GetObject<MobilityModel> ());
+      NS_LOG_INFO ("------ Creating WIFI Links ------");
+      NS_LOG_INFO ("------Creating Wireless cards------");
+
+      // Use the Wifi Helper to define the wireless interfaces for APs
+      WifiHelper wifi;
+      wifi.SetRemoteStationManager ("ns3::ArfWifiManager");
+
+      YansWifiChannelHelper wifiChannel;
+      wifiChannel.SetPropagationDelay ("ns3::ConstantSpeedPropagationDelayModel");
+      wifiChannel.AddPropagationLoss ("ns3::ThreeLogDistancePropagationLossModel");
+      wifiChannel.AddPropagationLoss("ns3::NakagamiPropagationLossModel");
+
+      // All interfaces are placed on the same channel. Makes AP changes easy.
+      YansWifiPhyHelper wifiPhyHelper = YansWifiPhyHelper::Default ();
+      wifiPhyHelper.SetChannel (wifiChannel.Create ());
+      wifiPhyHelper.Set("TxPowerStart", DoubleValue(16.0206));
+      wifiPhyHelper.Set("TxPowerEnd", DoubleValue(16.0206));
+
+      // Add a simple no QoS based card to the Wifi interfaces
+      NqosWifiMacHelper wifiMacHelper = NqosWifiMacHelper::Default ();
+
+      // Create SSIDs for all the APs
+      std::vector<Ssid> ssidV;
+
+      NS_LOG_INFO ("------Creating ssids for wireless cards------");
+
+      // We store the Wifi AP mobility models in a map, ordered by the ssid string. Will be easier to manage when
+      // calling the modified StaMApWifiMac
+      std::map<std::string, Ptr<MobilityModel> > apTerminalMobility;
+
+      for (int i = 0; i < wnodes; i++)
+	{
+	  // Temporary string containing our SSID
+	  std::string ssidtmp("ap-" + boost::lexical_cast<std::string>(i));
+
+	  // Push the newly created SSID into a vector
+	  ssidV.push_back (Ssid (ssidtmp));
+
+	  // Get the mobility model for wnode i
+	  Ptr<MobilityModel> tmp = (APContainer.Get (i))->GetObject<MobilityModel> ();
+
+	  // Store the information into our map
+	  apTerminalMobility[ssidtmp] = tmp;
+	}
+
+      NS_LOG_INFO ("------Assigning mobile terminal wireless cards------");
+
+      NS_LOG_INFO ("Assigning AP wireless cards");
+      std::vector<NetDeviceContainer> wifiAPNetDevices;
+      for (int i = 0; i < wnodes; i++)
+	{
+	  wifiMacHelper.SetType ("ns3::ApWifiMac",
+	                         "Ssid", SsidValue (ssidV[i]),
+	                         "BeaconGeneration", BooleanValue (true),
+	                         "BeaconInterval", TimeValue (Seconds (0.102)));
+
+	  wifiAPNetDevices.push_back (wifi.Install (wifiPhyHelper, wifiMacHelper, APContainer.Get (i)));
+	}
+
+      // Create a Wifi for the mobile node
+      wifiMacHelper.SetType("ns3::StaWifiMac",
+                            "Ssid", SsidValue (ssidV[0]),
+                            "ActiveProbing", BooleanValue (true));
+
+      NetDeviceContainer wifiMTNetDevices = wifi.Install (wifiPhyHelper, wifiMacHelper, MNContainer);
+
+      // Using the same calculation from the Yans-wifi-Channel, we obtain the Mobility Models for the
+      // mobile node as well as all the Wifi capable nodes
+      Ptr<MobilityModel> mobileTerminalMobility = (MNContainer.Get (0))->GetObject<MobilityModel> ();
+
+      std::vector<Ptr<MobilityModel> > mobileTerminalsMobility;
+
+      // Get the list of mobile node mobility models
+      for (int i = 0; i < mobile; i++)
+	{
+	  mobileTerminalsMobility.push_back((MNContainer.Get (i))->GetObject<MobilityModel> ());
+	}
     }
 
   char routeType[250];
@@ -313,12 +365,12 @@ int main (int argc, char *argv[])
   // Set the FIB default routes
   primaryStack.SetDefaultRoutes (true);
   // Install the stack
-  primaryStack.Install(wirelessAPContainer);
+  primaryStack.Install(APContainer);
 
   // Create the initial 3N name
   Ptr<nnn::NNNAddress> firstName = Create <nnn::NNNAddress> ("a");
   // Get the ForwardingStrategy object from the node
-  Ptr<nnn::ForwardingStrategy> fwAP = wirelessAPContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
+  Ptr<nnn::ForwardingStrategy> fwAP = APContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
   // Give a 3N name for the first AP - ensure it is longer than the actual simulation
   fwAP->SetNode3NName(firstName, Seconds (endTime + 5));
 
@@ -337,10 +389,10 @@ int main (int argc, char *argv[])
   // Set the FIB default routes
   mobileStack.SetDefaultRoutes (true);
   // Install the stack
-  mobileStack.Install(mobileTerminalContainer);
+  mobileStack.Install(MNContainer);
 
   // Get the ForwardingStrategy object from the mobile nodes
-    Ptr<nnn::ForwardingStrategy> fwMN = mobileTerminalContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
+    Ptr<nnn::ForwardingStrategy> fwMN = MNContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
   // Force the enroll procedure of the mobile node
   Simulator::Schedule (Seconds(3), &nnn::ForwardingStrategy::Enroll, fwMN);
 
@@ -351,7 +403,7 @@ int main (int argc, char *argv[])
   producerHelper.SetPrefix ("/waseda/sato");
   producerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime -1)));
   // Install producer on AP
-  producerHelper.Install (wirelessAPContainer);
+  producerHelper.Install (APContainer);
 
   NS_LOG_INFO ("------ Installing Consumer Application------ ");
   // Create the consumer node on the mobile node - same as in NDN
@@ -365,7 +417,7 @@ int main (int argc, char *argv[])
       NS_LOG_INFO ("Consumer is using mobility 3N SO support");
       consumerHelper.SetAttribute("UseSO", BooleanValue(true));
     }
-  consumerHelper.Install (mobileTerminalContainer);
+  consumerHelper.Install (MNContainer);
 
   NS_LOG_INFO("Ending time " << endTime);
 

@@ -100,17 +100,23 @@ namespace ns3
       {
 	NS_LOG_FUNCTION (this << boost::cref(*face) << status);
 
+	NS_LOG_INFO ("Searching for Face " << boost::cref(*face));
+
 	FaceMetricByFace::type::iterator record = m_faces.get<i_face> ().find (face);
 	if (record == m_faces.get<i_face> ().end ())
 	  {
+	    NS_LOG_INFO ("Face " << boost::cref(*face) << " not found, returning!");
 	    return;
 	  }
 
+	NS_LOG_INFO ("Face " << boost::cref(*face) << " found, modifying status");
 	m_faces.modify (record,
 			ll::bind (&FaceMetric::SetStatus, ll::_1, status));
 
+	NS_LOG_INFO ("Face " << boost::cref(*face) << " reordering random access");
 	// reordering random access index same way as by metric index
 	m_faces.get<i_nth> ().rearrange (m_faces.get<i_metric> ().begin ());
+	NS_LOG_INFO ("Face " << boost::cref(*face) << " update complete");
       }
 
       void

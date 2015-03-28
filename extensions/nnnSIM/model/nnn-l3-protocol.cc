@@ -46,6 +46,7 @@ namespace ns3
 {
   namespace nnn
   {
+
     const uint16_t L3Protocol::ETHERNET_FRAME_TYPE = 0x7786;
 
     NS_OBJECT_ENSURE_REGISTERED (L3Protocol);

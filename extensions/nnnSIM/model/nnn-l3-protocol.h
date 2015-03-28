@@ -21,12 +21,9 @@
 #ifndef NNN_L3_PROTOCOL_H
 #define NNN_L3_PROTOCOL_H
 
-#include <list>
 #include <vector>
 
 #include <ns3-dev/ns3/ptr.h>
-#include <ns3-dev/ns3/net-device.h>
-#include <ns3-dev/ns3/nstime.h>
 
 namespace ns3 {
 

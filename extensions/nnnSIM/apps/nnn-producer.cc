@@ -115,6 +115,8 @@ namespace ns3
       // StaticCast<fib::FibImpl> (fib)->modify (fibEntry,
       //                                        ll::bind (&fib::Entry::UpdateStatus,
       //                                                  ll::_1, m_face, fib::FaceMetric::NDN_FIB_GREEN));
+
+      NS_LOG_INFO ("Finished setting up Producer application");
     }
 
     void
