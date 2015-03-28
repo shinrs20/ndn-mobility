@@ -771,9 +771,9 @@ namespace ns3
 	  // Now create the AEN PDU to respond
 	  Ptr<AEN> aen_p = Create<AEN> (*obtainedName);
 	  // Ensure that the lease time is set right (continues to be in absolute simulator time)
-	  aen_p->SetLeasetime(lease);
+	  aen_p->SetLeasetime (lease);
 	  // Add the PoAs to the response PDU
-	  aen_p->AddPoa(GetAllPoANames());
+	  aen_p->AddPoa(GetAllPoANames (face));
 
 	  // Send the created AEN PDU
 	  face->SendAEN(aen_p);
@@ -1152,11 +1152,12 @@ namespace ns3
     }
 
     std::vector<Address>
-    ForwardingStrategy::GetAllPoANames ()
+    ForwardingStrategy::GetAllPoANames (Ptr<Face> face)
     {
       NS_LOG_FUNCTION (this);
       // Vector to save the PoA names
-      std::vector<Address> poanames;
+      std::vector<Address> poanames1;
+      std::vector<Address> poanames2;
       // Get the total number of addresses we have
       int totalFaces = m_faces->GetN ();
       Ptr<Face> tmp;
@@ -1170,39 +1171,31 @@ namespace ns3
 	  // Check that the Face is not of type APPLICATION
 	  if (!tmp->isAppFace ())
 	    {
-	      // Get the Address for the
-	      poanames.push_back (tmp->GetAddress ());
+	      if (face == tmp)
+		poanames1.push_back (tmp->GetAddress ());
+	      else
+		poanames2.push_back (tmp->GetAddress ());
 	    }
 	}
 
-      return poanames;
+      for (int i = 0; i < poanames2.size (); i++)
+	{
+	  poanames1.push_back (poanames2[i]);
+	}
+
+      return poanames1;
     }
 
     void
     ForwardingStrategy::Enroll ()
     {
-      NS_LOG_FUNCTION (this << Simulator::Now ());
+      NS_LOG_FUNCTION (this);
       // Check whether this node has a 3N name
       if (!Has3NName ())
 	{
 	  // Temporary test - an enroll means we have no name, fire the traced callback
 	  m_no3Nname ();
-	  // Obtain all the node's PoA names
-	  std::vector<Address> poanames = GetAllPoANames ();
 	  bool ok = false;
-
-	  // Create the EN PDU to transmit
-	  Ptr<EN> en_o = Create<EN> ();
-	  // Set the lifetime for the EN PDU
-	  en_o->SetLifetime (m_3n_lifetime);
-	  // Set the PoA type
-	  en_o->SetPoaType (POA_MAC48);
-	  // Add all the PoA names we found
-	  for (int i = 0; i < poanames.size (); i++)
-	    {
-	      NS_LOG_INFO ("Adding PoA name " << poanames[i]);
-	      en_o->AddPoa (poanames[i]);
-	    }
 
 	  Ptr<Face> tmp;
 	  // Now transmit the EN through all Faces that are not of type APPLICATION
@@ -1213,6 +1206,25 @@ namespace ns3
 	      // Check that the Face is not of type APPLICATION
 	      if (!tmp->isAppFace ())
 		{
+		  NS_LOG_INFO ("Sending out Face " << boost::cref(*tmp) << " with " << tmp->GetAddress ());
+
+		  // Obtain all the node's PoA names
+		  std::vector<Address> poanames = GetAllPoANames (tmp);
+
+		  // Create the EN PDU to transmit
+		  Ptr<EN> en_o = Create<EN> ();
+		  // Set the lifetime for the EN PDU
+		  en_o->SetLifetime (m_3n_lifetime);
+		  // Set the PoA type
+		  en_o->SetPoaType (POA_MAC48);
+
+		  // Add all the PoA names we found
+		  for (int i = 0; i < poanames.size (); i++)
+		    {
+		      NS_LOG_INFO ("Adding PoA name " << poanames[i]);
+		      en_o->AddPoa (poanames[i]);
+		    }
+
 		  // Send the EN throughout the Faces
 		  ok = tmp->SendEN (en_o);
 
@@ -1226,29 +1238,11 @@ namespace ns3
     void
     ForwardingStrategy::Reenroll ()
     {
-      NS_LOG_FUNCTION (this << Simulator::Now ());
+      NS_LOG_FUNCTION (this);
       // Check whether this node has a 3N name
       if (Has3NName ())
 	{
-	  std::vector<Address> poanames = GetAllPoANames ();
 	  bool ok = false;
-
-	  // Create the REN PDU to transmit
-	  Ptr<REN> ren_o = Create<REN> ();
-	  Ptr<const NNNAddress> addr = GetNode3NNamePtr ();
-
-	  // Set the lifetime for the REN PDU
-	  ren_o->SetLifetime (m_3n_lifetime);
-	  // Set the 3N name for the REN
-	  ren_o->SetName (*addr);
-	  // Write the expire time for the 3N name (Time within the simulator is absolute)
-	  ren_o->SetRemainLease (m_node_names->findNameExpireTime (addr));
-	  // Add all the PoA names we found
-	  for (int i = 0; i < poanames.size (); i++)
-	    {
-	      ren_o->AddPoa (poanames[i]);
-	    }
-
 	  Ptr<Face> tmp;
 	  // Now transmit the REN through all Faces that are not of type APPLICATION
 	  for (int i = 0; i < m_faces->GetN (); i++)
@@ -1258,6 +1252,24 @@ namespace ns3
 	      // Check that the Face is not of type APPLICATION
 	      if (!tmp->isAppFace ())
 		{
+		  std::vector<Address> poanames = GetAllPoANames (tmp);
+
+		  // Create the REN PDU to transmit
+		  Ptr<REN> ren_o = Create<REN> ();
+		  Ptr<const NNNAddress> addr = GetNode3NNamePtr ();
+
+		  // Set the lifetime for the REN PDU
+		  ren_o->SetLifetime (m_3n_lifetime);
+		  // Set the 3N name for the REN
+		  ren_o->SetName (*addr);
+		  // Write the expire time for the 3N name (Time within the simulator is absolute)
+		  ren_o->SetRemainLease (m_node_names->findNameExpireTime (addr));
+		  // Add all the PoA names we found
+		  for (int i = 0; i < poanames.size (); i++)
+		    {
+		      ren_o->AddPoa (poanames[i]);
+		    }
+
 		  // Send the REN throughout the Faces
 		  ok = tmp->SendREN (ren_o);
 
@@ -1271,26 +1283,12 @@ namespace ns3
     void
     ForwardingStrategy::Disenroll ()
     {
-      NS_LOG_FUNCTION (this << Simulator::Now ());
+      NS_LOG_FUNCTION (this);
       // Check whether this node has a 3N name
       if (Has3NName ())
 	{
-	  std::vector<Address> poanames = GetAllPoANames ();
+
 	  bool ok = false;
-
-	  // Create the REN PDU to transmit
-	  Ptr<DEN> den_o = Create<DEN> ();
-	  Ptr<const NNNAddress> addr = GetNode3NNamePtr ();
-
-	  // Set the lifetime for the REN PDU
-	  den_o->SetLifetime (m_3n_lifetime);
-	  // Set the 3N name for the REN
-	  den_o->SetName (*addr);
-	  // Add all the PoA names we found
-	  for (int i = 0; i < poanames.size (); i++)
-	    {
-	      den_o->AddPoa (poanames[i]);
-	    }
 
 	  Ptr<Face> tmp;
 	  // Now transmit the DEN through all Faces that are not of type APPLICATION
@@ -1301,6 +1299,21 @@ namespace ns3
 	      // Check that the Face is not of type APPLICATION
 	      if (!tmp->isAppFace ())
 		{
+		  std::vector<Address> poanames = GetAllPoANames (tmp);
+
+		  // Create the REN PDU to transmit
+		  Ptr<DEN> den_o = Create<DEN> ();
+		  Ptr<const NNNAddress> addr = GetNode3NNamePtr ();
+
+		  // Set the lifetime for the REN PDU
+		  den_o->SetLifetime (m_3n_lifetime);
+		  // Set the 3N name for the REN
+		  den_o->SetName (*addr);
+		  // Add all the PoA names we found
+		  for (int i = 0; i < poanames.size (); i++)
+		    {
+		      den_o->AddPoa (poanames[i]);
+		    }
 		  // Send the REN throughout the Faces
 		  ok = tmp->SendDEN (den_o);
 

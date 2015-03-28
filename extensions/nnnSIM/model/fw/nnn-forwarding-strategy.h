@@ -293,7 +293,7 @@ namespace ns3
       RemoveFace (Ptr<Face> face);
 
       virtual std::vector<Address>
-      GetAllPoANames ();
+      GetAllPoANames (Ptr<Face> face);
 
       virtual void
       Enroll ();
