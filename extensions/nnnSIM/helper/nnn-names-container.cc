@@ -249,6 +249,14 @@ namespace ns3
     }
 
     void
+    NamesContainer::Print (std::ostream &os) const
+    {
+      const names_set_by_lease& lease_index = container.get<lease> ();
+
+      std::copy(lease_index.begin (), lease_index.end (), std::ostream_iterator<names_set::value_type> (os));
+    }
+
+    void
     NamesContainer::printByAddress ()
     {
       names_set_by_name& names_index = container.get<address> ();
@@ -280,5 +288,11 @@ namespace ns3
 	}
     }
 
-} /* namespace nnn */
+    std::ostream&
+    operator<< (std::ostream& os, const NamesContainer &names)
+    {
+      names.Print (os);
+      return os;
+    }
+  } /* namespace nnn */
 } /* namespace ns3 */

@@ -93,6 +93,10 @@ int main (int argc, char *argv[])
   std::cout << "Printing ordering by lease expire time" << std::endl;
   test1.printByLease();
 
+  std::cout << "Printing ordering by << operator" << std::endl;
+  std::cout << test1;
+
+
   Simulator::Stop (Seconds (50));
   Simulator::Run ();
   Simulator::Destroy ();

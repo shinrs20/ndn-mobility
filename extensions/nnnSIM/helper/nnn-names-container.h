@@ -20,6 +20,8 @@
 #ifndef NNN_NAMES_CONTAINER_H_
 #define NNN_NAMES_CONTAINER_H_
 
+#include <ostream>
+
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/node.h>
 #include <ns3-dev/ns3/object.h>
@@ -127,6 +129,9 @@ namespace ns3
       willAttemptRenew ();
 
       void
+      Print (std::ostream &os) const;
+
+      void
       printByAddress ();
 
       void
@@ -139,6 +144,8 @@ namespace ns3
       Callback<void> renewName;    ///< \brief Renewal callback
       Callback<void> hasNoName;    ///< \brief Enroll callback - done when container is empty
     };
+
+    std::ostream& operator<< (std::ostream& os, const NamesContainer &names);
 
   } /* namespace nnn */
 } /* namespace ns3 */
