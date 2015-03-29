@@ -68,11 +68,21 @@ int main (int argc, char *argv[])
       std::cout << *nn_test3 << " is not a fixed address" << std::endl;
     }
 
+  if (test1.hasFixedName ())
+    {
+      std::cout << "NamesContainer has a fixed name" << std::endl;
+    }
+
   test1.updateLeaseTime(nn_test2, updateTime);
 
   std::cout << "Deleting " << *nn_test3 << " from container..." << std::endl;
 
   test1.deleteEntry(nn_test3);
+
+  if (!test1.hasFixedName ())
+    {
+      std::cout << "NamesContainer doesn't have a fixed name" << std::endl;
+    }
 
   std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
   std::cout << "Printing ordering by lease expire time" << std::endl;

@@ -119,6 +119,9 @@ namespace ns3
       bool
       isFixed (Ptr<const NNNAddress> name);
 
+      bool
+      hasFixedName ();
+
       Time
       findNameExpireTime (Ptr<const NNNAddress> name);
 

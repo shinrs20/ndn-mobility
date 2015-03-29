@@ -205,6 +205,28 @@ namespace ns3
       return findEntry (name).m_fixed;
     }
 
+    bool
+    NamesContainer::hasFixedName ()
+    {
+      NS_LOG_FUNCTION (this);
+      names_set_by_name& names_index = container.get<address> ();
+      names_set_by_name::iterator it = names_index.begin ();
+
+      bool hasFixed = false;
+
+      while (it != names_index.end ())
+	{
+	  if (it->m_fixed)
+	    {
+	      hasFixed = true;
+	      break;
+	    }
+	  it++;
+	}
+
+     return hasFixed;
+    }
+
     void
     NamesContainer::cleanExpired()
     {
