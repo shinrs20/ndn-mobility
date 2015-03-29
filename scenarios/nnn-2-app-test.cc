@@ -237,7 +237,7 @@ int main (int argc, char *argv[])
     {
       NS_LOG_INFO ("------ Creating P2P links ------");
       NS_LOG_INFO("------ Connecting P2P links ------");
-      PointToPointHelper p2p_100mbps5ms;
+      nnn::FlexPointToPointHelper p2p_100mbps5ms;
       p2p_100mbps5ms.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
       p2p_100mbps5ms.SetChannelAttribute ("Delay", StringValue ("1ms"));
 

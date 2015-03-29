@@ -56,6 +56,9 @@
 #include "model/pit/nnn-pit-entry-incoming-face.h"
 #include "model/pit/nnn-pit-entry-outgoing-face.h"
 
+#include "model/nnn-ppp-header.h"
+#include "model/nnn-point2point-netdevice.h"
+
 // Helper
 #include "helper/nnn-app-helper.h"
 #include "helper/nnn-face-container.h"
@@ -65,5 +68,6 @@
 #include "helper/nnn-names-container-entry.h"
 #include "helper/nnn-stack-helper.h"
 
+#include "helper/nnn-point2point-helper.h"
 
 #endif /* NNNSIM_MODULE_H_ */
