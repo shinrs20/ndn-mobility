@@ -490,6 +490,7 @@ namespace ns3
 	  NS_LOG_INFO ("OnEN : are in (" << myAddr << ") creating OEN PDU to send");
 	  // Create an OEN PDU to respond
 	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname);
+	  oen_p->SetLifetime(m_3n_lifetime);
 	  // Ensure that the lease time is set in the PDU
 	  // We send the lease out in absolute simulator time
 	  Time absoluteLease = Simulator::Now () + m_3n_lease_time;
@@ -603,6 +604,7 @@ namespace ns3
 			      // If node was not originally in our sector, create a INF PDU
 			      NS_LOG_INFO ("(" << *registeredOldName << ") was not in our sector, creating INF PDU");
 			      Ptr<INF> inf_o = Create<INF> ();
+			      inf_o->SetLifetime(m_3n_lifetime);
 
 			      // Fill the necessary information
 			      inf_o->SetOldName (registeredOldName);
@@ -661,6 +663,7 @@ namespace ns3
 	  NS_LOG_INFO("OnREN : are in (" << myAddr << ") creating OEN PDU to send");
 	  // Create an OEN PDU to respond
 	  Ptr<OEN> oen_p = Create<OEN> (produced3Nname->getName());
+	  oen_p->SetLifetime(m_3n_lifetime);
 	  // Ensure that the lease time is set in the PDU
 	  // We send the lease out in absolute simulator time
 	  Time absoluteLease = Simulator::Now () + m_3n_lease_time;
@@ -770,6 +773,7 @@ namespace ns3
 	  NS_LOG_INFO("OnOEN : Pushing AEN with Node name (" << *obtainedName << ") with lease until " << lease);
 	  // Now create the AEN PDU to respond
 	  Ptr<AEN> aen_p = Create<AEN> (*obtainedName);
+	  aen_p->SetLifetime(m_3n_lifetime);
 	  // Ensure that the lease time is set right (continues to be in absolute simulator time)
 	  aen_p->SetLeasetime (lease);
 	  // Add the PoAs to the response PDU
