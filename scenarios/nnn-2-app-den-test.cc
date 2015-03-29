@@ -36,6 +36,7 @@
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/uniform_real_distribution.hpp>
@@ -74,6 +75,12 @@ char scenario[250] = "3N2Test";
 
 NS_LOG_COMPONENT_DEFINE (scenario);
 
+// Global information to use in callbacks
+std::map<int, Address> last_seen_mac;
+std::map<int, Address>::iterator last_seen_mac_it;
+std::map<int, std::string> last_seen_ssid;
+std::map<int, std::string>::iterator last_seen_ssid_it;
+
 // Number generator
 br::mt19937_64 gen;
 
@@ -94,13 +101,21 @@ double obtain_Num(double min, double max)
 }
 
 // Function to change the SSID of a Node, depending on distance
-void SetSSIDviaDistance(uint32_t mtId, Ptr<MobilityModel> node, std::map<std::string, Ptr<MobilityModel> > aps)
+void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr<MobilityModel> > aps)
 {
+  NS_LOG_FUNCTION (mtId << netId);
+
   char configbuf[250];
   char buffer[250];
 
+  // Obtain the global list of Nodes in the simulation
+  NodeContainer global = NodeContainer::GetGlobal ();
+
+  Ptr<MobilityModel> nodeMM = global.Get (mtId)->GetObject<MobilityModel> ();
+  Ptr<nnn::ForwardingStrategy> nodeFW = global.Get (mtId)->GetObject<nnn::ForwardingStrategy> ();
+
   // This causes the device in mtId to change the SSID, forcing AP change
-  sprintf(configbuf, "/NodeList/%d/DeviceList/0/$ns3::WifiNetDevice/Mac/Ssid", mtId);
+  sprintf(configbuf, "/NodeList/%d/DeviceList/%d/$ns3::WifiNetDevice/Mac/Ssid", mtId, netId);
 
   std::map<double, std::string> SsidDistance;
 
@@ -108,7 +123,7 @@ void SetSSIDviaDistance(uint32_t mtId, Ptr<MobilityModel> node, std::map<std::st
   for (std::map<std::string, Ptr<MobilityModel> >::iterator ii=aps.begin(); ii!=aps.end(); ++ii)
     {
       // Calculate the distance from the AP to the node and save into the map
-      SsidDistance[node->GetDistanceFrom((*ii).second)] = (*ii).first;
+      SsidDistance[nodeMM->GetDistanceFrom((*ii).second)] = (*ii).first;
     }
 
   double distance = SsidDistance.begin()->first;
@@ -121,9 +136,94 @@ void SetSSIDviaDistance(uint32_t mtId, Ptr<MobilityModel> node, std::map<std::st
   // Because the map sorts by std:less, the first position has the lowest distance
   Config::Set(configbuf, SsidValue(ssid));
 
+  // Search nodeNum in global map
+  last_seen_ssid_it = last_seen_ssid.find(mtId);
+
+  if (last_seen_ssid_it != last_seen_ssid.end ())
+    {
+      // We know that we have connected somewhere before
+      if (last_seen_ssid[mtId] == ssid)
+	NS_LOG_INFO ("Node " << mtId << " was already connected to AP with SSID" << ssid);
+      else
+	{
+	  NS_LOG_INFO ("Node " << mtId << " has changed AP to new " << ssid << " will disenroll");
+	  last_seen_ssid[mtId] = ssid;
+
+	  nodeFW->Disenroll ();
+	}
+    }
+  else
+    {
+      NS_LOG_INFO ("First time Node " << mtId << " sees an address, saving " << ssid);
+      // Save the Address
+      last_seen_ssid[mtId] = ssid;
+
+      // Now continue to do the enroll procedure
+      nodeFW->Enroll();
+    }
+
   // Empty the maps
   SsidDistance.clear();
 }
+
+void ApAssociation (std::string context, const Mac48Address mac)
+{
+  NS_LOG_FUNCTION (context << mac);
+
+  // Temporary container for context string
+  std::vector<std::string> context_parts;
+
+  // Use boost library to split the string
+  boost::split(context_parts, context, boost::is_any_of ("//"));
+
+  // Get the Node ID
+  int nodeNum = std::atoi (context_parts[2].c_str());
+
+  // Obtain the global list of Nodes in the simulation
+  NodeContainer global = NodeContainer::GetGlobal ();
+
+  // Get the node that fired the callback
+  Ptr<Node> moving = global.Get (nodeNum);
+
+  Ptr<nnn::ForwardingStrategy> nodeFW = moving->GetObject<nnn::ForwardingStrategy> ();
+
+  // Convert MAC to Address
+  Address nowAddr = mac.operator ns3::Address();
+
+  // Search nodeNum in global map
+  last_seen_mac_it = last_seen_mac.find(nodeNum);
+
+  if (last_seen_mac_it != last_seen_mac.end ())
+    {
+      // We know that we have connected somewhere before
+      if (last_seen_mac[nodeNum] == nowAddr)
+	{
+	  NS_LOG_INFO ("Node " << nodeNum << " was already connected to AP with " << nowAddr);
+	  if (!nodeFW->Has3NName())
+	    {
+	      NS_LOG_INFO ("Node " << nodeNum << " still doesn't have a 3N name, reattempting");
+	      nodeFW->Enroll ();
+	    }
+	}
+      else
+	{
+	  NS_LOG_INFO ("Node " << nodeNum << " has changed AP to " << nowAddr << " will reenroll");
+	  last_seen_mac[nodeNum] = nowAddr;
+
+	  nodeFW->Reenroll ();
+	}
+    }
+  else
+    {
+      NS_LOG_INFO ("First time Node " << nodeNum << " sees an address, saving " << nowAddr);
+      // Save the Address
+      last_seen_mac[nodeNum] = nowAddr;
+
+      // Now continue to do the enroll procedure
+      nodeFW->Enroll ();
+    }
+}
+
 
 int main (int argc, char *argv[])
 {
@@ -387,7 +487,7 @@ int main (int argc, char *argv[])
   // Vector of all forwarding strategies for APs
   std::vector<Ptr<nnn::ForwardingStrategy> > fwAPs;
 
-  // Enrollment for the APs
+  // Force Enrollment for the APs
   for (int i = 0; i < aps; i++)
     {
       fwAPs.push_back (APContainer.Get (i)->GetObject<nnn::ForwardingStrategy> ());
@@ -395,7 +495,7 @@ int main (int argc, char *argv[])
 
   for (int i = 0; i < aps; i++)
     {
-      Simulator::Schedule(Seconds (1), &nnn::ForwardingStrategy::Enroll, fwAPs[i]);
+      Simulator::Schedule(Seconds (0), &nnn::ForwardingStrategy::Enroll, fwAPs[i]);
     }
 
   ///////////////////////////////////////////////////////
@@ -411,15 +511,6 @@ int main (int argc, char *argv[])
   mobileStack.SetDefaultRoutes (true);
   // Install the stack
   mobileStack.Install (MNContainer);
-
-  // Get the ForwardingStrategy object from the mobile nodes
-  Ptr<nnn::ForwardingStrategy> fwMN = MNContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
-  // Force the enroll procedure of the mobile node
-  Simulator::Schedule (Seconds(3), &nnn::ForwardingStrategy::Enroll, fwMN);
-  //  // Force the disenroll procedure of the mobile node
-  //  Simulator::Schedule (Seconds(30), &nnn::ForwardingStrategy::Disenroll, fwMN);
-  //  // Force the reenroll procedure of the mobile node
-  //  Simulator::Schedule (Seconds(40), &nnn::ForwardingStrategy::Reenroll, fwMN);
 
   // Create the applications
   NS_LOG_INFO ("------ Installing Producer Application------ ");
@@ -444,6 +535,26 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute("UseSO", BooleanValue(true));
     }
   consumerHelper.Install (MNContainer);
+
+  NS_LOG_INFO ("------ Creating the AP Association Callbacks ------");
+  char configbuf[250];
+
+  for (int i = 0; i < mobileNodeIds.size (); i++)
+    {
+      NS_LOG_INFO ("Establishing callbacks for Node " << mobileNodeIds[i] << " wireless device 0");
+      sprintf (configbuf, "/NodeList/%d/DeviceList/%d/$ns3::WifiNetDevice/Mac/$ns3::StaWifiMac/Assoc", mobileNodeIds[i], 0);
+      Config::Connect(configbuf, MakeCallback (&ApAssociation));
+    }
+
+  NS_LOG_INFO ("------ SSID distance event changes ------");
+  for (int i = 0; i < mobileNodeIds.size (); i++)
+    {
+      for (int j = 40; j < endTime; j += 50)
+	{
+	  NS_LOG_INFO ("Scheduling SSID calculation for Node " << mobileNodeIds[i] << " wireless device 0 at " << j);
+	  Simulator::Schedule (Seconds(j), &SetSSIDviaDistance, mobileNodeIds[i], 0, apTerminalMobility);
+	}
+    }
 
   NS_LOG_INFO("Ending time " << endTime);
 
