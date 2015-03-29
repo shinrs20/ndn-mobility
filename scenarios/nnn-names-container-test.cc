@@ -59,6 +59,15 @@ int main (int argc, char *argv[])
   std::cout << "Expire time for " << *nn_test2 << " is " << test1.findNameExpireTime(nn_test2) << std::endl;
   std::cout << "Updating expire time for " << *nn_test2 << " to " << updateTime << std::endl;
 
+  if (test1.isFixed (nn_test3))
+    {
+      std::cout << *nn_test3 << " is a fixed address" << std::endl;
+    }
+  else
+    {
+      std::cout << *nn_test3 << " is not a fixed address" << std::endl;
+    }
+
   test1.updateLeaseTime(nn_test2, updateTime);
 
   std::cout << "Deleting " << *nn_test3 << " from container..." << std::endl;
