@@ -136,7 +136,7 @@ namespace ns3
       obtain_Num(uint64_t min, uint64_t max);
 
       virtual void
-      SetNode3NName (Ptr<const NNNAddress> name, Time lease);
+      SetNode3NName (Ptr<const NNNAddress> name, Time lease, bool fixed);
 
       virtual const NNNAddress&
       GetNode3NName ();

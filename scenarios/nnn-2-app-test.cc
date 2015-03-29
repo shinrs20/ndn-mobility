@@ -372,7 +372,7 @@ int main (int argc, char *argv[])
   // Get the ForwardingStrategy object from the node
   Ptr<nnn::ForwardingStrategy> fwAP = APContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
   // Give a 3N name for the first AP - ensure it is longer than the actual simulation
-  fwAP->SetNode3NName(firstName, Seconds (endTime + 5));
+  fwAP->SetNode3NName(firstName, Seconds (endTime + 5), true);
 
   ///////////////////////////////////////////////////////
   // Stack for nodes that use fixed connections

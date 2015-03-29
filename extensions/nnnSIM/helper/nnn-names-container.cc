@@ -58,7 +58,7 @@ namespace ns3
     }
 
     void
-    NamesContainer::addEntry (Ptr<const NNNAddress> name, Time lease_expire)
+    NamesContainer::addEntry (Ptr<const NNNAddress> name, Time lease_expire, bool fixed)
     {
       NS_LOG_FUNCTION (this << *name << lease_expire);
 
@@ -75,10 +75,13 @@ namespace ns3
 	  NS_LOG_INFO ("Lease time is positive, add (" << *name << "), lease until " << lease_expire );
 
 	  // We need to save the lease and renewal time in absolute time
-	  container.insert(NamesContainerEntry(name, lease_expire, lease_expire - defaultRenewal));
-	  // The Schedulers are in relative time
-	  Simulator::Schedule((relativeExpireTime - defaultRenewal), &NamesContainer::willAttemptRenew, this);
-	  Simulator::Schedule(relativeExpireTime, &NamesContainer::cleanExpired, this);
+	  container.insert(NamesContainerEntry(name, lease_expire, lease_expire - defaultRenewal, fixed));
+	  if (!fixed)
+	    {
+	      // The Schedulers are in relative time
+	      Simulator::Schedule((relativeExpireTime - defaultRenewal), &NamesContainer::willAttemptRenew, this);
+	      Simulator::Schedule(relativeExpireTime, &NamesContainer::cleanExpired, this);
+	    }
 	}
     }
 
@@ -196,6 +199,12 @@ namespace ns3
       return (container.size() == 0);
     }
 
+    bool
+    NamesContainer::isFixed (Ptr<const NNNAddress> name)
+    {
+      return findEntry (name).m_fixed;
+    }
+
     void
     NamesContainer::cleanExpired()
     {
@@ -205,9 +214,9 @@ namespace ns3
 
       names_set_by_lease::iterator it = lease_index.begin();
 
-      while (! isEmpty())
+      while (! isEmpty() && it != lease_index.end ())
 	{
-	  if (it->m_lease_expire <= now)
+	  if (it->m_lease_expire <= now &&  !it->m_fixed)
 	    {
 	      deleteEntry(*it);
 	      break;
@@ -262,8 +271,8 @@ namespace ns3
       names_set_by_name& names_index = container.get<address> ();
       names_set_by_name::iterator it = names_index.begin();
 
-      std::cout << "NNN Address\t| Lease Expire\t| Renew" << std::endl;
-      std::cout << "--------------------------------------------------" << std::endl;
+      std::cout << "NNN Address\t| Lease Expire\t| Renew\t| Fixed" << std::endl;
+      std::cout << "-----------------------------------------------------" << std::endl;
 
       while (it != names_index.end())
 	{
@@ -278,8 +287,8 @@ namespace ns3
       names_set_by_lease& lease_index = container.get<lease> ();
       names_set_by_lease::iterator it = lease_index.begin();
 
-      std::cout << "NNN Address\t| Lease Expire\t| Renew" << std::endl;
-      std::cout << "--------------------------------------------------" << std::endl;
+      std::cout << "NNN Address\t| Lease Expire\t| Renew\t| Fixed" << std::endl;
+      std::cout << "-----------------------------------------------------" << std::endl;
 
       while (it != lease_index.end ())
 	{

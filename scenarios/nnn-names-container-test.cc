@@ -43,10 +43,10 @@ int main (int argc, char *argv[])
 
   Time updateTime = Seconds (400);
 
-  test1.addEntry(nn_test1, t_test1);
-  test1.addEntry(nn_test2, t_test2);
-  test1.addEntry(nn_test3, t_test3);
-  test1.addEntry(nn_test4, t_test4);
+  test1.addEntry(nn_test1, t_test1, false);
+  test1.addEntry(nn_test2, t_test2, false);
+  test1.addEntry(nn_test3, t_test3, true);
+  test1.addEntry(nn_test4, t_test4, false);
 
   std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
@@ -77,10 +77,10 @@ int main (int argc, char *argv[])
 
   std::cout << "Reinserting everything into NamesContainer" << std::endl;
 
-  test1.addEntry(nn_test1, t_test1);
-  test1.addEntry(nn_test2, t_test2);
-  test1.addEntry(nn_test3, t_test3);
-  test1.addEntry(nn_test4, t_test4);
+  test1.addEntry(nn_test1, t_test1, false);
+  test1.addEntry(nn_test2, t_test2, false);
+  test1.addEntry(nn_test3, t_test3, true);
+  test1.addEntry(nn_test4, t_test4, false);
 
   std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 

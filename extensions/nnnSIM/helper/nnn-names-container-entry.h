@@ -46,7 +46,7 @@ namespace ns3
 
       NamesContainerEntry();
 
-      NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire, Time renew_time);
+      NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire, Time renew_time, bool fixed);
 
       virtual ~NamesContainerEntry();
 
@@ -55,12 +55,13 @@ namespace ns3
       Ptr<const NNNAddress> m_name;
       Time m_lease_expire;
       Time m_renew_time;
+      bool m_fixed;
     };
 
     inline std::ostream &
     operator << (std::ostream &os, const NamesContainerEntry &entry)
     {
-      os << *(entry.m_name) << "\t" << entry.m_lease_expire << "\t" << entry.m_renew_time << std::endl;
+      os << *(entry.m_name) << "\t" << entry.m_lease_expire << "\t" << entry.m_renew_time <<  "\t" << entry.m_fixed << std::endl;
       return os;
     }
 

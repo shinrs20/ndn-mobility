@@ -90,7 +90,7 @@ namespace ns3
       GetDefaultRenewal ();
 
       void
-      addEntry (Ptr<const NNNAddress> name, Time lease_expire);
+      addEntry (Ptr<const NNNAddress> name, Time lease_expire, bool fixed);
 
       void
       deleteEntry (NamesContainerEntry nameEntry);
@@ -115,6 +115,9 @@ namespace ns3
 
       bool
       isEmpty ();
+
+      bool
+      isFixed (Ptr<const NNNAddress> name);
 
       Time
       findNameExpireTime (Ptr<const NNNAddress> name);

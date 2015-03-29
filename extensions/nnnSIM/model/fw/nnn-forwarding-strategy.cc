@@ -282,14 +282,14 @@ namespace ns3
     }
 
     void
-    ForwardingStrategy::SetNode3NName (Ptr<const NNNAddress> name, Time lease)
+    ForwardingStrategy::SetNode3NName (Ptr<const NNNAddress> name, Time lease, bool fixed)
     {
       NS_LOG_FUNCTION (this);
       // Modification to know which node if being called
       Ptr<Node> node = this->GetObject<Node> ();
 
       NS_LOG_INFO("Adding 3N name (" << *name << ") to node " << node->GetId());
-      m_node_names->addEntry(name, lease);
+      m_node_names->addEntry(name, lease, fixed);
       // TracedCallback to let Apps know we have a name
       m_got3Nname ();
     }
@@ -583,7 +583,7 @@ namespace ns3
 
 		      NS_LOG_INFO("OnAEN : Adding lease information for (" << tmp << ") until " << absoluteLeaseTime);
 		      // Add the information the the leased NodeNameContainer
-		      m_leased_names->addEntry(newName, absoluteLeaseTime);
+		      m_leased_names->addEntry(newName, absoluteLeaseTime, false);
 
 		      // If there is an NNPT entry, it means we had a REN before. We need to
 		      // ensure the network of this change
@@ -756,14 +756,14 @@ namespace ns3
 	  if (*GetNode3NNamePtr() != *obtainedName)
 	    {
 	      NS_LOG_INFO("OnOEN : Node had (" << GetNode3NName () << ") now taking (" << *obtainedName << ") until " << lease);
-	      SetNode3NName(obtainedName, lease);
+	      SetNode3NName(obtainedName, lease, false);
 	      willUseName = true;
 	    }
 	}
       else
 	{
 	  NS_LOG_INFO("OnOEN : Node has no name, taking (" << *obtainedName << ") until " << lease);
-	  SetNode3NName(obtainedName, lease);
+	  SetNode3NName(obtainedName, lease, false);
 	  willUseName = true;
 	}
 
