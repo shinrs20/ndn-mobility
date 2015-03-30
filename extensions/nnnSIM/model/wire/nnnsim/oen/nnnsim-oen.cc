@@ -94,8 +94,11 @@ namespace ns3
 	OEN::GetSerializedSize(void) const
 	{
 	  uint16_t poatype = m_ptr->GetPoaType ();
+	  uint16_t poatype2 = m_ptr->GetPersonalPoaType();
 	  size_t poatype_size = 0;
 	  size_t poa_num = 0;
+	  size_t poa_num2 = 0;
+	  size_t poatype_size2 = 0;
 
 	  if (poatype == 0)
 	    {
@@ -103,12 +106,23 @@ namespace ns3
 	      poatype_size = 6; // Hardcoded size of a Mac48Address
 	    }
 
-	  size_t size = CommonGetSerializedSize() +         /* Common header */
-	      2 +                                           /* PoA Type*/
-	      2 +                                           /* Number of PoAs */
-	      poa_num * poatype_size +                      /* Total size of PoAs */
-	      8 +                                           /* Lease time */
-	      NnnSim::SerializedSizeName(m_ptr->GetName()); /* Name size */
+	  if (poatype2 == 0)
+	    {
+	      poa_num2 = m_ptr->GetPersonalNumPoa ();
+	      poatype_size2 = 6; // Hardcoded size of a Mac48Address
+	    }
+
+	  size_t size = CommonGetSerializedSize() +             /* Common header */
+	      2 +                                               /* PoA Type*/
+	      2 +                                               /* Number of PoAs */
+	      poa_num * poatype_size +                          /* Total size of PoAs */
+	      8 +                                               /* Lease time */
+	      NnnSim::SerializedSizeName(m_ptr->GetName ()) +   /* Name size */
+	      2 +                                               /* PoA Type*/
+	      2 +                                               /* Number of PoAs */
+	      poa_num2 * poatype_size2 +                        /* Total size of PoAs */
+	      NnnSim::SerializedSizeName(m_ptr->GetSrcName ())
+	  ;
 	  return size;
 	}
 
@@ -132,18 +146,29 @@ namespace ns3
 
 	  uint16_t poatype = m_ptr->GetPoaType ();
 
+	  uint16_t personal_poatype = m_ptr->GetPersonalPoaType ();
+
 	  NS_LOG_INFO ("Serialize -> PoA Type = " << poatype);
 	  size_t bufsize = 0;
+	  size_t personal_bufsize = 0;
 
 	  if (poatype == 0)
 	    bufsize = 6; // Hardcoded Mac48Address size
 
+	  if (personal_poatype == 0)
+	    personal_bufsize = 6;
+
 	  // Create a buffer to be able to serialize PoAs
 	  uint8_t buffer[bufsize];
 
+	  uint8_t personal_buffer[personal_bufsize];
+
 	  uint32_t totalpoas = m_ptr->GetNumPoa();
 
+	  uint32_t totalpersonalpoas = m_ptr->GetPersonalNumPoa ();
+
 	  NS_LOG_INFO ("Serialize -> PoA Num = " << totalpoas);
+	  NS_LOG_INFO ("Serialize -> Personal PoA Num = " << totalpersonalpoas);
 
 	  // Serialize PoA Type
 	  start.WriteU16(poatype);
@@ -175,6 +200,27 @@ namespace ns3
 
 	  // Serialize NNN address
 	  NnnSim::SerializeName(start, m_ptr->GetName());
+
+	  // Serialize PoA Type
+	  start.WriteU16(personal_poatype);
+
+	  // Serialize Number of PoAs
+	  start.WriteU16(totalpersonalpoas);
+
+	  // Serialize PoAs
+	  for (int i = 0; i < totalpersonalpoas; i++)
+	    {
+	      // Use the CopyTo function to get the bit representation
+	      m_ptr->GetPersonalOnePoa(i).CopyTo (personal_buffer);
+
+	      // Since the bit representation is in 8 bit chunks, serialize it
+	      // accordingly
+	      for (int j = 0; j < personal_bufsize; j++)
+		start.WriteU8(personal_buffer[j]);
+	    }
+
+	  // Serialize NNN address
+	  NnnSim::SerializeName(start, m_ptr->GetSrcName());
 
 	  NS_LOG_INFO("Finished serialization");
 	}
@@ -236,6 +282,38 @@ namespace ns3
 
 	  // Deserialize the old name
 	  m_ptr->SetName(NnnSim::DeserializeName(i));
+
+
+	  uint16_t personal_poatype = i.ReadU16 ();
+	  size_t personal_bufsize = 0;
+
+	  NS_LOG_INFO ("Deserialize -> Personal PoA Type = " << personal_poatype);
+
+	  uint16_t personal_totalpoas = i.ReadU16 ();
+
+	  if (personal_poatype == 0)
+	    personal_bufsize = 6; // Hardcoded Mac48Address size
+
+	  NS_LOG_INFO ("Deserialize -> PoA Num = " << personal_totalpoas);
+
+	  // Create a buffer to be able to deserialize PoAs
+	  uint8_t personal_buffer[personal_bufsize];
+
+	  for (int k = 0; k < personal_totalpoas; k++)
+	    {
+	      for (int j = 0; j < personal_bufsize; j++)
+		{
+		  personal_buffer[j] = i.ReadU8 ();
+		}
+
+	      Address tmp = Address ();
+	      tmp.CopyFrom(personal_buffer, personal_bufsize);
+
+	      m_ptr->AddPoa(tmp);
+	    }
+
+	  // Deserialize the src name
+	  m_ptr->SetSrcName(NnnSim::DeserializeName(i));
 
 	  NS_ASSERT (GetSerializedSize ()== (i.GetDistanceFrom (start)));
 

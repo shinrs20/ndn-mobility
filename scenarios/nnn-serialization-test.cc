@@ -34,6 +34,7 @@ int main (int argc, char *argv[])
 
   Mac48Address n1_mac00 = Mac48Address ("01:B2:03:04:05:06");
   Mac48Address n1_mac01 = Mac48Address ("01:02:03:04:05:06");
+  Mac48Address n1_mac02 = Mac48Address ("02:D0:78:45:12:45");
 
   Ptr<NNNAddress> addr = Create<NNNAddress> ("ae.34.24");
   Ptr<NNNAddress> addr2 = Create<NNNAddress> ("45.34.76");
@@ -197,8 +198,10 @@ int main (int argc, char *argv[])
   source9->SetLifetime(ttl);
   source9->SetName(addr);
   source9->SetLeasetime(lease);
-  source9->AddPoa(n1_mac00.operator ns3::Address());
-  source9->AddPoa(n1_mac01.operator ns3::Address());
+  source9->AddPoa(n1_mac00.operator ns3::Address ());
+  source9->AddPoa(n1_mac01.operator ns3::Address ());
+  source9->SetSrcName (addr2);
+  source9->AddPersonalPoa(n1_mac02.operator ns3::Address ());
 
   std::cout << std::endl << "Before" << std::endl << *source9 << std::endl;
 

@@ -90,6 +90,33 @@ namespace ns3
       SetWire (0);
     }
 
+    const NNNAddress&
+    OEN::GetSrcName () const
+    {
+      if (m_src_name == 0) throw OENException ();
+      return *m_src_name;
+    }
+
+    Ptr<const NNNAddress>
+    OEN::GetSrcNamePtr () const
+    {
+      return m_src_name;
+    }
+
+    void
+    OEN::SetSrcName(Ptr<NNNAddress> name)
+    {
+      m_src_name = name;
+      SetWire (0);
+    }
+
+    void
+    OEN::SetSrcName (const NNNAddress &name)
+    {
+      m_src_name = Create<NNNAddress> (name);
+      SetWire (0);
+    }
+
     Time
     OEN::GetLeasetime() const
     {
@@ -105,12 +132,67 @@ namespace ns3
     void
     OEN::Print (std::ostream &os) const
     {
+      uint32_t num = GetPersonalNumPoa ();
+
       os << "<OEN>" << std::endl;
       NNNPDU::Print(os);
       os << "  <Name>" << GetName () << "</Name>" << std::endl;
       os << "  <Lease>" << GetLeasetime () << "</Lease>" << std::endl;
       ENPDU::Print(os);
+
+      os << "  <Giving Name>" << GetSrcName () << "</Giving Name>" << std::endl;
+      os << "  <Personal POA Type>" << GetPersonalPoaType () << "</Personal POA Type>"<< std::endl;
+      os << "  <Personal POA Num>" << num << "</Personal POA Num>"<< std::endl;
+      for (int i = 0; i < num; i++)
+	{
+	  os << "  <Personal POA" << i << ">" << GetPersonalOnePoa (i) << "</Personal POA" << i << ">"<< std::endl;
+	}
       os << "</OEN>" << std::endl;
+    }
+
+    uint16_t
+    OEN::GetPersonalPoaType () const
+    {
+      return m_personal_poa_type;
+    }
+
+    void
+    OEN::SetPersonalPoaType (uint16_t type)
+    {
+      m_personal_poa_type = type;
+    }
+
+    void
+    OEN::AddPersonalPoa (Address signature)
+    {
+      m_personal_poas.push_back(signature);
+    }
+
+    void
+    OEN::AddPersonalPoa (std::vector<Address> signatures)
+    {
+      m_personal_poas.insert(m_personal_poas.end (), signatures.begin (), signatures.end ());
+    }
+
+    uint32_t
+    OEN::GetPersonalNumPoa () const
+    {
+      return m_personal_poas.size();
+    }
+
+    std::vector<Address>
+    OEN::GetPersonalPoas () const
+    {
+      return m_personal_poas;
+    }
+
+    Address
+    OEN::GetPersonalOnePoa (uint32_t index) const
+    {
+      if (index < GetPersonalNumPoa ())
+	return m_personal_poas[index];
+      else
+	return Address();
     }
   } /* namespace nnn */
 } /* namespace ns3 */

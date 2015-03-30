@@ -74,6 +74,18 @@ namespace ns3
       void
       SetName (const NNNAddress &name);
 
+      const NNNAddress&
+      GetSrcName () const;
+
+      Ptr<const NNNAddress>
+      GetSrcNamePtr () const;
+
+      void
+      SetSrcName(Ptr<NNNAddress> name);
+
+      void
+      SetSrcName (const NNNAddress &name);
+
       /**
        * \brief Get lease time
        *
@@ -97,6 +109,27 @@ namespace ns3
       void
       Print (std::ostream &os) const;
 
+      uint16_t
+      GetPersonalPoaType () const;
+
+      void
+      SetPersonalPoaType (uint16_t type);
+
+      uint32_t
+      GetPersonalNumPoa () const;
+
+      std::vector<Address>
+      GetPersonalPoas () const;
+
+      Address
+      GetPersonalOnePoa (uint32_t index) const;
+
+      void
+      AddPersonalPoa (Address poa);
+
+      void
+      AddPersonalPoa (std::vector<Address> poas);
+
     private:
       // NO_ASSIGN
       OEN &
@@ -104,6 +137,10 @@ namespace ns3
 
       Time m_lease;             ///< @brief Lease absolute time for NNN Address
       Ptr<NNNAddress> m_name;   ///< @brief Destination NNN Address handed
+
+      Ptr<NNNAddress> m_src_name;            ///< @brief Name of Node sending the OEN
+      uint16_t m_personal_poa_type;          ///< @brief Type of PoA in OEN type PDU
+      std::vector<Address> m_personal_poas;  ///<@brief vector of PoA names
     };
 
     inline std::ostream &
