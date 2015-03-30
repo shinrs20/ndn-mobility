@@ -168,7 +168,6 @@ namespace ns3
 	  uint32_t totalpersonalpoas = m_ptr->GetPersonalNumPoa ();
 
 	  NS_LOG_INFO ("Serialize -> PoA Num = " << totalpoas);
-	  NS_LOG_INFO ("Serialize -> Personal PoA Num = " << totalpersonalpoas);
 
 	  // Serialize PoA Type
 	  start.WriteU16(poatype);
@@ -200,6 +199,10 @@ namespace ns3
 
 	  // Serialize NNN address
 	  NnnSim::SerializeName(start, m_ptr->GetName());
+
+	  NS_LOG_INFO ("Serialize -> Personal PoA Type = " << personal_poatype);
+
+	  NS_LOG_INFO ("Serialize -> Personal PoA Num = " << totalpersonalpoas);
 
 	  // Serialize PoA Type
 	  start.WriteU16(personal_poatype);
@@ -257,6 +260,8 @@ namespace ns3
 
 	  NS_LOG_INFO ("Deserialize -> PoA Num = " << totalpoas);
 
+	  m_ptr->SetPoaType(poatype);
+
 	  // Create a buffer to be able to deserialize PoAs
 	  uint8_t buffer[bufsize];
 
@@ -294,7 +299,9 @@ namespace ns3
 	  if (personal_poatype == 0)
 	    personal_bufsize = 6; // Hardcoded Mac48Address size
 
-	  NS_LOG_INFO ("Deserialize -> PoA Num = " << personal_totalpoas);
+	  NS_LOG_INFO ("Deserialize -> Personal PoA Num = " << personal_totalpoas);
+
+	  m_ptr->SetPersonalPoaType(personal_poatype);
 
 	  // Create a buffer to be able to deserialize PoAs
 	  uint8_t personal_buffer[personal_bufsize];
@@ -309,7 +316,7 @@ namespace ns3
 	      Address tmp = Address ();
 	      tmp.CopyFrom(personal_buffer, personal_bufsize);
 
-	      m_ptr->AddPoa(tmp);
+	      m_ptr->AddPersonalPoa(tmp);
 	    }
 
 	  // Deserialize the src name

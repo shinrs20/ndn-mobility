@@ -498,6 +498,11 @@ namespace ns3
 	  // Add the PoA names to the PDU
 	  oen_p->AddPoa(poaAddrs);
 
+	  // Add my name to the PDU
+	  oen_p->SetSrcName (GetNode3NName ());
+	  // Add personal PoAs
+	  oen_p->AddPersonalPoa (GetAllPoANames (face));
+
 	  // Send the create OEN PDU out the way it came
 	  face->SendOEN(oen_p, destAddr);
 
@@ -758,6 +763,9 @@ namespace ns3
 	      NS_LOG_INFO("OnOEN : Node had (" << GetNode3NName () << ") now taking (" << *obtainedName << ") until " << lease);
 	      SetNode3NName(obtainedName, lease, false);
 	      willUseName = true;
+
+	      // Add the information to NNST
+	      m_nnst->Add(oen_p->GetSrcNamePtr (), face, oen_p->GetPersonalPoas (), lease, m_standardMetric);
 	    }
 	}
       else
@@ -765,6 +773,9 @@ namespace ns3
 	  NS_LOG_INFO("OnOEN : Node has no name, taking (" << *obtainedName << ") until " << lease);
 	  SetNode3NName(obtainedName, lease, false);
 	  willUseName = true;
+
+	  // Add the information to NNST
+	  m_nnst->Add(oen_p->GetSrcNamePtr (), face, oen_p->GetPersonalPoas (), lease, m_standardMetric);
 	}
 
       // If you start using the 3N name, execute the following
