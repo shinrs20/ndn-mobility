@@ -34,6 +34,7 @@
 #include "name-component.h"
 
 #define SEP '.'
+#define MAXCOMP 16
 
 NNN_NAMESPACE_BEGIN
 
@@ -43,308 +44,359 @@ NNN_NAMESPACE_BEGIN
 class NNNAddress : public SimpleRefCount<NNNAddress>
 {
 public:
-	typedef std::vector<name::Component>::iterator iterator;
-	typedef std::vector<name::Component>::const_iterator const_iterator;
-	typedef std::vector<name::Component>::reverse_iterator reverse_iterator;
-	typedef std::vector<name::Component>::const_reverse_iterator const_reverse_iterator;
-	typedef std::vector<name::Component>::reference reference;
-	typedef std::vector<name::Component>::const_reference const_reference;
+  typedef std::vector<name::Component>::iterator iterator;
+  typedef std::vector<name::Component>::const_iterator const_iterator;
+  typedef std::vector<name::Component>::reverse_iterator reverse_iterator;
+  typedef std::vector<name::Component>::const_reverse_iterator const_reverse_iterator;
+  typedef std::vector<name::Component>::reference reference;
+  typedef std::vector<name::Component>::const_reference const_reference;
 
-	typedef name::Component partial_type;
-	///////////////////////////////////////////////////////////////////////////////
-	//                              CONSTRUCTORS                                 //
-	///////////////////////////////////////////////////////////////////////////////
+  typedef name::Component partial_type;
+  ///////////////////////////////////////////////////////////////////////////////
+  //                              CONSTRUCTORS                                 //
+  ///////////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * @brief Default constructor to create an NNN Address
-	 */
-	NNNAddress ();
+  /**
+   * @brief Default constructor to create an NNN Address
+   */
+  NNNAddress ();
 
-	/**
-	 * @brief Copy constructor
-	 *
-	 * @param other reference to a NNN Address object
-	 */
-	NNNAddress (const NNNAddress &other);
+  /**
+   * @brief Copy constructor
+   *
+   * @param other reference to a NNN Address object
+   */
+  NNNAddress (const NNNAddress &other);
 
-	/**
-	 * @brief Create a name from string
-	 *
-	 * @param name Dot separated address
-	 */
-	NNNAddress (const std::string &name);
+  /**
+   * @brief Create a name from string
+   *
+   * @param name Dot separated address
+   */
+  NNNAddress (const std::string &name);
 
-	/**
-	 * @brief Create a name from a vector of name::Components
-	 *
-	 * @param name vector of name::Components
-	 */
-	NNNAddress (const std::vector<name::Component> name);
+  /**
+   * @brief Create a name from a vector of name::Components
+   *
+   * @param name vector of name::Components
+   */
+  NNNAddress (const std::vector<name::Component> name);
 
-	/**
-	 * @brief Assignment operator
-	 */
-	NNNAddress &
-	operator= (const NNNAddress &other);
+  /**
+   * @brief Create a name from a container of elements [begin, end)
+   *
+   * @param begin begin iterator of the container
+   * @param end end iterator of the container
+   */
+  template<class Iterator>
+  NNNAddress (Iterator begin, Iterator end);
+
+  /**
+   * @brief Assignment operator
+   */
+  NNNAddress &
+  operator= (const NNNAddress &other);
 
 
-	///////////////////////////////////////////////////////////////////////////////
-	//                                SETTERS                                    //
-	///////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////
+  //                                SETTERS                                    //
+  ///////////////////////////////////////////////////////////////////////////////
 
-	/**
-	 * @brief Append components from another ndn::Name object
-	 *
-	 * @param comp reference to Name object
-	 * @returns reference to self (to allow chaining of append methods)
-	 */
-	inline NNNAddress &
-	append (const name::Component &comp);
+  /**
+   * @brief Append components from another NNNAddress object
+   *
+   * @param comp reference to Name object
+   * @returns reference to self (to allow chaining of append methods)
+   */
+  inline NNNAddress &
+  append (const name::Component &comp);
 
-	/**
-	 * @brief Append a string as a name component
-	 *
-	 * @param compStr a string
-	 * @returns reference to self (to allow chaining of append methods)
-	 *
-	 * No conversions will be done to the string.  The string is included in raw form,
-	 * without any leading '\0' symbols.
-	 */
-	inline NNNAddress &
-	append (const std::string &compStr);
+  /**
+   * @brief Append a binary blob as a NNNAddress component
+   * @param comp a binary blob
+   *
+   * This version is a little bit more efficient, since it swaps contents of comp and newly added component
+   *
+   * Attention!!! This method has an intended side effect: content of comp becomes empty
+   */
+  inline NNNAddress &
+  appendBySwap (name::Component &comp);
 
-	/**
-	 * @brief Append a binary blob as a name component
-	 * @param comp a binary blob
-	 *
-	 * This version is a little bit more efficient, since it swaps contents of comp and newly added component
-	 *
-	 * Attention!!! This method has an intended side effect: content of comp becomes empty
-	 */
-	inline NNNAddress &
-	appendBySwap (name::Component &comp);
+  /**
+   * @brief Append components a container of elements [begin, end)
+   *
+   * @param begin begin iterator of the container
+   * @param end end iterator of the container
+   * @returns reference to self (to allow chaining of append methods)
+   */
+  template<class Iterator>
+  inline NNNAddress &
+  append (Iterator begin, Iterator end);
 
-	/**
-	 * @brief Append a binary blob as a name component
-	 *
-	 * @param buf pointer to the first byte of the binary blob
-	 * @param size length of the binary blob
-	 * @returns reference to self (to allow chaining of append methods)
-	 */
-	inline NNNAddress &
-	append (const void *buf, size_t size);
+  /**
+   * @brief Append components from another NNNAddress object
+   *
+   * @param comp reference to NNNAddress object
+   * @returns reference to self (to allow chaining of append methods)
+   */
+  inline NNNAddress &
+  append (const NNNAddress &comp);
 
-	/**
-	 * @brief Get number of the name components
-	 * @return number of name components
-	 */
-	inline size_t
-	size () const;
+  /**
+   * @brief Append a string as a NNNAddress component
+   *
+   * @param compStr a string
+   * @returns reference to self (to allow chaining of append methods)
+   *
+   * No conversions will be done to the string.  The string is included in raw form,
+   * without any leading '\0' symbols.
+   */
+  inline NNNAddress &
+  append (const std::string &compStr);
 
-	/**
-	 * @brief Get binary blob of name component
-	 * @param index index of the name component.  If less than 0, then getting component from the back:
-	 *              get(-1) getting the last component, get(-2) is getting second component from back, etc.
-	 * @returns const reference to binary blob of the requested name component
-	 *
-	 * If index is out of range, an exception will be thrown
-	 */
-	const name::Component &
-	get (int index) const;
+  /**
+   * @brief Append a binary blob as a NNNAddress component
+   *
+   * @param buf pointer to the first byte of the binary blob
+   * @param size length of the binary blob
+   * @returns reference to self (to allow chaining of append methods)
+   */
+  inline NNNAddress &
+  append (const void *buf, size_t size);
 
-	/**
-	 * @brief Get binary blob of name component
-	 * @param index index of the name component.  If less than 0, then getting component from the back
-	 * @returns reference to binary blob of the requested name component
-	 *
-	 * If index is out of range, an exception will be thrown
-	 */
-	name::Component &
-	get (int index);
+  /**
+   * @brief Get number of the name components
+   * @return number of name components
+   */
+  inline size_t
+  size () const;
 
-	/////
-	///// Iterator interface to name components
-	/////
-	inline NNNAddress::const_iterator
-	begin () const;           ///< @brief Begin iterator (const)
+  /**
+   * @brief Get binary blob of name component
+   * @param index index of the name component.  If less than 0, then getting component from the back:
+   *              get(-1) getting the last component, get(-2) is getting second component from back, etc.
+   * @returns const reference to binary blob of the requested name component
+   *
+   * If index is out of range, an exception will be thrown
+   */
+  const name::Component &
+  get (int index) const;
 
-	inline NNNAddress::iterator
-	begin ();                 ///< @brief Begin iterator
+  /**
+   * @brief Get binary blob of name component
+   * @param index index of the name component.  If less than 0, then getting component from the back
+   * @returns reference to binary blob of the requested name component
+   *
+   * If index is out of range, an exception will be thrown
+   */
+  name::Component &
+  get (int index);
 
-	inline NNNAddress::const_iterator
-	end () const;             ///< @brief End iterator (const)
+  /////
+  ///// Iterator interface to name components
+  /////
+  inline NNNAddress::const_iterator
+  begin () const;           ///< @brief Begin iterator (const)
 
-	inline NNNAddress::iterator
-	end ();                   ///< @brief End iterator
+  inline NNNAddress::iterator
+  begin ();                 ///< @brief Begin iterator
 
-	inline NNNAddress::const_reverse_iterator
-	rbegin () const;          ///< @brief Reverse begin iterator (const)
+  inline NNNAddress::const_iterator
+  end () const;             ///< @brief End iterator (const)
 
-	inline NNNAddress::reverse_iterator
-	rbegin ();                ///< @brief Reverse begin iterator
+  inline NNNAddress::iterator
+  end ();                   ///< @brief End iterator
 
-	inline NNNAddress::const_reverse_iterator
-	rend () const;            ///< @brief Reverse end iterator (const)
+  inline NNNAddress::const_reverse_iterator
+  rbegin () const;          ///< @brief Reverse begin iterator (const)
 
-	inline NNNAddress::reverse_iterator
-	rend ();                  ///< @brief Reverse end iterator
+  inline NNNAddress::reverse_iterator
+  rbegin ();                ///< @brief Reverse begin iterator
 
-	/////
-	///// Static helpers to convert name component to appropriate value
-	/////
+  inline NNNAddress::const_reverse_iterator
+  rend () const;            ///< @brief Reverse end iterator (const)
 
-	/*
-	 * @brief Obtain an address minus the ending component
-	 */
-	NNNAddress
-	getSectorName () const;
+  inline NNNAddress::reverse_iterator
+  rend ();                  ///< @brief Reverse end iterator
 
-	/**
-	 * @brief Get text representation of the name (Dot notation)
-	 */
-	std::string
-	toDotHex () const;
+  /////
+  ///// Static helpers to convert name component to appropriate value
+  /////
 
-	/**
-	 * @brief Write name in Dot notation to the specified output stream
-	 * @param os output stream
-	 */
-	void
-	toDotHex (std::ostream &os) const;
+  NNNAddress
+  getName () const;
 
-	/////////////////////////////////////////////////
-	// Helpers and compatibility wrappers
-	/////////////////////////////////////////////////
+  /*
+   * @brief Obtain an address minus the ending component
+   */
+  NNNAddress
+  getSectorName () const;
 
-	/**
-	 * @brief Compare two names, using canonical ordering for each component
-	 * @return 0  They compare equal
-	 *         <0 If *this comes before other in the canonical ordering
-	 *         >0 If *this comes after in the canonical ordering
-	 */
-	int
-	compare (const NNNAddress &name) const;
+  /**
+   * @brief Get text representation of the name (Dot notation)
+   */
+  std::string
+  toDotHex () const;
 
-	/**
-	 * @brief Find out if two NNN addresses belong to the same sector
-	 * @return True or False
-	 */
-	bool
-	isSameSector (const NNNAddress &name) const;
+  /**
+   * @brief Write name in Dot notation to the specified output stream
+   * @param os output stream
+   */
+  void
+  toDotHex (std::ostream &os) const;
 
-	/**
-	 * @brief Find out if NNN address is a top level address
-	 * @return True or False
-	 */
-	bool
-	isToplvlSector () const;
+  /////////////////////////////////////////////////
+  // Helpers and compatibility wrappers
+  /////////////////////////////////////////////////
 
-	/**
-	 * @brief Find out if NNN address is empty
-	 * @return True or False
-	 */
-	bool
-	isEmpty () const;
+  /**
+   * @brief Compare two names, using canonical ordering for each component
+   * @return 0  They compare equal
+   *         <0 If *this comes before other in the canonical ordering
+   *         >0 If *this comes after in the canonical ordering
+   */
+  int
+  compare (const NNNAddress &name) const;
 
-	/*
-	 * @brief Obtain the closest address common to the NNN addresses used
-	 */
-	NNNAddress
-	getClosestSector (const NNNAddress &name) const;
+  int
+  compareLabels (const NNNAddress &name) const;
 
-	/**
-	 * @brief Check if 2 NNNAddress objects are equal
-	 */
-	inline bool
-	operator == (const NNNAddress &name) const;
+  /**
+   * @brief Find out if two NNN addresses belong to the same sector
+   * @return True or False
+   */
+  bool
+  isSameSector (const NNNAddress &name) const;
 
-	/**
-	 * @brief Check if 2 NNNAddress objects are not equal
-	 */
-	inline bool
-	operator != (const NNNAddress &name) const;
+  bool
+  isSubSector (const NNNAddress &name) const;
 
-	/**
-	 * @brief Less or equal comparison of 2 NNNAddress objects
-	 */
-	inline bool
-	operator <= (const NNNAddress &name) const;
+  bool
+  isParentSector (const NNNAddress &name) const;
 
-	/**
-	 * @brief Less comparison of 2 NNNAddress objects
-	 */
-	inline bool
-	operator < (const NNNAddress &name) const;
+  /**
+   * @brief Find out if NNN address is a top level address
+   * @return True or False
+   */
+  bool
+  isToplvlSector () const;
 
-	/**
-	 * @brief Great or equal comparison of 2 NNNAddress objects
-	 */
-	inline bool
-	operator >= (const NNNAddress &name) const;
+  bool
+  isOneLabel () const;
 
-	/**
-	 * @brief Great comparison of 2 NNNAddress objects
-	 */
-	inline bool
-	operator > (const NNNAddress &name) const;
+  NNNAddress
+  getLastLabel () const;
 
-	/**
-	 * @brief Operator [] to simplify access to name components
-	 * @see get
-	 */
-	inline name::Component &
-	operator [] (int index);
+  /**
+   * @brief Find out if NNN address is empty
+   * @return True or False
+   */
+  bool
+  isEmpty () const;
 
-	/**
-	 * @brief Operator [] to simplify access to name components
-	 * @see get
-	 */
-	inline const name::Component &
-	operator [] (int index) const;
+  /*
+   * @brief Obtain the closest address common to the NNN addresses used
+   */
+  NNNAddress
+  getClosestSector (const NNNAddress &name) const;
 
-	/**
-	 * @brief Create a new Name object, by copying components from first and second name
-	 */
-	NNNAddress
-	operator + (const NNNAddress &name) const;
+  /**
+   * @brief Check if 2 NNNAddress objects are equal
+   */
+  inline bool
+  operator == (const NNNAddress &name) const;
 
-	static uint8_t
-	GetType (void);
+  /**
+   * @brief Check if 2 NNNAddress objects are not equal
+   */
+  inline bool
+  operator != (const NNNAddress &name) const;
 
-	Address
-	ConvertTo (void) const;
+  /**
+   * @brief Less or equal comparison of 2 NNNAddress objects
+   */
+  inline bool
+  operator <= (const NNNAddress &name) const;
 
-	NNNAddress
-	ConvertFrom (const Address &address);
+  /**
+   * @brief Less comparison of 2 NNNAddress objects
+   */
+  inline bool
+  operator < (const NNNAddress &name) const;
 
-	int
-	distance (const NNNAddress &name) const;
+  /**
+   * @brief Great or equal comparison of 2 NNNAddress objects
+   */
+  inline bool
+  operator >= (const NNNAddress &name) const;
+
+  /**
+   * @brief Great comparison of 2 NNNAddress objects
+   */
+  inline bool
+  operator > (const NNNAddress &name) const;
+
+  /**
+   * @brief Operator [] to simplify access to name components
+   * @see get
+   */
+  inline name::Component &
+  operator [] (int index);
+
+  /**
+   * @brief Operator [] to simplify access to name components
+   * @see get
+   */
+  inline const name::Component &
+  operator [] (int index) const;
+
+  /**
+   * @brief Create a new Name object, by copying components from first and second name
+   */
+  NNNAddress
+  operator + (const NNNAddress &name) const;
+
+  static uint8_t
+  GetType (void);
+
+  Address
+  ConvertTo (void) const;
+
+  NNNAddress
+  ConvertFrom (const Address &address);
+
+  int
+  distance (const NNNAddress &name) const;
 
 public:
-	// Data Members (public):
-	///  Value returned by various member functions when they fail.
-	const static size_t npos = static_cast<size_t> (-1);
-	const static uint64_t nversion = static_cast<uint64_t> (-1);
+  // Data Members (public):
+  ///  Value returned by various member functions when they fail.
+  const static size_t npos = static_cast<size_t> (-1);
+  const static uint64_t nversion = static_cast<uint64_t> (-1);
 
 private:
-	std::vector<name::Component> m_address_comp;
+
+  bool
+  canAppendComponent();
+
+  std::vector<name::Component> m_address_comp;
 };
 
 inline std::ostream &
 operator << (std::ostream &os, const NNNAddress &name)
 {
-	name.toDotHex (os);
-	return os;
+  name.toDotHex (os);
+  return os;
 }
 
 inline std::istream &
 operator >> (std::istream &is, NNNAddress &name)
 {
-	std::string line;
-	is >> line;
-	name = NNNAddress (line);
+  std::string line;
+  is >> line;
+  name = NNNAddress (line);
 
-	return is;
+  return is;
 }
 
 /////
@@ -399,16 +451,22 @@ NNNAddress::rend ()
   return m_address_comp.rend ();
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////
 // Definition of inline methods
 /////////////////////////////////////////////////////////////////////////////////////
+
+template<class Iterator>
+NNNAddress::NNNAddress (Iterator begin, Iterator end)
+{
+  append (begin, end);
+}
 
 inline NNNAddress &
 NNNAddress::append (const name::Component &comp)
 {
   if (comp.size () != 0)
-	  m_address_comp.push_back (comp);
+    if (canAppendComponent())
+      m_address_comp.push_back (comp);
   return *this;
 }
 
@@ -416,11 +474,45 @@ inline NNNAddress &
 NNNAddress::appendBySwap (name::Component &comp)
 {
   if (comp.size () != 0)
+    if (canAppendComponent())
+      {
+	NNNAddress::iterator newComp = m_address_comp.insert (end (), name::Component ());
+	newComp->swap (comp);
+      }
+  return *this;
+}
+
+template<class Iterator>
+inline NNNAddress &
+NNNAddress::append (Iterator begin, Iterator end)
+{
+  for (Iterator i = begin; i != end; i++)
     {
-	  NNNAddress::iterator newComp = m_address_comp.insert (end (), name::Component ());
-      newComp->swap (comp);
+      append (*i);
     }
   return *this;
+}
+
+NNNAddress &
+NNNAddress::append (const NNNAddress &comp)
+{
+  if (size() + comp.size() <= MAXCOMP)
+    {
+      if (this == &comp)
+	{
+	  // have to double-copy if the object is self, otherwise results very frustrating (because we use vector...)
+	  return append (NNNAddress (comp.begin (), comp.end ()));
+	}
+      return append (comp.begin (), comp.end ());
+    }
+  else
+    return *this;
+}
+
+inline size_t
+NNNAddress::size () const
+{
+  return m_address_comp.size ();
 }
 
 NNNAddress &
@@ -433,37 +525,37 @@ NNNAddress::append (const void *buf, size_t size)
 inline bool
 NNNAddress::operator ==(const NNNAddress &name) const
 {
-	return (compare (name) == 0);
+  return (compareLabels (name) == 0);
 }
 
 inline bool
 NNNAddress::operator !=(const NNNAddress &name) const
 {
-	return (compare (name) != 0);
+  return (compareLabels (name) != 0);
 }
 
 inline bool
 NNNAddress::operator <= (const NNNAddress &name) const
 {
-	return (compare (name) <= 0);
+  return (compareLabels (name) <= 0);
 }
 
 inline bool
 NNNAddress::operator < (const NNNAddress &name) const
 {
-	return (compare (name) < 0);
+  return (compareLabels (name) < 0);
 }
 
 inline bool
 NNNAddress::operator >= (const NNNAddress &name) const
 {
-	return (compare (name) >= 0);
+  return (compareLabels (name) >= 0);
 }
 
 inline bool
 NNNAddress::operator > (const NNNAddress &name) const
 {
-	return (compare (name) > 0);
+  return (compareLabels (name) > 0);
 }
 
 inline name::Component &

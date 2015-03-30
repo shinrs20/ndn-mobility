@@ -25,86 +25,91 @@
 
 #include "nnn-face.h"
 
-namespace ns3 {
-namespace nnn {
-
-/**
- * \ingroup Nnn-face
- * \brief Implementation of layer-2 (Ethernet) Nnn face
- *
- * This class defines basic functionality of Nnn face. Face is core
- * component responsible for actual delivery of data packet to and
- * from Nnn stack
- *
- * NnnNetDevice face is permanently associated with one NetDevice
- * object and this object cannot be changed for the lifetime of the
- * face
- *
- * \see NnnAppFace, NnnNetDeviceFace, NnnIpv4Face, NnnUdpFace
- */
-class NetDeviceFace  : public Face
+namespace ns3
 {
-public:
-	static TypeId
-	GetTypeId ();
+  namespace nnn
+  {
+    /**
+     * \ingroup Nnn-face
+     * \brief Implementation of layer-2 (Ethernet) Nnn face
+     *
+     * This class defines basic functionality of Nnn face. Face is core
+     * component responsible for actual delivery of data packet to and
+     * from Nnn stack
+     *
+     * NnnNetDevice face is permanently associated with one NetDevice
+     * object and this object cannot be changed for the lifetime of the
+     * face
+     *
+     * \see NnnAppFace, NnnNetDeviceFace, NnnIpv4Face, NnnUdpFace
+     */
+    class NetDeviceFace  : public Face
+    {
+    public:
+      static TypeId
+      GetTypeId ();
 
-	/**
-	 * \brief Constructor
-	 *
-	 * @param node Node associated with the face
-	 * @param netDevice a smart pointer to NetDevice object to which
-	 * this face will be associate
-	 */
-	NetDeviceFace (Ptr<Node> node, const Ptr<NetDevice> &netDevice);
-	virtual ~NetDeviceFace();
+      /**
+       * \brief Constructor
+       *
+       * @param node Node associated with the face
+       * @param netDevice a smart pointer to NetDevice object to which
+       * this face will be associate
+       */
+      NetDeviceFace (Ptr<Node> node, const Ptr<NetDevice> &netDevice);
+      virtual ~NetDeviceFace();
 
-	////////////////////////////////////////////////////////////////////
-	// methods overloaded from NnnFace
-	virtual void
-	RegisterProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
-			const DOHandler &DOHandler, const ENHandler &ENHandler,
-			const AENHandler &AENHandler, const RENHandler &RENHandler,
-			const DENHandler &DENHandler, const INFHandler &INFHandler);
+      ////////////////////////////////////////////////////////////////////
+      // methods overloaded from NnnFace
+      virtual void
+      RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
+                                   const DOHandler &DOHandler, const ENHandler &ENHandler,
+                                   const AENHandler &AENHandler, const RENHandler &RENHandler,
+                                   const DENHandler &DENHandler, const INFHandler &INFHandler,
+				   const DUHandler &DUHandler, const OENHandler &OENHandler);
 
-	virtual void
-	UnRegisterProtocolHandlers ();
+      virtual void
+      UnRegisterNNNProtocolHandlers ();
 
-protected:
-	virtual bool
-	Send (Ptr<Packet> p);
+    protected:
+      virtual bool
+      Send (Ptr<Packet> p);
 
-public:
-	/**
-	 * @brief Print out name of the NnnFace to the stream
-	 */
-	virtual std::ostream&
-	Print (std::ostream &os) const;
-	////////////////////////////////////////////////////////////////////
+      virtual bool
+      Send (Ptr<Packet> p, Address addr);
 
-	/**
-	 * \brief Get NetDevice associated with the face
-	 *
-	 * \returns smart pointer to NetDevice associated with the face
-	 */
-	Ptr<NetDevice> GetNetDevice () const;
+    public:
+      /**
+       * @brief Print out name of the NnnFace to the stream
+       */
+      virtual std::ostream&
+      Print (std::ostream &os) const;
+      ////////////////////////////////////////////////////////////////////
 
-private:
-	NetDeviceFace (const NetDeviceFace &); ///< \brief Disabled copy constructor
-	NetDeviceFace& operator= (const NetDeviceFace &); ///< \brief Disabled copy operator
+      /**
+       * \brief Get NetDevice associated with the face
+       *
+       * \returns smart pointer to NetDevice associated with the face
+       */
+      Ptr<NetDevice> GetNetDevice () const;
 
-	/// \brief callback from lower layers
-	void ReceiveFromNetDevice (Ptr<NetDevice> device,
-			Ptr<const Packet> p,
-			uint16_t protocol,
-			const Address &from,
-			const Address &to,
-			NetDevice::PacketType packetType);
+    private:
+      NetDeviceFace (const NetDeviceFace &); ///< \brief Disabled copy constructor
+      NetDeviceFace& operator= (const NetDeviceFace &); ///< \brief Disabled copy operator
 
-private:
-	Ptr<NetDevice> m_netDevice; ///< \brief Smart pointer to NetDevice
-};
+      /// \brief callback from lower layers
+      void ReceiveFromNetDevice (Ptr<NetDevice> device,
+                                 Ptr<const Packet> p,
+                                 uint16_t protocol,
+                                 const Address &from,
+                                 const Address &to,
+                                 NetDevice::PacketType packetType);
 
-} // namespace nnn
+    private:
+      Ptr<NetDevice> m_netDevice; ///< \brief Smart pointer to NetDevice
+    };
+
+  } // namespace nnn
 } // namespace ns3
 
 #endif //NNN_NET_DEVICE_FACE_H

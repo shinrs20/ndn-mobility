@@ -29,56 +29,94 @@ using namespace nnn;
 
 int main (int argc, char *argv[])
 {
-	NamesContainer test1;
+  NamesContainer test1;
 
-	NNNAddress nn_test1 ("be.54.32");
-	NNNAddress nn_test2 ("af.67.31");
-	NNNAddress nn_test3 ("ae.34.26");
+  Ptr<const NNNAddress> nn_test1 = Create<NNNAddress> ("be.54.32");
+  Ptr<const NNNAddress> nn_test2 = Create<NNNAddress> ("af.67.31");
+  Ptr<const NNNAddress> nn_test3 = Create<NNNAddress> ("ae.34.26");
+  Ptr<const NNNAddress> nn_test4 = Create<NNNAddress> ("6.8.9.3.2");
 
-	Time t_test1 = Seconds (20);
-	Time t_test2 = Seconds (60);
-	Time t_test3 = Seconds (10);
+  Time t_test1 = Seconds (100);
+  Time t_test2 = Seconds (300);
+  Time t_test3 = Seconds (350);
+  Time t_test4 = Seconds (200);
 
-	Time updateTime = Seconds (80);
+  Time updateTime = Seconds (400);
 
-	NamesContainerEntry nce_test1 = NamesContainerEntry (nn_test1, t_test1);
-	NamesContainerEntry nce_test2 = NamesContainerEntry (nn_test2, t_test2);
-	NamesContainerEntry nce_test3 = NamesContainerEntry (nn_test3, t_test3);
+  test1.addEntry(nn_test1, t_test1, false);
+  test1.addEntry(nn_test2, t_test2, false);
+  test1.addEntry(nn_test3, t_test3, true);
+  test1.addEntry(nn_test4, t_test4, false);
 
-	test1.addEntry(nce_test1);
-	test1.addEntry(nce_test2);
-	test1.addEntry(nce_test3);
+  std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
 
-	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
+  std::cout << "Printing ordering by address" << std::endl;
+  test1.printByAddress();
 
-	std::cout << "Printing ordering by address" << std::endl;
-	test1.printByAddress();
+  std::cout << "Printing ordering by lease expire time" << std::endl;
+  test1.printByLease();
 
-	std::cout << "Printing ordering by lease expire time" << std::endl;
-	test1.printByLease();
+  std::cout << "Expire time for " << *nn_test2 << " is " << test1.findNameExpireTime(nn_test2) << std::endl;
+  std::cout << "Updating expire time for " << *nn_test2 << " to " << updateTime << std::endl;
 
-	std::cout << "Expire time for " << nn_test2 << " is " << test1.findNameExpireTime(nn_test2) << std::endl;
-	std::cout << "Updating expire time for " << nn_test2 << " to " << updateTime << std::endl;
+  if (test1.isFixed (nn_test3))
+    {
+      std::cout << *nn_test3 << " is a fixed address" << std::endl;
+    }
+  else
+    {
+      std::cout << *nn_test3 << " is not a fixed address" << std::endl;
+    }
 
-	test1.updateLeaseTime(nn_test2, updateTime);
+  if (test1.hasFixedName ())
+    {
+      std::cout << "NamesContainer has a fixed name" << std::endl;
+    }
 
-	std::cout << "Deleting " << nn_test3 << " from container..." << std::endl;
+  test1.updateLeaseTime(nn_test2, updateTime);
 
-	test1.deleteEntry(nn_test3);
+  std::cout << "Deleting " << *nn_test3 << " from container..." << std::endl;
 
-	NNNAddress tmp = test1.findNewestName();
+  test1.deleteEntry(nn_test3);
 
-	std::cout << "Last address to die will be " << tmp << " at " << test1.findNameExpireTime(tmp) << std::endl;
+  if (!test1.hasFixedName ())
+    {
+      std::cout << "NamesContainer doesn't have a fixed name" << std::endl;
+    }
 
-	std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
-	std::cout << "Printing ordering by address" << std::endl;
-	test1.printByAddress();
+  std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
+  std::cout << "Printing ordering by lease expire time" << std::endl;
+  test1.printByLease();
 
-	Simulator::Stop (Seconds (70));
-	Simulator::Run ();
-	Simulator::Destroy ();
+  std::cout << "Deleting everything from container..." << std::endl;
+  test1.clear();
 
-	std::cout << "Printing ordering by address" << std::endl;
-	test1.printByAddress();
+  std::cout << "Printing ordering by lease expire time" << std::endl;
+  test1.printByLease();
 
+  std::cout << "Reinserting everything into NamesContainer" << std::endl;
+
+  test1.addEntry(nn_test1, t_test1, false);
+  test1.addEntry(nn_test2, t_test2, false);
+  test1.addEntry(nn_test3, t_test3, true);
+  test1.addEntry(nn_test4, t_test4, false);
+
+  std::cout << "We have a NamesContainer of size: " << test1.size() << std::endl;
+
+  Ptr<const NNNAddress> tmp = test1.findNewestName();
+
+  std::cout << "Last address to die will be " << *tmp << " at " << test1.findNameExpireTime(tmp) << std::endl;
+  std::cout << "Printing ordering by address" << std::endl;
+  test1.printByAddress();
+
+  std::cout << "Printing ordering by lease expire time" << std::endl;
+  test1.printByLease();
+
+  std::cout << "Printing ordering by << operator" << std::endl;
+  std::cout << test1;
+
+
+  Simulator::Stop (Seconds (50));
+  Simulator::Run ();
+  Simulator::Destroy ();
 }

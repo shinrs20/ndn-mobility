@@ -29,16 +29,20 @@ namespace ll = boost::lambda;
 
 NS_LOG_COMPONENT_DEFINE ("nnn.nnst");
 
-namespace ns3 {
-  namespace nnn {
+namespace ns3
+{
+  namespace nnn
+  {
+    NS_OBJECT_ENSURE_REGISTERED (NNST);
 
     TypeId
     NNST::GetTypeId (void)
     {
       static TypeId tid = TypeId ("ns3::nnn::NNST") // cheating ns3 object system
-    		    .SetParent<Object> ()
-    		    .SetGroupName ("nnn")
-    		    .AddConstructor<NNST> ();
+	  .SetParent<Object> ()
+	  .SetGroupName ("Nnn")
+	  .AddConstructor<NNST> ()
+	  ;
       return tid;
     }
 
@@ -53,12 +57,201 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this << prefix);
       super::iterator item = super::longest_prefix_match (prefix);
-      // @todo use predicate to search with exclude filters
 
       if (item == super::end ())
 	return 0;
       else
 	return item->payload ();
+    }
+
+    Ptr<const NNNAddress>
+    NNST::ClosestSectorNameInfo (const NNNAddress &prefix)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+      Ptr<nnst::Entry> tmp = ClosestSector (prefix);
+      if (tmp != 0)
+	return tmp->GetAddressPtr();
+      else
+	return Create<const NNNAddress> ();
+    }
+
+    Ptr<const NNNAddress>
+    NNST::ClosestSectorNameInfo (Ptr<const NNNAddress> prefix)
+    {
+      NS_LOG_FUNCTION (this << *prefix);
+      return ClosestSectorNameInfo(*prefix);
+    }
+
+    std::pair<Ptr<Face>, Address>
+    NNST::ClosestSectorFaceInfo (const NNNAddress &prefix, uint32_t skip)
+    {
+        NS_LOG_FUNCTION (this << prefix);
+        // Find the closest entry to prefix.
+        Ptr<nnst::Entry> tmp = ClosestSector(prefix);
+
+        return tmp->FindBestCandidateFaceInfo(skip);
+    }
+
+    std::pair<Ptr<Face>, Address>
+    NNST::ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip)
+    {
+        NS_LOG_FUNCTION (this << *prefix);
+        return ClosestSectorFaceInfo(*prefix, skip);
+    }
+
+    std::vector<Ptr<const NNNAddress> >
+    NNST::OneHopNameInfo (const NNNAddress &prefix)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+      Ptr<nnst::Entry> curr;
+      std::vector<Ptr<const NNNAddress> > ret;
+
+      for (curr = Begin(); curr != End (); curr = Next(curr))
+	{
+	  if (curr->GetAddress().distance(prefix) == 1)
+	    {
+	      ret.push_back(curr->GetAddressPtr());
+	    }
+	}
+
+      return ret;
+    }
+
+    std::vector<Ptr<const NNNAddress> >
+    NNST::OneHopNameInfo (Ptr<const NNNAddress> prefix)
+    {
+      NS_LOG_FUNCTION (this << *prefix);
+      return OneHopNameInfo (*prefix);
+    }
+
+    std::vector<std::pair<Ptr<Face>, Address> >
+    NNST::OneHopFaceInfo (const NNNAddress &prefix, uint32_t skip)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+
+      Ptr<nnst::Entry> curr;
+      std::vector<std::pair<Ptr<Face>, Address> > ret;
+
+      for (curr = Begin(); curr != End (); curr = Next(curr))
+	{
+	  if (curr->GetAddress().distance(prefix) == 1)
+	    {
+	      ret.push_back(curr->FindBestCandidateFaceInfo(skip));
+	    }
+	}
+
+      return ret;
+    }
+
+    std::vector<std::pair<Ptr<Face>, Address> >
+    NNST::OneHopFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip)
+    {
+      NS_LOG_FUNCTION (this << *prefix);
+      return OneHopFaceInfo(*prefix, skip);
+    }
+
+    std::vector<Ptr<const NNNAddress> >
+    NNST::OneHopSubSectorNameInfo (const NNNAddress &prefix)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+
+      Ptr<nnst::Entry> curr;
+      std::vector<Ptr<const NNNAddress> > ret;
+
+      for (curr = Begin(); curr != End (); curr = Next(curr))
+	{
+	  if (curr->GetAddress().distance(prefix) == 1 && prefix.isParentSector(curr->GetAddress()))
+	    {
+	      ret.push_back(curr->GetAddressPtr());
+	    }
+	}
+
+      return ret;
+    }
+
+    std::vector<Ptr<const NNNAddress> >
+    NNST::OneHopSubSectorNameInfo (Ptr<const NNNAddress> prefix)
+    {
+      NS_LOG_FUNCTION (this << *prefix);
+      return OneHopSubSectorNameInfo (*prefix);
+    }
+
+    std::vector<std::pair<Ptr<Face>, Address> >
+    NNST::OneHopSubSectorFaceInfo (const NNNAddress &prefix, uint32_t skip)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+
+      Ptr<nnst::Entry> curr;
+      std::vector<std::pair<Ptr<Face>, Address> > ret;
+
+      for (curr = Begin(); curr != End (); curr = Next(curr))
+	{
+	  if (curr->GetAddress().distance(prefix) == 1 && prefix.isParentSector(curr->GetAddress()))
+	    {
+	      ret.push_back(curr->FindBestCandidateFaceInfo(skip));
+	    }
+	}
+
+      return ret;
+    }
+
+    std::vector<std::pair<Ptr<Face>, Address> >
+    NNST::OneHopSubSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip)
+    {
+      NS_LOG_FUNCTION (this << *prefix);
+      return OneHopSubSectorFaceInfo(*prefix, skip);
+    }
+
+    std::vector<Ptr<const NNNAddress> >
+    NNST::OneHopParentSectorNameInfo (const NNNAddress &prefix)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+
+      Ptr<nnst::Entry> curr;
+      std::vector<Ptr<const NNNAddress> > ret;
+
+      for (curr = Begin(); curr != End (); curr = Next(curr))
+	{
+	  if (curr->GetAddress().distance(prefix) == 1 && curr->GetAddress().isParentSector(prefix))
+	    {
+	      ret.push_back(curr->GetAddressPtr ());
+	    }
+	}
+
+      return ret;
+    }
+
+    std::vector<Ptr<const NNNAddress> >
+    NNST::OneHopParentSectorNameInfo (Ptr<const NNNAddress> prefix)
+    {
+      NS_LOG_FUNCTION (this << *prefix);
+      return OneHopParentSectorNameInfo(*prefix);
+    }
+
+    std::vector<std::pair<Ptr<Face>, Address> >
+    NNST::OneHopParentSectorFaceInfo (const NNNAddress &prefix, uint32_t skip)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+
+      Ptr<nnst::Entry> curr;
+      std::vector<std::pair<Ptr<Face>, Address> > ret;
+
+      for (curr = Begin(); curr != End (); curr = Next(curr))
+	{
+	  if (curr->GetAddress().distance(prefix) == 1 && curr->GetAddress().isParentSector(prefix))
+	    {
+	      ret.push_back(curr->FindBestCandidateFaceInfo(skip));
+	    }
+	}
+
+      return ret;
+    }
+
+    std::vector<std::pair<Ptr<Face>, Address> >
+    NNST::OneHopParentSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip)
+    {
+      NS_LOG_FUNCTION (this << *prefix);
+      return OneHopParentSectorFaceInfo(*prefix, skip);
     }
 
     Ptr<nnst::Entry>
@@ -73,69 +266,102 @@ namespace ns3 {
 	return item->payload ();
     }
 
-    // To be deleted
-    Ptr<nnst::Entry>
-    NNST::Add (const NNNAddress &prefix, Ptr<Face> face, int32_t metric)
-    {
-      return Add (Create<NNNAddress> (prefix), face, metric);
-    }
-
-    // This one to be deleted as well
-    Ptr<nnst::Entry>
-    NNST::Add (const Ptr<const NNNAddress> &name, Ptr<Face> face, int32_t metric)
-    {
-    }
-
     Ptr<nnst::Entry>
     NNST::Add (const NNNAddress &name, Ptr<Face> face, Address poa, Time lease_expire, int32_t metric)
     {
-      NS_LOG_FUNCTION ("const NNNAddress Add" << name);
-      char c;
-      Ptr<nnst::Entry> tmp = Add (Create<NNNAddress> (name), face, poa, lease_expire, metric, c);
+      NS_LOG_FUNCTION ("const NNNAddress Add" << name << lease_expire);
+      // We assume that the lease time gives us the absolute expiry time
+      // We need to calculate the relative time for the Schedule function
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
 
-      Simulator::Schedule(lease_expire, &NNST::cleanExpired, this, tmp);
-      return tmp;
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << name << ") at " << now);
+
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  char c;
+	  Ptr<nnst::Entry> tmp = Add (Create<NNNAddress> (name), face, poa, lease_expire, metric, c);
+
+	  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+	  return tmp;
+	}
+      else
+	return 0;
     }
 
     Ptr<nnst::Entry>
     NNST::Add (const Ptr<const NNNAddress> &prefix, std::vector<Ptr<Face> > faces, Address poa, Time lease_expire, int32_t metric)
     {
-      NS_LOG_FUNCTION ("Face vector Add" << boost::cref(*prefix));
-      Ptr<nnst::Entry> tmp;
-      char c;
-      for (std::vector<Ptr<Face> >::iterator i = faces.begin(); i != faces.end (); ++i)
-	{
-	  tmp = Add(prefix, *i, poa, lease_expire, metric, c);
-	}
+      NS_LOG_FUNCTION ("Face vector Add" << boost::cref(*prefix) << lease_expire);
 
-      Simulator::Schedule(lease_expire, &NNST::cleanExpired, this, tmp);
-      return tmp;
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
+
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << boost::cref(*prefix) << ") at " << now);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  Ptr<nnst::Entry> tmp;
+	  char c;
+	  for (std::vector<Ptr<Face> >::iterator i = faces.begin(); i != faces.end (); ++i)
+	    {
+	      tmp = Add(prefix, *i, poa, lease_expire, metric, c);
+	    }
+
+	  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+	  return tmp;
+	}
+      else
+	return 0;
     }
 
     Ptr<nnst::Entry>
     NNST::Add (const Ptr<const NNNAddress> &prefix, Ptr<Face> face, std::vector<Address> poas, Time lease_expire, int32_t metric)
     {
-      NS_LOG_FUNCTION ("Address vector Add" << boost::cref(*prefix));
-      Ptr<nnst::Entry> tmp;
-      char c;
-      for (std::vector<Address>::iterator i = poas.begin(); i != poas.end (); ++i)
-	{
-	  tmp = Add(prefix, face, *i, lease_expire, metric, c);
-	}
+      NS_LOG_FUNCTION ("Address vector Add" << boost::cref(*prefix) << lease_expire);
 
-      Simulator::Schedule(lease_expire, &NNST::cleanExpired, this, tmp);
-      return tmp;
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
+
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << boost::cref(*prefix) << ") at " << now);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  Ptr<nnst::Entry> tmp;
+	  char c;
+	  for (std::vector<Address>::iterator i = poas.begin(); i != poas.end (); ++i)
+	    {
+	      tmp = Add(prefix, face, *i, lease_expire, metric, c);
+	    }
+
+	  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+	  return tmp;
+	}
+      else
+	return 0;
     }
 
     Ptr<nnst::Entry>
     NNST::Add (const Ptr<const NNNAddress> &name, Ptr<Face> face, Address poa, Time lease_expire, int32_t metric)
     {
-      NS_LOG_FUNCTION ("Unitary Add" << boost::cref(*name));
-      char c;
-      Ptr<nnst::Entry> tmp = Add(name, face, poa, lease_expire, metric, c);
+      NS_LOG_FUNCTION ("Unitary Add" << boost::cref(*name) << lease_expire);
 
-      Simulator::Schedule(lease_expire, &NNST::cleanExpired, this, tmp);
-      return tmp;
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = lease_expire - now;
+
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << boost::cref(*name) << ") at " << now);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
+	{
+	  char c;
+	  Ptr<nnst::Entry> tmp = Add(name, face, poa, lease_expire, metric, c);
+
+	  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+	  return tmp;
+	}
+      else
+	return 0;
     }
 
     void
@@ -154,16 +380,24 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this << prefix << n_lease);
 
-      super::iterator item = super::find_exact (prefix);
+      Time now = Simulator::Now ();
+      Time relativeExpireTime = n_lease - now;
 
-      if (item != super::end ())
+      NS_LOG_INFO ("Checking remaining lease time " << relativeExpireTime << " for (" << prefix << ") at " << now);
+      // If the relative expire time is above 0, we can save it
+      if (relativeExpireTime.IsStrictlyPositive())
 	{
-	  bool ok = super::modify (&(*item), ll::bind (&nnst::Entry::UpdateLeaseTime, ll::_1, n_lease));
+	  super::iterator item = super::find_exact (prefix);
 
-	  if (ok)
+	  if (item != super::end ())
 	    {
-	      Ptr<nnst::Entry> tmp = item->payload ();
-	      Simulator::Schedule(n_lease, &NNST::cleanExpired, this, tmp);
+	      bool ok = super::modify (&(*item), ll::bind (&nnst::Entry::UpdateLeaseTime, ll::_1, n_lease));
+
+	      if (ok)
+		{
+		  Ptr<nnst::Entry> tmp = item->payload ();
+		  Simulator::Schedule(relativeExpireTime, &NNST::cleanExpired, this, tmp);
+		}
 	    }
 	}
     }
@@ -213,9 +447,9 @@ namespace ns3 {
       super::iterator nnstEntry = super::find_exact (*name);
       if (nnstEntry != super::end ())
 	{
-	  // notify forwarding strategy about soon be removed FIB entry
-	  NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
-	  this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (nnstEntry->payload ());
+	  // notify forwarding strategy about soon be removed entry
+	  //NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
+	  //this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (nnstEntry->payload ());
 
 	  super::erase (nnstEntry);
 	}
@@ -235,8 +469,8 @@ namespace ns3 {
 	      Ptr<nnst::Entry> nextEntry = Next (entry);
 
 	      // notify forwarding strategy about soon be removed FIB entry
-	      NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
-	      this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (entry);
+	      //NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
+	      //this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (entry);
 
 	      super::erase (StaticCast<nnst::Entry> (entry)->to_iterator ());
 	      entry = nextEntry;
@@ -262,8 +496,8 @@ namespace ns3 {
 	      Ptr<nnst::Entry> nextEntry = Next (entry);
 
 	      // notify forwarding strategy about soon be removed NNST entry
-	      NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
-	      this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (entry);
+	      //NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
+	      //this->GetObject<ForwardingStrategy> ()->WillRemoveNNSTEntry (entry);
 
 	      super::erase (entry->to_iterator ());
 	      entry = nextEntry;
@@ -437,6 +671,30 @@ namespace ns3 {
       return node->GetObject<NNST> ();
     }
 
+    bool
+    NNST::FoundName (const NNNAddress &prefix)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+      super::iterator item = super::find_exact (prefix);
+
+      if (item == super::end ())
+	return false;
+      else
+	return true;
+    }
+
+    std::vector<Address>
+    NNST::GetAllPoas (const NNNAddress &prefix)
+    {
+      NS_LOG_FUNCTION (this << prefix);
+      super::iterator item = super::find_exact (prefix);
+
+      if (item == super::end ())
+	return std::vector<Address> ();
+      else
+	return item->payload ()->GetPoAs();
+    }
+
     void
     NNST::NotifyNewAggregate ()
     {
@@ -471,12 +729,12 @@ namespace ns3 {
 	  super::modify (result.first,
 	                 ll::bind (&nnst::Entry::AddOrUpdateRoutingMetric, ll::_1, face, metric));
 
-	  if (result.second)
-	    {
-	      // notify forwarding strategy about new NNST entry
-	      NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
-	      this->GetObject<ForwardingStrategy> ()->DidAddNNSTEntry (result.first->payload ());
-	    }
+//	  if (result.second)
+//	    {
+//	      // notify forwarding strategy about new NNST entry
+//	      NS_ASSERT (this->GetObject<ForwardingStrategy> () != 0);
+//	      this->GetObject<ForwardingStrategy> ()->DidAddNNSTEntry (result.first->payload ());
+//	    }
 
 	  // If this is a new entry, then the PoA has not been added
 	  if (!result.second)
@@ -513,13 +771,13 @@ namespace ns3 {
     void
     NNST::cleanExpired(Ptr<nnst::Entry> item)
     {
-      Ptr<const NNNAddress> name = item->GetPtrAddress();
+      Ptr<const NNNAddress> name = item->GetAddressPtr();
       NS_LOG_FUNCTION (this << boost::cref(*name));
 
-      item->cleanExpired();
+      item->cleanExpired ();
 
-      if (item->isEmpty())
-	Remove(name);
+      if (item->isEmpty ())
+	Remove (name);
     }
 
     std::ostream&

@@ -47,31 +47,13 @@ using namespace ::boost::multi_index;
 #include "../../utils/trie/counting-policy.h"
 #include "../../utils/trie/trie-with-policy.h"
 
-namespace ns3 {
-  namespace nnn {
-
-    class L3Protocol;
-
-    class NULLp;
-    typedef NULLp NULLpHeader;
-    class SO;
-    typedef SO SOHeader;
-    class DO;
-    typedef DO DOHeader;
-    class EN;
-    typedef EN ENHeader;
-    class AEN;
-    typedef AEN AENHeader;
-    class REN;
-    typedef REN RENHeader;
-    class INF;
-    typedef INF INFHeader;
-
-
+namespace ns3
+{
+  namespace nnn
+  {
     namespace nnst {
 
       class Entry;
-
     }
 
     /**
@@ -100,21 +82,57 @@ namespace ns3 {
 
       Ptr<nnst::Entry>
       ClosestSector (const NNNAddress &prefix);
+      
+      Ptr<const NNNAddress>
+      ClosestSectorNameInfo (const NNNAddress &prefix);
 
-      // Possibly unnecessary
-      //Ptr<nnst::Entry>
-      //SignatureMatch (Address poa);
+      Ptr<const NNNAddress>
+      ClosestSectorNameInfo (Ptr<const NNNAddress> prefix);
+
+      std::pair<Ptr<Face>, Address>
+      ClosestSectorFaceInfo (const NNNAddress &prefix, uint32_t skip);
+
+      std::pair<Ptr<Face>, Address>
+      ClosestSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopNameInfo (const NNNAddress &prefix);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopNameInfo (Ptr<const NNNAddress> prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopFaceInfo (const NNNAddress &prefix, uint32_t skip);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopSubSectorNameInfo (const NNNAddress &prefix);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopSubSectorNameInfo (Ptr<const NNNAddress> prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopSubSectorFaceInfo (const NNNAddress &prefix, uint32_t skip);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopSubSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopParentSectorNameInfo (const NNNAddress &prefix);
+
+      std::vector<Ptr<const NNNAddress> >
+      OneHopParentSectorNameInfo (Ptr<const NNNAddress> prefix);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopParentSectorFaceInfo (const NNNAddress &prefix, uint32_t skip);
+
+      std::vector<std::pair<Ptr<Face>, Address> >
+      OneHopParentSectorFaceInfo (Ptr<const NNNAddress> prefix, uint32_t skip);
 
       Ptr<nnst::Entry>
       Find (const NNNAddress &prefix);
-
-      // This one should be eliminated
-      Ptr<nnst::Entry>
-      Add (const NNNAddress &prefix, Ptr<Face> face, int32_t metric);
-
-      // This one as well
-      Ptr<nnst::Entry>
-      Add (const Ptr<const NNNAddress> &prefix, Ptr<Face> face, int32_t metric);
 
       Ptr<nnst::Entry>
       Add (const NNNAddress &prefix, Ptr<Face> face, Address poa, Time lease_expire, int32_t metric);
@@ -198,6 +216,12 @@ namespace ns3 {
 
       Ptr<NNST>
       GetNNST (Ptr<Object> node);
+
+      bool
+      FoundName (const NNNAddress &prefix);
+
+      std::vector<Address>
+      GetAllPoas (const NNNAddress &prefix);
 
     protected:
       // inherited from Object class

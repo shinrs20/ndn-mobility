@@ -31,38 +31,38 @@ NNN_NAMESPACE_BEGIN
 
 namespace wire {
 
-/**
- * \brief Helper to encode ndnSIM wire elements
- */
-class NnnSim
-{
-public:
-	/**
-	 * @brief Append Name in nnnSIM encoding
-	 * @param start Buffer to store serialized Interest
-	 * @param name constant reference to Name object
-	 *
-	 * @returns written length
-	 */
-	static size_t
-	SerializeName (Buffer::Iterator &start, const NNNAddress &name);
+  /**
+   * \brief Helper to encode ndnSIM wire elements
+   */
+  class NnnSim
+  {
+  public:
+    /**
+     * @brief Append Name in nnnSIM encoding
+     * @param start Buffer to store serialized Interest
+     * @param name constant reference to Name object
+     *
+     * @returns written length
+     */
+    static size_t
+    SerializeName (Buffer::Iterator &start, const NNNAddress &name);
 
-	/**
-	 * @brief Estimate size of Name in nnnSIM encoding
-	 * @param name constant reference to Name object
-	 * @returns estimated length
-	 */
-	static size_t
-	SerializedSizeName (const NNNAddress &name);
+    /**
+     * @brief Estimate size of Name in nnnSIM encoding
+     * @param name constant reference to Name object
+     * @returns estimated length
+     */
+    static size_t
+    SerializedSizeName (const NNNAddress &name);
 
-	/**
-	 * @brief Deserialize Name from nnnSIM encodeing
-	 * @param start Buffer that stores serialized Interest
-	 * @param name Name object
-	 */
-	static Ptr<NNNAddress>
-	DeserializeName (Buffer::Iterator &start);
-}; // NnnSim
+    /**
+     * @brief Deserialize Name from nnnSIM encodeing
+     * @param start Buffer that stores serialized Interest
+     * @param name Name object
+     */
+    static Ptr<NNNAddress>
+    DeserializeName (Buffer::Iterator &start);
+  }; // NnnSim
 
 } // wire
 

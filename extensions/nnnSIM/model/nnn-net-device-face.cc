@@ -32,130 +32,150 @@
 
 NS_LOG_COMPONENT_DEFINE ("nnn.NetDeviceFace");
 
-namespace ns3 {
-namespace nnn {
-
-NS_OBJECT_ENSURE_REGISTERED (NetDeviceFace);
-
-TypeId
-NetDeviceFace::GetTypeId ()
+namespace ns3
 {
-	static TypeId tid = TypeId ("ns3::nnn::NetDeviceFace")
-    		.SetParent<Face> ()
-    		.SetGroupName ("nnn")
-    		;
-	return tid;
-}
+  namespace nnn
+  {
+    NS_OBJECT_ENSURE_REGISTERED (NetDeviceFace);
 
-/**
- * By default, Nnn face are created in the "down" state.  Before
- * becoming useable, the user must invoke SetUp on the face
- */
-NetDeviceFace::NetDeviceFace (Ptr<Node> node, const Ptr<NetDevice> &netDevice)
-: Face (node)
-, m_netDevice (netDevice)
-{
-	NS_LOG_FUNCTION (this << netDevice);
+    TypeId
+    NetDeviceFace::GetTypeId ()
+    {
+      static TypeId tid = TypeId ("ns3::nnn::NetDeviceFace")
+    		    .SetParent<Face> ()
+    		    .SetGroupName ("Nnn")
+    		    ;
+      return tid;
+    }
 
-	SetMetric (1); // default metric
+    /**
+     * By default, Nnn face are created in the "down" state.  Before
+     * becoming useable, the user must invoke SetUp on the face
+     */
+    NetDeviceFace::NetDeviceFace (Ptr<Node> node, const Ptr<NetDevice> &netDevice)
+    : Face (node)
+    , m_netDevice (netDevice)
+    {
+      NS_LOG_FUNCTION (this << netDevice);
 
-	NS_ASSERT_MSG (m_netDevice != 0, "NetDeviceFace needs to be assigned a valid NetDevice");
-}
+      SetMetric (1); // default metric
+      SetAddress (m_netDevice->GetAddress());
 
-NetDeviceFace::~NetDeviceFace ()
-{
-	NS_LOG_FUNCTION_NOARGS ();
-}
+      NS_ASSERT_MSG (m_netDevice != 0, "NetDeviceFace needs to be assigned a valid NetDevice");
+    }
 
-NetDeviceFace& NetDeviceFace::operator= (const NetDeviceFace &)
-{
-	return *this;
-}
+    NetDeviceFace::~NetDeviceFace ()
+    {
+      NS_LOG_FUNCTION_NOARGS ();
+    }
 
-Ptr<NetDevice>
-NetDeviceFace::GetNetDevice () const
-{
-	return m_netDevice;
-}
+    NetDeviceFace& NetDeviceFace::operator= (const NetDeviceFace &)
+    {
+      return *this;
+    }
 
-void
-NetDeviceFace::RegisterProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
-		const DOHandler &DOHandler, const ENHandler &ENHandler,
-		const AENHandler &AENHandler, const RENHandler &RENHandler,
-		const DENHandler &DENHandler, const INFHandler &INFHandler)
-{
-	NS_LOG_FUNCTION (this);
+    Ptr<NetDevice>
+    NetDeviceFace::GetNetDevice () const
+    {
+      return m_netDevice;
+    }
 
-	Face::RegisterProtocolHandlers (NULLpHandler, SOHandler, DOHandler,
-			ENHandler, AENHandler, RENHandler, DENHandler, INFHandler);
+    void
+    NetDeviceFace::RegisterNNNProtocolHandlers (const NULLpHandler &NULLpHandler, const SOHandler &SOHandler,
+                                                const DOHandler &DOHandler, const ENHandler &ENHandler,
+                                                const AENHandler &AENHandler, const RENHandler &RENHandler,
+                                                const DENHandler &DENHandler, const INFHandler &INFHandler,
+						const DUHandler &DUHandler, const OENHandler &OENHandler)
+    {
+      NS_LOG_FUNCTION (this);
 
-	m_node->RegisterProtocolHandler (MakeCallback (&NetDeviceFace::ReceiveFromNetDevice, this),
-			L3Protocol::ETHERNET_FRAME_TYPE, m_netDevice, true/*promiscuous mode*/);
-}
+      Face::RegisterNNNProtocolHandlers (NULLpHandler, SOHandler, DOHandler, ENHandler, AENHandler,
+					 RENHandler, DENHandler, INFHandler, DUHandler, OENHandler);
 
-void
-NetDeviceFace:: UnRegisterProtocolHandlers ()
-{
-	m_node->UnregisterProtocolHandler (MakeCallback (&NetDeviceFace::ReceiveFromNetDevice, this));
-	Face::UnRegisterProtocolHandlers ();
-}
+      m_node->RegisterProtocolHandler (MakeCallback (&NetDeviceFace::ReceiveFromNetDevice, this),
+                                       L3Protocol::ETHERNET_FRAME_TYPE, m_netDevice, true/*promiscuous mode*/);
+    }
 
-bool
-NetDeviceFace::Send (Ptr<Packet> packet)
-{
-	if (!Face::Send (packet))
+    void
+    NetDeviceFace:: UnRegisterNNNProtocolHandlers ()
+    {
+      m_node->UnregisterProtocolHandler (MakeCallback (&NetDeviceFace::ReceiveFromNetDevice, this));
+      Face::UnRegisterNNNProtocolHandlers ();
+    }
+
+    bool
+    NetDeviceFace::Send (Ptr<Packet> packet)
+    {
+      if (!Face::Send (packet))
 	{
-		return false;
+	  return false;
 	}
 
-	NS_LOG_FUNCTION (this << packet);
+      NS_LOG_FUNCTION (this << packet);
 
-	NS_ASSERT_MSG (packet->GetSize () <= m_netDevice->GetMtu (),
-			"Packet size " << packet->GetSize () << " exceeds device MTU "
-			<< m_netDevice->GetMtu ()
-			<< " for Nnn; fragmentation not supported");
+      NS_ASSERT_MSG (packet->GetSize () <= m_netDevice->GetMtu (),
+                     "Packet size " << packet->GetSize () << " exceeds device MTU "
+                     << m_netDevice->GetMtu ()
+                     << " for Nnn; fragmentation not supported");
 
-	// Here is where I think we can use anything other than broadcast
-	bool ok = m_netDevice->Send (packet, m_netDevice->GetBroadcast (),
-			L3Protocol::ETHERNET_FRAME_TYPE);
-	return ok;
-}
+      bool ok = m_netDevice->Send (packet, m_netDevice->GetBroadcast (),
+                                   L3Protocol::ETHERNET_FRAME_TYPE);
+      return ok;
+    }
 
-// callback
-void
-NetDeviceFace::ReceiveFromNetDevice (Ptr<NetDevice> device,
-		Ptr<const Packet> p,
-		uint16_t protocol,
-		const Address &from,
-		const Address &to,
-		NetDevice::PacketType packetType)
-{
-	NS_LOG_FUNCTION (device << p << protocol << from << to << packetType);
-	Receive (p);
-}
+    bool
+    NetDeviceFace::Send (Ptr<Packet> packet, Address addr)
+    {
+      if (!Face::Send (packet, addr))
+	{
+	  return false;
+	}
+
+      NS_LOG_FUNCTION (this << packet << " going from " << m_netDevice->GetAddress() << " to " << addr);
+
+      NS_ASSERT_MSG (packet->GetSize () <= m_netDevice->GetMtu (),
+                     "Packet size " << packet->GetSize () << " exceeds device MTU "
+                     << m_netDevice->GetMtu ()
+                     << " for Nnn; fragmentation not supported");
+
+      bool ok = m_netDevice->Send (packet, addr, L3Protocol::ETHERNET_FRAME_TYPE);
+      return ok;
+    }
+
+    // callback
+    void
+    NetDeviceFace::ReceiveFromNetDevice (Ptr<NetDevice> device,
+                                         Ptr<const Packet> p,
+                                         uint16_t protocol,
+                                         const Address &from,
+                                         const Address &to,
+                                         NetDevice::PacketType packetType)
+    {
+      NS_LOG_FUNCTION (device << p << protocol << from << to << packetType);
+      Receive (p);
+    }
 
 
-std::ostream&
-NetDeviceFace::Print (std::ostream& os) const
-{
+    std::ostream&
+    NetDeviceFace::Print (std::ostream& os) const
+    {
 #ifdef NS3_LOG_ENABLE
-	os << "dev[" << GetNode ()->GetId () << "]=net(" << GetId ();
+      os << "dev[" << GetNode ()->GetId () << "]=net(" << GetId ();
 
-	if (DynamicCast<PointToPointNetDevice> (m_netDevice))
+      if (DynamicCast<PointToPointNetDevice> (m_netDevice))
 	{
-		// extra debugging information which available ONLY for PointToPointNetDevice's
-		os << ",";
-		os << DynamicCast<PointToPointNetDevice> (m_netDevice)->GetChannel ()->GetDevice (0)->GetNode ()->GetId ();
-		os << "-";
-		os << DynamicCast<PointToPointNetDevice> (m_netDevice)->GetChannel ()->GetDevice (1)->GetNode ()->GetId ();
+	  // extra debugging information which available ONLY for PointToPointNetDevice's
+	  os << ",";
+	  os << DynamicCast<PointToPointNetDevice> (m_netDevice)->GetChannel ()->GetDevice (0)->GetNode ()->GetId ();
+	  os << "-";
+	  os << DynamicCast<PointToPointNetDevice> (m_netDevice)->GetChannel ()->GetDevice (1)->GetNode ()->GetId ();
 	}
-	os << ")";
+      os << ")";
 #else
-	os << "dev=net(" << GetId () << ")";
+      os << "dev=net(" << GetId () << ")";
 #endif
-	return os;
-}
+      return os;
+    }
 
-} // namespace nnnsim
+  } // namespace nnnsim
 } // namespace ns3
-

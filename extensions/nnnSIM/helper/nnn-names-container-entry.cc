@@ -19,37 +19,29 @@
 
 #include "nnn-names-container-entry.h"
 
-namespace ns3 {
-namespace nnn {
-
-NamesContainerEntry::NamesContainerEntry()
-: m_name            (NNNAddress ())
-, m_lease_expire    (Seconds (-1))
-, m_renew           (Seconds (-1))
+namespace ns3
 {
-}
+  namespace nnn
+  {
+    NamesContainerEntry::NamesContainerEntry()
+    : m_name            (Create<const NNNAddress> ())
+    , m_lease_expire    (Seconds (0))
+    , m_renew_time      (Seconds (0))
+    , m_fixed           (false)
+    {
+    }
 
-NamesContainerEntry::~NamesContainerEntry() {
+    NamesContainerEntry::~NamesContainerEntry() {
 
-}
+    }
 
-NamesContainerEntry::NamesContainerEntry(NNNAddress name, Time lease_expire)
-: m_name           (name)
-, m_lease_expire   (lease_expire)
-, m_renew          (lease_expire - Seconds(1))
-{
+    NamesContainerEntry::NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire, Time renew_time, bool fixed)
+    : m_name           (name)
+    , m_lease_expire   (lease_expire)
+    , m_renew_time     (renew_time)
+    , m_fixed          (fixed)
+    {
+    }
 
-}
-
-NamesContainerEntry::NamesContainerEntry(NNNAddress name, Time lease_expire, Time renew)
-: m_name           (name)
-, m_lease_expire   (lease_expire)
-{
-	if (renew < m_lease_expire)
-		m_renew = renew;
-	else
-		m_renew = lease_expire - Seconds(1);
-}
-
-} /* namespace nnn */
+  } /* namespace nnn */
 } /* namespace ns3 */

@@ -46,10 +46,12 @@
 using namespace ::boost;
 using namespace ::boost::multi_index;
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnst {
-
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnst
+    {
       /// @cond include_hidden
       class i_entry {};
       class i_face {};
@@ -74,44 +76,45 @@ namespace ns3 {
       typedef multi_index_container<
 	  FaceMetric,
 	  indexed_by<
-	  ordered_unique<
-	  tag<i_entry>,
-	  identity<FaceMetric>
-      >,
+	    ordered_unique<
+	      tag<i_entry>,
+	      identity<FaceMetric>
+          >,
 
-      // For fast access to elements using Face
-      ordered_non_unique<
-      tag<i_face>,
-      const_mem_fun<FaceMetric,Ptr<Face>,&FaceMetric::GetFace>
-      >,
+            // For fast access to elements using Face
+            ordered_non_unique<
+              tag<i_face>,
+              const_mem_fun<FaceMetric,Ptr<Face>,&FaceMetric::GetFace>
+            >,
 
-      // For fast access by PoA Address
-      ordered_non_unique<
-      tag<i_poa>,
-      const_mem_fun<FaceMetric,Address,&FaceMetric::GetAddress>
-      >,
+            // For fast access by PoA Address
+            ordered_non_unique<
+              tag<i_poa>,
+              const_mem_fun<FaceMetric,Address,&FaceMetric::GetAddress>
+            >,
 
-      // For access by lease time
-      ordered_non_unique<
-      tag<i_lease>,
-      const_mem_fun<FaceMetric,Time,&FaceMetric::GetExpireTime>
-      >,
+            // For access by lease time
+            ordered_non_unique<
+              tag<i_lease>,
+              const_mem_fun<FaceMetric,Time,&FaceMetric::GetExpireTime>
+            >,
 
-      // List of available faces ordered by (status, m_routingCost)
-      ordered_non_unique<
-      tag<i_metric>,
-      composite_key<
-      FaceMetric,
-      const_mem_fun<FaceMetric,FaceMetric::Status,&FaceMetric::GetStatus>,
-      const_mem_fun<FaceMetric,int32_t,&FaceMetric::GetRoutingCost>
-      >
-      >,
+            // List of available faces ordered by (status, m_routingCost)
+            ordered_non_unique<
+              tag<i_metric>,
+              composite_key<
+                FaceMetric,
+                const_mem_fun<FaceMetric,FaceMetric::Status,&FaceMetric::GetStatus>,
+                const_mem_fun<FaceMetric,int32_t,&FaceMetric::GetRoutingCost>
+              >
+            >,
 
-      // To optimize nth candidate selection (sacrifice a little bit space to gain speed)
-      random_access<
-      tag<i_nth>
-      >
-      >
+            // To optimize nth candidate selection (sacrifice a little bit
+            // space to gain speed)
+            random_access<
+              tag<i_nth>
+            >
+          >
       > fmtr_set;
       /// @endcond
 
@@ -144,16 +147,16 @@ namespace ns3 {
 	  return m_nnst;
 	}
 
-	Ptr<const NNNAddress>
-	GetPtrAddress ()
-	{
-	  return m_address;
-	}
-
 	const NNNAddress&
 	GetAddress () const
 	{
 	  return *m_address;
+	}
+
+	Ptr<const NNNAddress>
+	GetAddressPtr ()
+	{
+	  return m_address;
 	}
 
 	void
@@ -180,6 +183,9 @@ namespace ns3 {
 
 	const FaceMetric &
 	FindBestCandidate (uint32_t skip = 0) const;
+
+	std::pair<Ptr<Face>, Address>
+	FindBestCandidateFaceInfo (uint32_t skip = 0) const;
 
 	void
 	RemoveFace (const Ptr<Face> &face);
@@ -236,7 +242,6 @@ namespace ns3 {
       };
 
       std::ostream& operator<< (std::ostream& os, const Entry &entry);
-
 
     } /* namespace nnst */
   } /* namespace nnn */

@@ -23,48 +23,40 @@
 
 #include <ns3-dev/ns3/ptr.h>
 
-namespace ns3 {
+#include "../model/pdus/nnn-pdu.h"
 
-class Header;
-class Packet;
-
-namespace nnn {
-
-class NNNAddress;
-
-typedef NNNAddress NameComponents;
-
-/**
- * @ingroup nnn-helpers
- *
- * \brief Class implementing functionality to detect Nnn packet type and
- * create the corresponding object
- *
- * Nnn doesn't really have a header, so we need this class to
- * determine type of Nnn packet and return corresponent header class,
- * NULLp, SO, DO, EN, AEN, REN or INF
- *
- * Throws UnknownHeaderException if header type couldn't be determined
- */
-class HeaderHelper
+namespace ns3
 {
-public:
-	/**
-     @brief enum for Nnn packet types
-	 */
-	enum Type {NULL_NNN, SO_NNN, DO_NNN,
-		EN_NNN, AEN_NNN, REN_NNN, DEN_NNN, INF_NNN};
+  class Header;
+  class Packet;
 
-	static Type
-	GetNnnHeaderType (Ptr<const Packet> packet);
-};
+  namespace nnn
+  {
+    class NNNAddress;
 
-/**
- * \brief Exception thrown if NNN stack receives unrecognized message type
- */
-class UnknownHeaderException {};
+    typedef NNNAddress NameComponents;
 
-} // namespace nnn
+    /**
+     * @ingroup nnn-helpers
+     *
+     * \brief Class implementing functionality to detect NNN packet type and
+     * create the corresponding object
+     *
+     * Throws UnknownHeaderException if header type couldn't be determined
+     */
+    class HeaderHelper
+    {
+    public:
+      static NNN_PDU_TYPE
+      GetNNNHeaderType (Ptr<const Packet> packet);
+    };
+
+    /**
+     * \brief Exception thrown if NNN stack receives unrecognized message type
+     */
+    class UnknownHeaderException {};
+
+  } // namespace nnn
 } // namespace ns3
 
 #endif // _NNN_HEADER_HELPER_H_

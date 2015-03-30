@@ -36,36 +36,36 @@
 #include "nnn-names-container-entry.h"
 #include "../model/nnn-naming.h"
 
-namespace ns3 {
-namespace nnn {
-
-class NamesContainerEntry : public SimpleRefCount<NamesContainerEntry>
+namespace ns3
 {
-public:
+  namespace nnn
+  {
+    class NamesContainerEntry : public SimpleRefCount<NamesContainerEntry>
+    {
+    public:
 
-	NamesContainerEntry();
+      NamesContainerEntry();
 
-	NamesContainerEntry(NNNAddress name, Time lease_expire);
+      NamesContainerEntry(Ptr<const NNNAddress> name, Time lease_expire, Time renew_time, bool fixed);
 
-	NamesContainerEntry(NNNAddress name, Time lease_expire, Time renew);
+      virtual ~NamesContainerEntry();
 
-	virtual ~NamesContainerEntry();
+      bool operator< (const NamesContainerEntry e) const { return m_lease_expire > e.m_lease_expire; }
 
-	bool operator< (const NamesContainerEntry e) const { return m_lease_expire < e.m_lease_expire; }
+      Ptr<const NNNAddress> m_name;
+      Time m_lease_expire;
+      Time m_renew_time;
+      bool m_fixed;
+    };
 
-	NNNAddress m_name;
-	Time m_lease_expire;
-	Time m_renew;
-};
+    inline std::ostream &
+    operator << (std::ostream &os, const NamesContainerEntry &entry)
+    {
+      os << *(entry.m_name) << "\t" << entry.m_lease_expire << "\t" << entry.m_renew_time <<  "\t" << entry.m_fixed << std::endl;
+      return os;
+    }
 
-inline std::ostream &
-operator << (std::ostream &os, const NamesContainerEntry &entry)
-{
-	os << entry.m_name << "\t" << entry.m_lease_expire << "\t" << entry.m_renew << std::endl;
-	return os;
-}
-
-} /* namespace nnn */
+  } /* namespace nnn */
 } /* namespace ns3 */
 
 #endif /* NNN_NAMES_CONTAINER_ENTRY_H_ */

@@ -20,6 +20,8 @@
 #ifndef NNN_NAMES_CONTAINER_H_
 #define NNN_NAMES_CONTAINER_H_
 
+#include <ostream>
+
 #include <ns3-dev/ns3/ptr.h>
 #include <ns3-dev/ns3/node.h>
 #include <ns3-dev/ns3/object.h>
@@ -37,93 +39,121 @@
 using boost::multi_index_container;
 using namespace ::boost::multi_index;
 
-namespace ns3 {
-namespace nnn {
-
-struct address {};
-struct lease {};
-
-typedef multi_index_container<
-	NamesContainerEntry,
-	indexed_by<
-		// sort by NamesContainer::operator<
-		ordered_unique<
-			tag<lease>,
-			identity<NamesContainerEntry>
-		>,
-
-		// sort by less<string> on NNNAddress
-		ordered_unique<
-			tag<address>,
-			member<NamesContainerEntry,NNNAddress,&NamesContainerEntry::m_name>
-		>
-	>
-> names_set;
-
-typedef names_set::index<address>::type names_set_by_name;
-typedef names_set::index<lease>::type names_set_by_lease;
-
-class NamesContainer : public SimpleRefCount<NamesContainer>
+namespace ns3
 {
+  namespace nnn
+  {
+    class NamesContainer : public Object
+    {
+    public:
+      struct PtrNNNComp
+      {
+	bool operator () (const Ptr<const NNNAddress> &lhs , const Ptr<const NNNAddress>  &rhs) const  {
+	  return *lhs < *rhs;
+	}
+      };
 
-public:
-	NamesContainer();
+      struct address {};
+      struct lease {};
 
-	virtual
-	~NamesContainer();
+      typedef multi_index_container<
+	  NamesContainerEntry,
+	  indexed_by<// sort by NamesContainer::operator<
+	    ordered_unique<
+	      tag<lease>,
+	      identity<NamesContainerEntry>
+            >,
 
-	void
-	addEntry (NamesContainerEntry nameEntry);
+            ordered_unique<
+              tag<address>,
+              member<NamesContainerEntry,Ptr<const NNNAddress>,&NamesContainerEntry::m_name>,
+              PtrNNNComp
+            >
+          >
+      > names_set;
 
-	void
-	addEntry (NNNAddress name, Time lease_expire);
+      typedef names_set::index<address>::type names_set_by_name;
+      typedef names_set::index<lease>::type names_set_by_lease;
 
-	void
-	addEntry (NNNAddress name, Time lease_expire, Time renew);
+      NamesContainer();
 
-	void
-	deleteEntry (NamesContainerEntry nameEntry);
+      virtual
+      ~NamesContainer();
 
-	void
-	deleteEntry (NNNAddress name);
+      void
+      RegisterCallbacks (const Callback<void> renewal, const Callback<void> leaseagain);
 
-	bool
-	foundName (NNNAddress name);
+      void
+      SetDefaultRenewal (Time renew);
 
-	NamesContainerEntry
-	findEntry (NNNAddress name);
+      Time
+      GetDefaultRenewal ();
 
-	NNNAddress
-	findNewestName ();
+      void
+      addEntry (Ptr<const NNNAddress> name, Time lease_expire, bool fixed);
 
-	void
-	updateLeaseTime (NNNAddress name, Time lease_expire);
+      void
+      deleteEntry (NamesContainerEntry nameEntry);
 
-	void
-	updateLeaseTime (NNNAddress name, Time lease_expire, Time renew);
+      void
+      deleteEntry (Ptr<const NNNAddress> name);
 
-	uint32_t
-	size ();
+      bool
+      foundName (Ptr<const NNNAddress> name);
 
-	bool
-	isEmpty ();
+      NamesContainerEntry
+      findEntry (Ptr<const NNNAddress> name);
 
-	Time
-	findNameExpireTime (NNNAddress name);
+      Ptr<const NNNAddress>
+      findNewestName ();
 
-	void
-	cleanExpired ();
+      void
+      updateLeaseTime (Ptr<const NNNAddress> name, Time lease_expire);
 
-	void
-	printByAddress ();
+      uint32_t
+      size ();
 
-	void
-	printByLease ();
+      bool
+      isEmpty ();
 
-	names_set container;
-};
+      bool
+      isFixed (Ptr<const NNNAddress> name);
 
-} /* namespace nnn */
+      bool
+      hasFixedName ();
+
+      Time
+      findNameExpireTime (Ptr<const NNNAddress> name);
+
+      void
+      cleanExpired ();
+
+      void
+      clear ();
+
+      void
+      willAttemptRenew ();
+
+      void
+      Print (std::ostream &os) const;
+
+      void
+      printByAddress ();
+
+      void
+      printByLease ();
+
+    private:
+      names_set container;         ///< \brief Internal structure holding the 3N names
+      Time defaultRenewal;         ///< \brief Default negative default time to fire renewal callback
+
+      Callback<void> renewName;    ///< \brief Renewal callback
+      Callback<void> hasNoName;    ///< \brief Enroll callback - done when container is empty
+    };
+
+    std::ostream& operator<< (std::ostream& os, const NamesContainer &names);
+
+  } /* namespace nnn */
 } /* namespace ns3 */
 
 #endif /* NNN_NAMES_CONTAINER_H_ */

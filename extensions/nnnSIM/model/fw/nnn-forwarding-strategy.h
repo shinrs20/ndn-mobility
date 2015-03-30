@@ -17,558 +17,821 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-forwarding-strategy.h.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #ifndef NNN_FORWARDING_STRATEGY_H
 #define NNN_FORWARDING_STRATEGY_H
 
+#include <ns3-dev/ns3/address.h>
+#include <ns3-dev/ns3/nstime.h>
 #include <ns3-dev/ns3/callback.h>
 #include <ns3-dev/ns3/object.h>
 #include <ns3-dev/ns3/packet.h>
 #include <ns3-dev/ns3/traced-callback.h>
 
-namespace ns3 {
-namespace nnn {
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/variate_generator.hpp>
 
-/**
- * @ingroup nnn
- * @defgroup nnn-fw NNN forwarding strategies
- */
+#include "../nnn-naming.h"
 
-
-/**
- * @ingroup nnn-fw
- * @brief Namespace for Forwarding Strategy operations
- */
-namespace fw {
-}
-
-class Face;
-
-class NULLp;
-class SO;
-class DO;
-class EN;
-class AEN;
-class REN;
-class DEN;
-class INF;
-
-class NNST;
-class NNPT;
-
-namespace nnst { class Entry; }
-namespace nnpt { class Entry; }
-
-//class NNSTFaceMetric;
-
-/**
- * @ingroup nnn-fw
- * @brief Abstract base class for Nnn forwarding strategies
- */
-class ForwardingStrategy : public Object
+namespace ns3
 {
-public:
-	static TypeId GetTypeId ();
+  namespace ndn
+  {
+    class Interest;
+    class Data;
+    class ContentStore;
+  }
 
-	/**
-	 * @brief Helper function to retrieve logging name for the forwarding strategy
-	 */
-	static std::string GetLogName ();
+  namespace nnn
+  {
+    /**
+     * @ingroup nnn
+     * @defgroup nnn-fw NNN forwarding strategies
+     */
 
-	/**
-	 * @brief Default constructor
-	 */
-	ForwardingStrategy ();
-	virtual ~ForwardingStrategy ();
+    /**
+     * @ingroup nnn-fw
+     * @brief Namespace for Forwarding Strategy operations
+     */
+    namespace fw
+    {
+    }
 
-	/**
-	 * \brief Actual processing of incoming Nnn SOs.
-	 *
-	 * Processing SO packets
-	 * @param face     incoming face
-	 * @param so_p SO packet
-	 */
-	virtual void
-	OnSO (Ptr<Face> face,
-			Ptr<SO> so_p);
+    class Face;
 
-	/**
-	 * \brief Actual processing of incoming Nnn content objects
-	 *
-	 * Processing DO packets
-	 * @param face    incoming face
-	 * @param do_p    DO packet
-	 */
-	virtual void
-	OnDO (Ptr<Face> face,
-			Ptr<DO> do_p);
+    class NNNAddress;
 
-	/**
-	 * \brief Actual processing of incoming Nnn NULLps.
-	 *
-	 * Processing NULLp packets
-	 * @param face     incoming face
-	 * @param null_p NULLp packet
-	 */
-	virtual void
-	OnNULLp (Ptr<Face> face,
-			Ptr<NULLp> null_p);
+    class NNNPDU;
+    class NULLp;
+    class SO;
+    class DO;
+    class DU;
+    class EN;
+    class AEN;
+    class REN;
+    class DEN;
+    class OEN;
+    class INF;
 
-	/**
-	 * \brief Actual processing of incoming Nnn content objects
-	 *
-	 * Processing EN packets
-	 * @param face    incoming face
-	 * @param en_p    EN packet
-	 */
-	virtual void
-	OnEN (Ptr<Face> face,
-			Ptr<EN> en_p);
+    class NamesContainer;
+    class NamesContainerEntry;
+    class FaceContainer;
 
-	/**
-	 * \brief Actual processing of incoming Nnn AENs.
-	 *
-	 * Processing AEN packets
-	 * @param face     incoming face
-	 * @param aen_p AEN packet
-	 */
-	virtual void
-	OnAEN (Ptr<Face> face,
-			Ptr<AEN> aen_p);
+    class NNST;
+    namespace nnst
+    {
+      class Entry;
+      class FaceMetric;
+    }
 
-	/**
-	 * \brief Actual processing of incoming Nnn RENs
-	 *
-	 * Processing REN packets
-	 * @param face    incoming face
-	 * @param ren_p    REN packet
-	 */
-	virtual void
-	OnREN (Ptr<Face> face,
-			Ptr<REN> ren_p);
+    class NNPT;
+    namespace nnpt { class Entry; }
 
-	/**
-	 * \brief Actual processing of incoming Nnn DENs
-	 *
-	 * Processing DEN packets
-	 * @param face    incoming face
-	 * @param den_p    DEN packet
-	 */
-	virtual void
-	OnDEN (Ptr<Face> face,
-			Ptr<DEN> den_p);
+    class Pit;
+    namespace pit { class Entry; }
 
-	/**
-	 * \brief Actual processing of incoming Nnn INFs
-	 *
-	 * Processing INF packets
-	 * @param face    incoming face
-	 * @param inf_p    INF packet
-	 */
-	virtual void
-	OnINF (Ptr<Face> face,
-			Ptr<INF> inf_p);
+    class Fib;
+    namespace fib
+    {
+      class Entry;
+      class FaceMetric;
+    }
 
-	/**
-	 * @brief Event fired just before PIT entry is removed by timeout
-	 * @param pitEntry PIT entry to be removed
+    namespace name { class Component; }
 
-  virtual void
-  WillEraseTimedOutPendingSO (Ptr<pit::Entry> pitEntry);
-	 */
+    class NNNAddrAggregator;
+    class PDUBuffer;
 
-	/**
-	 * @brief Event fired every time face is added to NNN stack
-	 * @param face face to be removed
-	 */
-	virtual void
-	AddFace (Ptr<Face> face);
+    //class NNSTFaceMetric;
 
-	/**
-	 * @brief Event fired every time face is removed from NNN stack
-	 * @param face face to be removed
-	 *
-	 * For example, when an application terminates, AppFace is removed and this method called by NNN stack.
-	 */
-	virtual void
-	RemoveFace (Ptr<Face> face);
+    /**
+     * @ingroup nnn-fw
+     * @brief Abstract base class for Nnn forwarding strategies
+     */
+    class ForwardingStrategy : public Object
+    {
+    public:
+      struct PtrNNNComp
+      {
+	bool operator () (const Ptr<const NNNAddress> &lhs , const Ptr<const NNNAddress>  &rhs) const  {
+	  return *lhs < *rhs;
+	}
+      };
 
-	/**
-	 * @brief Event fired every time a NNST entry is added to NNST
-	 * @param NNSTEntry NNST entry that was added
-	 */
-	virtual void
-	DidAddNNSTEntry (Ptr<nnst::Entry> NNSTEntry);
+      static TypeId GetTypeId ();
 
-	/**
-	 * @brief Fired just before NNST entry will be removed from NNST
-	 * @param NNSTEntry NNST entry that will be removed
-	 */
-	virtual void
-	WillRemoveNNSTEntry (Ptr<nnst::Entry> NNSTEntry);
+      /**
+       * @brief Helper function to retrieve logging name for the forwarding strategy
+       */
+      static std::string GetLogName ();
 
-	/**
-	 * @brief Event fired every time a NNPT entry is added to NNPT
-	 * @param NNPTEntry NNPT entry that was added
-	 */
-	virtual void
-	DidAddNNPTEntry (Ptr<nnpt::Entry> NNPTEntry);
+      /**
+       * @brief Default constructor
+       */
+      ForwardingStrategy ();
+      virtual ~ForwardingStrategy ();
 
-	/**
-	 * @brief Fired just before NNPT entry will be removed from NNST
-	 * @param NNPTEntry NNPT entry that will be removed
-	 */
-	virtual void
-	WillRemoveNNPTEntry (Ptr<nnpt::Entry> NNPTEntry);
+      // Obtain a random number between min and max
+      uint64_t
+      obtain_Num(uint64_t min, uint64_t max);
 
-protected:
-	/**
-	 * @brief An event that is fired every time a new NNST entry is created
-	 *
-	 * @param inFace  incoming face
-	 * @param header  deserialized SO header
-	 * @param nnstEntry created PIT entry (incoming and outgoing face sets are empty)
-	 *
-	 */
-	 virtual void
-	 DidCreateNNSTEntry (Ptr<Face> inFace, Ptr<const SO> so_p, Ptr<nnst::Entry> nnstEntry);
+      virtual void
+      SetNode3NName (Ptr<const NNNAddress> name, Time lease, bool fixed);
 
-	/**
-	 * @brief An event that is fired every time a new PIT entry cannot be created (e.g., PIT container imposes a limit)
-	 *
-	 * Note that this call can be called only for non-similar SO (i.e., there is an attempt to create a new PIT entry).
-	 * For any non-similar SOs, either FailedToCreatePitEntry or DidCreatePitEntry is called.
-	 *
-	 * @param inFace   incoming face
-	 * @param so_p SO packet
+      virtual const NNNAddress&
+      GetNode3NName ();
 
-  virtual void
-  FailedToCreatePitEntry (Ptr<Face> inFace,
-                          Ptr<const SO> so_p);
-	 */
+      virtual Ptr<const NNNAddress>
+      GetNode3NNamePtr ();
 
-	/**
-	 * @brief An event that is fired every time a duplicated SO is received
-	 *
-	 * This even is the last action that is performed before the SO processing is halted
-	 *
-	 * @param inFace  incoming face
-	 * @param so_p SO packet
-	 * @param pitEntry an existing PIT entry, corresponding to the duplicated SO
-	 *
-	 * @see DidReceiveDuplicateSO, DidSuppressSimilarSO, DidForwardSimilarSO, ShouldSuppressIncomingSO
+      // Produces a random 3N name under the delegated name space
+      virtual Ptr<NNNAddress>
+      produce3NName ();
 
-  virtual void
-  DidReceiveDuplicateSO (Ptr<Face> inFace,
-                               Ptr<const SO> so_p,
-                               Ptr<pit::Entry> pitEntry);
-	 */
+      virtual bool
+      Has3NName ();
 
-	/**
-	 * @brief An event that is fired every time when a similar SO is received and suppressed (collapsed)
-	 *
-	 * This even is the last action that is performed before the SO processing is halted
-	 *
-	 * @param inFace  incoming face
-	 * @param so_p SO packet
-	 * @param pitEntry an existing PIT entry, corresponding to the duplicated SO
-	 *
-	 * @see DidReceiveDuplicateSO, DidForwardSimilarSO, ShouldSuppressIncomingSO
+      virtual bool
+      GoesBy3NName (Ptr<NNNAddress> addr);
 
-  virtual void
-  DidSuppressSimilarSO (Ptr<Face> inFace,
-                              Ptr<const SO> so_p,
-                              Ptr<pit::Entry> pitEntry);
-	 */
+      virtual void
+      flushBuffer (Ptr<Face> face, Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName);
 
-	/**
-	 * @brief An event that is fired every time when a similar SO is received and further forwarded (not suppressed/collapsed)
-	 *
-	 * This even is fired just before handling the SO to PropagateSO method
-	 *
-	 * @param inFace  incoming face
-	 * @param so_p SO packet
-	 * @param pitEntry an existing PIT entry, corresponding to the duplicated SO
-	 *
-	 * @see DidReceiveDuplicateSO, DidSuppressSimilarSO, ShouldSuppressIncomingSO
+      /**
+       * \brief Actual processing of incoming Nnn content objects
+       *
+       * Processing EN PDUs
+       * @param face    incoming face
+       * @param en_p    EN PDU
+       */
+      virtual void
+      OnEN (Ptr<Face> face, Ptr<EN> en_p);
 
-  virtual void
-  DidForwardSimilarSO (Ptr<Face> inFace,
-                             Ptr<const SO> so_p,
-                             Ptr<pit::Entry> pitEntry);
-	 */
+      /**
+       * \brief Actual processing of incoming Nnn AENs.
+       *
+       * Processing AEN PDUs
+       * @param face     incoming face
+       * @param aen_p AEN PDU
+       */
+      virtual void
+      OnAEN (Ptr<Face> face, Ptr<AEN> aen_p);
 
-	/**
-	 * @brief An even that is fired when SO cannot be forwarded
-	 *
-	 * Note that the event will not fire if  retransmission detection is enabled (by default)
-	 * and retransmitted SO cannot by forwarded.  For more details, refer to the implementation.
-	 *
-	 * @param inFace  incoming face
-	 * @param so_p SO header
-	 * @param pitEntry an existing PIT entry, corresponding to the duplicated SO
-	 *
-	 * @see DetectRetransmittedSO
+      /**
+       * \brief Actual processing of incoming Nnn RENs
+       *
+       * Processing REN PDUs
+       * @param face    incoming face
+       * @param ren_p    REN PDU
+       */
+      virtual void
+      OnREN (Ptr<Face> face, Ptr<REN> ren_p);
 
-  virtual void
-  DidExhaustForwardingOptions (Ptr<Face> inFace,
-                               Ptr<const SO> so_p,
-                               Ptr<pit::Entry> pitEntry);
-	 */
+      /**
+       * \brief Actual processing of incoming Nnn DENs
+       *
+       * Processing DEN PDUs
+       * @param face    incoming face
+       * @param den_p    DEN PDU
+       */
+      virtual void
+      OnDEN (Ptr<Face> face, Ptr<DEN> den_p);
 
-	/**
-	 * @brief Method that implements logic to distinguish between new and retransmitted SO
-	 *
-	 * This method is called only when DetectRetransmissions attribute is set true (by default).
-	 *
-	 * Currently, the retransmission detection logic relies on the fact that list of incoming faces
-	 * already has inFace (i.e., a similar SO is received on the same face more than once).
-	 *
-	 * @param inFace  incoming face
-	 * @param so_p SO header
-	 * @param pitEntry an existing PIT entry, corresponding to the duplicated SO
-	 * @return true if SO should be considered as retransmitted
+      /**
+       * \brief Actual processing of incoming Nnn DENs
+       *
+       * Processing OEN PDUs
+       * @param face    incoming face
+       * @param oen_p    OEN PDU
+       */
+      virtual void
+      OnOEN (Ptr<Face> face, Ptr<OEN> oen_p);
 
-  virtual bool
-  DetectRetransmittedSO (Ptr<Face> inFace,
-                               Ptr<const SO> so_p,
-                               Ptr<pit::Entry> pitEntry);
-	 */
+      /**
+       * \brief Actual processing of incoming Nnn INFs
+       *
+       * Processing INF PDUs
+       * @param face    incoming face
+       * @param inf_p    INF PDU
+       */
+      virtual void
+      OnINF (Ptr<Face> face, Ptr<INF> inf_p);
 
-	/**
-	 * @brief Even fired just before SO will be satisfied
-	 *
-	 * Note that when SO is satisfied from the cache, incoming face will be 0
-	 *
-	 * @param inFace  incoming face
-	 * @param pitEntry an existing PIT entry, corresponding to the duplicated SO
+      /**
+       * \brief Actual processing of incoming Nnn NULLps.
+       *
+       * Processing NULLp PDUs
+       * @param face incoming face
+       * @param null_p NULLp PDU
+       */
+      virtual void
+      OnNULLp (Ptr<Face> face, Ptr<NULLp> null_p);
 
-  virtual void
-  WillSatisfyPendingSO (Ptr<Face> inFace,
-                              Ptr<pit::Entry> pitEntry);
-	 */
+      /**
+       * \brief Actual processing of incoming Nnn SOs.
+       *
+       * Processing SO PDUs
+       * @param face incoming face
+       * @param so_p SO PDU
+       */
+      virtual void
+      OnSO (Ptr<Face> face, Ptr<SO> so_p);
 
-	/**
-	 * @brief Actual procedure to satisfy SO
-	 *
-	 * Note that when SO is satisfied from the cache, incoming face will be 0
-	 *
-	 * @param inFace  incoming face
-	 * @param do_p    DO packet
-	 * @param pitEntry an existing PIT entry, corresponding to the duplicated SO
+      /**
+       * \brief Actual processing of incoming Nnn content objects
+       *
+       * Processing DO PDUs
+       * @param face incoming face
+       * @param do_p DO PDU
+       */
+      virtual void
+      OnDO (Ptr<Face> face, Ptr<DO> do_p);
 
-  virtual void
-  SatisfyPendingSO (Ptr<Face> inFace, // 0 allowed (from cache)
-                          Ptr<const DO> do_p,
-                          Ptr<pit::Entry> pitEntry);
-	 */
+      /**
+       * \brief Actual processing of incoming NNN DU packets
+       *
+       * Processing DU PDUs
+       * @param face    incoming face
+       * @param du_p    DU PDU
+       */
+      virtual void
+      OnDU (Ptr<Face> face, Ptr<DU> du_p);
 
-	/**
-	 * @brief Event which is fired just after DO was send out on the face
-	 *
-	 * @param inFace   incoming face of the DO
-	 * @param outFace  outgoing face
-	 * @param do_p     DO packet
-	 * @param pitEntry an existing PIT entry, corresponding to the duplicated SO
+      virtual void
+      ProcessICNPDU (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<Packet> icn_pdu);
 
-  virtual void
-  DidSendOutDO (Ptr<Face> inFace,
-                  Ptr<Face> outFace,
-                  Ptr<const DO> do_p,
-                  Ptr<pit::Entry> pitEntry);
-	 */
+      void
+      UpdatePITEntry (Ptr<pit::Entry> pitEntry, Ptr<NNNPDU> pdu, Ptr<Face> face, Time lifetime);
 
-	/**
-	 * @brief Event which is fired every time a requested (solicited) DO packet (there is an active PIT entry) is received
-	 *
-	 * @param inFace  incoming face
-	 * @param do_p    DO packet
-	 * @param didCreateCacheEntry flag indicating whether a cache entry was added for this DO packet or not (e.g., packet already exists in cache)
+      virtual void
+      ProcessInterest (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<ndn::Interest> interest);
 
-  virtual void
-  DidReceiveSolicitedDO (Ptr<Face> inFace,
-                           Ptr<const DO> do_p,
-                           bool didCreateCacheEntry);
-	 */
+      virtual void
+      ProcessData (Ptr<NNNPDU> pdu, Ptr<Face> face, Ptr<ndn::Data> data);
 
-	/**
-	 * @brief Event which is fired every time an unsolicited DO packet (no active PIT entry) is received
-	 *
-	 * The current implementation allows ignoring unsolicited DO (by default), or cache it by setting
-	 * attribute CacheUnsolicitedDO true
-	 *
-	 * @param inFace  incoming face
-	 * @param do_p    DO packet
-	 * @param didCreateCacheEntry flag indicating whether a cache entry was added for this DO packet or not (e.g., packet already exists in cache)
+      /**
+       * @brief Event fired just before PIT entry is removed by timeout
+       * @param pitEntry PIT entry to be removed
+       */
+      virtual void
+      WillEraseTimedOutPendingInterest (Ptr<pit::Entry> pitEntry);
 
-  virtual void
-  DidReceiveUnsolicitedDO (Ptr<Face> inFace,
-                             Ptr<const DO> do_p,
-                             bool didCreateCacheEntry);
-	 */
+      /**
+       * @brief Event fired every time face is added to NNN stack
+       * @param face face to be removed
+       */
+      virtual void
+      AddFace (Ptr<Face> face);
 
-	/**
-	 * @brief Method implementing logic to suppress (collapse) similar SOs
-	 *
-	 * In the base class implementation this method checks list of incoming/outgoing faces of the PIT entry
-	 * (for new Intersets, both lists are empty before this call)
-	 *
-	 * For more details, refer to the source code.
-	 *
-	 * @param inFace  incoming face
-	 * @param so_p SO packet
-	 * @param payload DO payload
+      /**
+       * @brief Event fired every time face is removed from NNN stack
+       * @param face face to be removed
+       *
+       * For example, when an application terminates, AppFace is removed and this method called by NNN stack.
+       */
+      virtual void
+      RemoveFace (Ptr<Face> face);
 
-  virtual bool
-  ShouldSuppressIncomingSO (Ptr<Face> inFace,
-                                  Ptr<const SO> so_p,
+      virtual std::vector<Address>
+      GetAllPoANames (Ptr<Face> face);
+
+      virtual void
+      Enroll ();
+
+      virtual void
+      Reenroll ();
+
+      virtual void
+      Disenroll ();
+
+      /**
+       * @brief Event fired every time a NNST entry is added to NNST
+       * @param NNSTEntry NNST entry that was added
+       */
+      virtual void
+      DidAddNNSTEntry (Ptr<nnst::Entry> NNSTEntry);
+
+      /**
+       * @brief Fired just before NNST entry will be removed from NNST
+       * @param NNSTEntry NNST entry that will be removed
+       */
+      virtual void
+      WillRemoveNNSTEntry (Ptr<nnst::Entry> NNSTEntry);
+
+      /**
+       * @brief Event fired every time a NNPT entry is added to NNPT
+       * @param NNPTEntry NNPT entry that was added
+       */
+      virtual void
+      DidAddNNPTEntry (Ptr<nnpt::Entry> NNPTEntry);
+
+      /**
+       * @brief Fired just before NNPT entry will be removed from NNST
+       * @param NNPTEntry NNPT entry that will be removed
+       */
+      virtual void
+      WillRemoveNNPTEntry (Ptr<nnpt::Entry> NNPTEntry);
+
+      /**
+       * @brief Event fired every time a FIB entry is added to FIB
+       * @param fibEntry FIB entry that was added
+       */
+      virtual void
+      DidAddFibEntry (Ptr<fib::Entry> fibEntry);
+
+      /**
+       * @brief Fired just before FIB entry will be removed from FIB
+       * @param fibEntry FIB entry that will be removed
+       */
+      virtual void
+      WillRemoveFibEntry (Ptr<fib::Entry> fibEntry);
+
+    protected:
+      /**
+       * @brief An event that is fired every time a new PIT entry is created
+       *
+       * Note that if NDN node is receiving a similar interest (interest for the same name),
+       * then either DidReceiveDuplicateInterest, DidSuppressSimilarInterest, or DidForwardSimilarInterest
+       * will be called
+       *
+       * Suppression of similar Interests is controlled using ShouldSuppressIncomingInterest virtual method
+       *
+       * @param inFace  incoming face
+       * @param header  deserialized Interest header
+       * @param pitEntry created PIT entry (incoming and outgoing face sets are empty)
+       *
+       * @see DidReceiveDuplicateInterest, DidSuppressSimilarInterest, DidForwardSimilarInterest, ShouldSuppressIncomingInterest
+       */
+      virtual void
+      DidCreatePitEntry (Ptr<Face> inFace,
+                         Ptr<const ndn::Interest> interest,
+                         Ptr<pit::Entry> pitEntry);
+
+      /**
+       * @brief An event that is fired every time a new PIT entry cannot be created (e.g., PIT container imposes a limit)
+       *
+       * Note that this call can be called only for non-similar Interest (i.e., there is an attempt to create a new PIT entry).
+       * For any non-similar Interests, either FailedToCreatePitEntry or DidCreatePitEntry is called.
+       *
+       * @param inFace   incoming face
+       * @param interest Interest packet
+       */
+      virtual void
+      FailedToCreatePitEntry (Ptr<Face> inFace,
+                              Ptr<const ndn::Interest> interest);
+
+      /**
+       * @brief An event that is fired every time a duplicated Interest is received
+       *
+       * This even is the last action that is performed before the Interest processing is halted
+       *
+       * @param inFace  incoming face
+       * @param interest Interest packet
+       * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
+       *
+       * @see DidReceiveDuplicateInterest, DidSuppressSimilarInterest, DidForwardSimilarInterest, ShouldSuppressIncomingInterest
+       */
+      virtual void
+      DidReceiveDuplicateInterest (Ptr<Face> inFace,
+                                   Ptr<const ndn::Interest> interest,
+                                   Ptr<pit::Entry> pitEntry);
+
+      /**
+       * @brief An event that is fired every time when a similar Interest is received and suppressed (collapsed)
+       *
+       * This even is the last action that is performed before the Interest processing is halted
+       *
+       * @param inFace  incoming face
+       * @param interest Interest packet
+       * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
+       *
+       * @see DidReceiveDuplicateInterest, DidForwardSimilarInterest, ShouldSuppressIncomingInterest
+       */
+      virtual void
+      DidSuppressSimilarInterest (Ptr<Face> inFace,
+                                  Ptr<const ndn::Interest> interest,
                                   Ptr<pit::Entry> pitEntry);
-	 */
 
-	/**
-	 * @brief Method to check whether SO can be send out on the particular face or not
-	 *
-	 * In the base class, this method perfoms two checks:
-	 * 1. If inFace is equal to outFace (when equal, SO forwarding is prohibited)
-	 * 2. Whether SO should be suppressed (list of outgoing faces include outFace),
-	 * considering (if enabled) retransmission logic
-	 *
-	 * @param inFace     incoming face of the SO
-	 * @param outFace    proposed outgoing face of the SO
-	 * @param so_p   SO packet
-	 * @param pitEntry   reference to PIT entry (reference to corresponding NNST entry inside)
-	 *
-	 * @see DetectRetransmittedSO
+      /**
+       * @brief An event that is fired every time when a similar Interest is received and further forwarded (not suppressed/collapsed)
+       *
+       * This even is fired just before handling the Interest to PropagateInterest method
+       *
+       * @param inFace  incoming face
+       * @param interest Interest packet
+       * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
+       *
+       * @see DidReceiveDuplicateInterest, DidSuppressSimilarInterest, ShouldSuppressIncomingInterest
+       */
+      virtual void
+      DidForwardSimilarInterest (Ptr<Face> inFace,
+                                 Ptr<const ndn::Interest> interest,
+                                 Ptr<pit::Entry> pitEntry);
 
-  virtual bool
-  CanSendOutSO (Ptr<Face> inFace,
+      /**
+       * @brief An even that is fired when Interest cannot be forwarded
+       *
+       * Note that the event will not fire if  retransmission detection is enabled (by default)
+       * and retransmitted Interest cannot by forwarded.  For more details, refer to the implementation.
+       *
+       * @param inFace  incoming face
+       * @param interest Interest header
+       * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
+       *
+       * @see DetectRetransmittedInterest
+       */
+      virtual void
+      DidExhaustForwardingOptions (Ptr<NNNPDU> pdu,
+                                   Ptr<Face> inFace,
+                                   Ptr<const ndn::Interest> interest,
+                                   Ptr<pit::Entry> pitEntry);
+
+      /**
+       * @brief Method that implements logic to distinguish between new and retransmitted interest
+       *
+       * This method is called only when DetectRetransmissions attribute is set true (by default).
+       *
+       * Currently, the retransmission detection logic relies on the fact that list of incoming faces
+       * already has inFace (i.e., a similar interest is received on the same face more than once).
+       *
+       * @param inFace  incoming face
+       * @param interest Interest header
+       * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
+       * @return true if Interest should be considered as retransmitted
+       */
+      virtual bool
+      DetectRetransmittedInterest (Ptr<Face> inFace,
+                                   Ptr<const ndn::Interest> interest,
+                                   Ptr<pit::Entry> pitEntry);
+
+      /**
+       * @brief Even fired just before Interest will be satisfied
+       *
+       * Note that when Interest is satisfied from the cache, incoming face will be 0
+       *
+       * @param inFace  incoming face
+       * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
+       */
+      virtual void
+      WillSatisfyPendingInterest (Ptr<Face> inFace,
+                                  Ptr<pit::Entry> pitEntry);
+
+      /**
+       * @brief Actual procedure to satisfy Interest
+       *
+       * Note that when Interest is satisfied from the cache, incoming face will be 0
+       *
+       * @param pdu The 3N PDU that created this information
+       * @param inFace  incoming face
+       * @param data    Data packet
+       * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
+       */
+      virtual void
+      SatisfyPendingInterest (Ptr<NNNPDU> pdu,
+                              Ptr<Face> inFace, // 0 allowed (from cache)
+                              Ptr<const ndn::Data> data,
+                              Ptr<pit::Entry> pitEntry);
+
+      /**
+       * @brief Event which is fired just after data was send out on the face
+       *
+       * @param inFace   incoming face of the Data
+       * @param outFace  outgoing face
+       * @param data     Data packet
+       * @param pitEntry an existing PIT entry, corresponding to the duplicated Interest
+       */
+      virtual void
+      DidSendOutData (Ptr<Face> inFace,
                       Ptr<Face> outFace,
-                      Ptr<const SO> so_p,
+                      Ptr<const ndn::Data> data,
                       Ptr<pit::Entry> pitEntry);
-	 */
 
-	/**
-	 * @brief Method implementing actual SO forwarding, taking into account CanSendOutSO decision
-	 *
-	 * If event returns false, then there is some kind of a problem exists
-	 *
-	 * @param inFace     incoming face of the SO
-	 * @param outFace    proposed outgoing face of the SO
-	 * @param so_p SO packet
-	 * @param pitEntry   reference to PIT entry (reference to corresponding NNST entry inside)
-	 *
-	 * @see CanSendOutSO
+      /**
+       * @brief Event which is fired every time a requested (solicited) DATA packet (there is an active PIT entry) is received
+       *
+       * @param inFace  incoming face
+       * @param data    Data packet
+       * @param didCreateCacheEntry flag indicating whether a cache entry was added for this data packet or not (e.g., packet already exists in cache)
+       */
+      virtual void
+      DidReceiveSolicitedData (Ptr<Face> inFace,
+                               Ptr<const ndn::Data> data,
+                               bool didCreateCacheEntry);
 
-  virtual bool
-  TrySendOutSO (Ptr<Face> inFace,
-                      Ptr<Face> outFace,
-                      Ptr<const SO> so_p,
-                      Ptr<pit::Entry> pitEntry);
-	 */
+      /**
+       * @brief Event which is fired every time an unsolicited DATA packet (no active PIT entry) is received
+       *
+       * The current implementation allows ignoring unsolicited DATA (by default), or cache it by setting
+       * attribute CacheUnsolicitedData true
+       *
+       * @param inFace  incoming face
+       * @param data    Data packet
+       * @param didCreateCacheEntry flag indicating whether a cache entry was added for this data packet or not (e.g., packet already exists in cache)
+       */
+      virtual void
+      DidReceiveUnsolicitedData (Ptr<Face> inFace,
+                                 Ptr<const ndn::Data> data,
+                                 bool didCreateCacheEntry);
 
-	/**
-	 * @brief Event fired just after forwarding the SO
-	 *
-	 * @param inFace     incoming face of the SO
-	 * @param outFace    outgoing face of the SO
-	 * @param so_p SO packet
-	 * @param pitEntry   reference to PIT entry (reference to corresponding NNST entry inside)
+      /**
+       * @brief Method implementing logic to suppress (collapse) similar Interests
+       *
+       * In the base class implementation this method checks list of incoming/outgoing faces of the PIT entry
+       * (for new Intersets, both lists are empty before this call)
+       *
+       * For more details, refer to the source code.
+       *
+       * @param inFace  incoming face
+       * @param interest Interest packet
+       * @param payload Data payload
+       */
+      virtual bool
+      ShouldSuppressIncomingInterest (Ptr<Face> inFace,
+                                      Ptr<const ndn::Interest> interest,
+                                      Ptr<pit::Entry> pitEntry);
 
-  virtual void
-  DidSendOutSO (Ptr<Face> inFace,
-                      Ptr<Face> outFace,
-                      Ptr<const SO> so_p,
-                      Ptr<pit::Entry> pitEntry);
-	 */
+      /**
+       * @brief Method to check whether Interest can be send out on the particular face or not
+       *
+       * In the base class, this method perfoms two checks:
+       * 1. If inFace is equal to outFace (when equal, Interest forwarding is prohibited)
+       * 2. Whether Interest should be suppressed (list of outgoing faces include outFace),
+       * considering (if enabled) retransmission logic
+       *
+       * @param inFace     incoming face of the Interest
+       * @param outFace    proposed outgoing face of the Interest
+       * @param interest   Interest packet
+       * @param pitEntry   reference to PIT entry (reference to corresponding FIB entry inside)
+       *
+       * @see DetectRetransmittedInterest
+       */
+      virtual bool
+      CanSendOutInterest (Ptr<Face> inFace,
+                          Ptr<Face> outFace,
+                          Ptr<const ndn::Interest> interest,
+                          Ptr<pit::Entry> pitEntry);
 
-	/**
-	 * @brief Wrapper method, which performs general tasks and calls DoPropagateSO method
-	 *
-	 * General tasks so far are adding face to the list of incoming face, updating
-	 * PIT entry lifetime, calling DoPropagateSO, and retransmissions (enabled by default).
-	 *
-	 * @param inFace     incoming face
-	 * @param so_p   SO packet
-	 * @param pitEntry   reference to PIT entry (reference to corresponding NNST entry inside)
-	 *
-	 * @see DoPropagateSO
+      /**
+       * @brief Method implementing actual interest forwarding, taking into account CanSendOutInterest decision
+       *
+       * If event returns false, then there is some kind of a problem exists
+       *
+       * @param pdu The 3N PDU that created this information
+       * @param inFace     incoming face of the Interest
+       * @param outFace    proposed outgoing face of the Interest
+       * @param interest Interest packet
+       * @param pitEntry   reference to PIT entry (reference to corresponding FIB entry inside)
+       * @param addr Address to use when sending PDUs
+       *
+       * @see CanSendOutInterest
+       */
+      virtual bool
+      TrySendOutInterest (Ptr<NNNPDU> pdu,
+			  Ptr<Face> inFace,
+			  Ptr<Face> outFace,
+			  Address addr,
+			  Ptr<const ndn::Interest> interest,
+			  Ptr<pit::Entry> pitEntry);
 
-  virtual void
-  PropagateSO (Ptr<Face> inFace,
-                     Ptr<const SO> so_p,
-                     Ptr<pit::Entry> pitEntry);
-	 */
+      /**
+       * @brief Event fired just after forwarding the Interest
+       *
+       * @param inFace     incoming face of the Interest
+       * @param outFace    outgoing face of the Interest
+       * @param interest Interest packet
+       * @param pitEntry   reference to PIT entry (reference to corresponding FIB entry inside)
+       */
+      virtual void
+      DidSendOutInterest (Ptr<Face> inFace,
+                          Ptr<Face> outFace,
+                          Ptr<const ndn::Interest> interest,
+                          Ptr<pit::Entry> pitEntry);
 
-	/**
-	 * @brief Virtual method to perform SO propagation according to the forwarding strategy logic
-	 *
-	 * In most cases, this is the call that needs to be implemented/re-implemented in order
-	 * to perform forwarding of SOs according to the desired logic.
-	 *
-	 * There is also PropagateSO method (generally, do not require to be overriden)
-	 * which performs general tasks (adding face to the list of incoming face, updating
-	 * PIT entry lifetime, calling DoPropagateSO, as well as perform retransmissions (enabled by default).
-	 *
-	 * @param inFace     incoming face
-	 * @param so_p   SO packet
-	 * @param pitEntry   reference to PIT entry (reference to corresponding NNST entry inside)
-	 *
-	 * @return true if SO was successfully propagated, false if all options have failed
-	 *
-	 * @see PropagateSO
+      /**
+       * @brief Wrapper method, which performs general tasks and calls DoPropagateInterest method
+       *
+       * General tasks so far are adding face to the list of incoming face, updating
+       * PIT entry lifetime, calling DoPropagateInterest, and retransmissions (enabled by default).
+       *
+       * @param pdu The 3N PDU that created this information
+       * @param inFace     incoming face
+       * @param interest   Interest packet
+       * @param pitEntry   reference to PIT entry (reference to corresponding FIB entry inside)
+       *
+       * @see DoPropagateInterest
+       */
+      virtual void
+      PropagateInterest (Ptr<NNNPDU> pdu,
+                         Ptr<Face> inFace,
+                         Ptr<const ndn::Interest> interest,
+                         Ptr<pit::Entry> pitEntry);
 
-  virtual bool
-  DoPropagateSO (Ptr<Face> inFace,
-                       Ptr<const SO> so_p,
-                       Ptr<pit::Entry> pitEntry) = 0;
-	 */
+      /**
+       * @brief Virtual method to perform Interest propagation according to the forwarding strategy logic
+       *
+       * In most cases, this is the call that needs to be implemented/re-implemented in order
+       * to perform forwarding of Interests according to the desired logic.
+       *
+       * There is also PropagateInterest method (generally, do not require to be overriden)
+       * which performs general tasks (adding face to the list of incoming face, updating
+       * PIT entry lifetime, calling DoPropagateInterest, as well as perform retransmissions (enabled by default).
+       *
+       * @param pdu The 3N PDU that created this information
+       * @param inFace     incoming face
+       * @param interest   Interest packet
+       * @param pitEntry   reference to PIT entry (reference to corresponding FIB entry inside)
+       *
+       * @return true if interest was successfully propagated, false if all options have failed
+       *
+       * @see PropagateInterest
+       */
+      virtual bool
+      DoPropagateInterest (Ptr<NNNPDU> pdu,
+                           Ptr<Face> inFace,
+                           Ptr<const ndn::Interest> interest,
+                           Ptr<pit::Entry> pitEntry);
+    protected:
+      // inherited from Object class
+      virtual void NotifyNewAggregate (); ///< @brief Even when object is aggregated to another Object
+      virtual void DoDispose (); ///< @brief Do cleanup
 
-		protected:
-	// inherited from Object class
-	virtual void NotifyNewAggregate (); ///< @brief Even when object is aggregated to another Object
-	virtual void DoDispose (); ///< @brief Do cleanup
+    protected:
+      Ptr<NNPT> m_nnpt; ///< \brief Reference to NNPT
+      Ptr<NNST> m_nnst; ///< \brief Reference to NNST
+      Ptr<NNST> m_awaiting_response; /// \brief Reference to awaiting response, using NNST
 
-		protected:
-	// Ptr<Pit> m_pit; ///< \brief Reference to PIT to which this forwarding strategy is associated
-	Ptr<NNST> m_nnst; ///< \brief NNST
-	// Ptr<ContentStore> m_contentStore; ///< \brief Content store (for caching purposes only)
+      Ptr<FaceContainer> m_faces; ///< \brief List of Faces attached to this node
+      Ptr<NamesContainer> m_node_names; ///< \brief 3N names container for personal names
+      Ptr<NamesContainer> m_leased_names; ///< \brief 3N names container for node leased names
 
-	//  bool m_cacheUnsolicitedDOFromApps;
-	//  bool m_cacheUnsolicitedDO;
-	//  bool m_detectRetransmissions;
+      Ptr<PDUBuffer> m_node_pdu_buffer; /// <\brief Buffer for Node using forwarding strategy
 
-	//  TracedCallback<Ptr<const SO>,
-	//                Ptr<const Face> > m_outSOs; ///< @brief Transmitted SOs trace
+      Ptr<Pit> m_pit; ///< \brief Reference to PIT to which this forwarding strategy is associated
+      Ptr<Fib> m_fib; ///< \brief Reference to FIB to which this forwarding strategy is associated
+      Ptr<ndn::ContentStore> m_contentStore; ///< \brief Content store (for caching purposes only)
 
-	//  TracedCallback<Ptr<const SO>,
-	//                 Ptr<const Face> > m_inSOs; ///< @brief trace of incoming SOs
+      std::map <Ptr<const NNNAddress>, Time, PtrNNNComp> m_node_lease_times;
 
-	//  TracedCallback<Ptr<const SO>,
-	//                 Ptr<const Face> > m_dropSOs; ///< @brief trace of dropped SOs
+      bool m_cacheUnsolicitedDataFromApps;
+      bool m_cacheUnsolicitedData;
+      bool m_detectRetransmissions;
+      bool m_produce3Nnames;
 
-	////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////
+      Time m_3n_lease_time;
+      Time m_3n_lease_ack_timeout;
+      Time m_3n_lifetime;
+      int32_t m_standardMetric;
 
-	//  TracedCallback<Ptr<const DO>,
-	//            bool /*from cache*/,
-	//                 Ptr<const Face> > m_outDO; ///< @brief trace of outgoing DO
+      ////////////////////////////////////////////////////////////////////
 
-	//  TracedCallback<Ptr<const DO>,
-	//                 Ptr<const Face> > m_inDO; ///< @brief trace of incoming DO
+      TracedCallback<Ptr<const EN>,
+      Ptr<const Face> > m_outENs; ///< @brief trace of outgoing EN
 
-	//  TracedCallback<Ptr<const DO>,
-	//                  Ptr<const Face> > m_dropDO;  ///< @brief trace of dropped Do
+      TracedCallback<Ptr<const EN>,
+      Ptr<const Face> > m_inENs; ///< @brief trace of incoming EN
 
-	////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////
+      TracedCallback<Ptr<const EN>,
+      Ptr<const Face> > m_dropENs;  ///< @brief trace of dropped EN
 
-	//  TracedCallback< Ptr<const pit::Entry> > m_satisfiedSOs;
-	//  TracedCallback< Ptr<const pit::Entry> > m_timedOutSOs;
-		};
+      ////////////////////////////////////////////////////////////////////
 
-} // namespace nnn
+      TracedCallback<Ptr<const AEN>,
+      Ptr<const Face> > m_outAENs; ///< @brief trace of outgoing AEN
+
+      TracedCallback<Ptr<const AEN>,
+      Ptr<const Face> > m_inAENs; ///< @brief trace of incoming AEN
+
+      TracedCallback<Ptr<const AEN>,
+      Ptr<const Face> > m_dropAENs;  ///< @brief trace of dropped AEN
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const DEN>,
+      Ptr<const Face> > m_outDENs; ///< @brief trace of outgoing DEN
+
+      TracedCallback<Ptr<const DEN>,
+      Ptr<const Face> > m_inDENs; ///< @brief trace of incoming DEN
+
+      TracedCallback<Ptr<const DEN>,
+      Ptr<const Face> > m_dropDENs;  ///< @brief trace of dropped DEN
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const REN>,
+      Ptr<const Face> > m_outRENs; ///< @brief trace of outgoing REN
+
+      TracedCallback<Ptr<const REN>,
+      Ptr<const Face> > m_inRENs; ///< @brief trace of incoming REN
+
+      TracedCallback<Ptr<const REN>,
+      Ptr<const Face> > m_dropRENs;  ///< @brief trace of dropped REN
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const OEN>,
+      Ptr<const Face> > m_outOENs; ///< @brief trace of outgoing OEN
+
+      TracedCallback<Ptr<const OEN>,
+      Ptr<const Face> > m_inOENs; ///< @brief trace of incoming OEN
+
+      TracedCallback<Ptr<const OEN>,
+      Ptr<const Face> > m_dropOENs;  ///< @brief trace of dropped OEN
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const INF>,
+      Ptr<const Face> > m_outINFs; ///< @brief trace of outgoing INF
+
+      TracedCallback<Ptr<const INF>,
+      Ptr<const Face> > m_inINFs; ///< @brief trace of incoming INF
+
+      TracedCallback<Ptr<const INF>,
+      Ptr<const Face> > m_dropINFs;  ///< @brief trace of dropped INF
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const NULLp>,
+      Ptr<const Face> > m_outNULLps; ///< @brief trace of outgoing NULLp
+
+      TracedCallback<Ptr<const NULLp>,
+      Ptr<const Face> > m_inNULLps; ///< @brief trace of incoming NULLp
+
+      TracedCallback<Ptr<const NULLp>,
+      Ptr<const Face> > m_dropNULLps;  ///< @brief trace of dropped NULLp
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const SO>,
+      Ptr<const Face> > m_outSOs; ///< @brief Transmitted SOs trace
+
+      TracedCallback<Ptr<const SO>,
+      Ptr<const Face> > m_inSOs; ///< @brief trace of incoming SOs
+
+      TracedCallback<Ptr<const SO>,
+      Ptr<const Face> > m_dropSOs; ///< @brief trace of dropped SOs
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const DO>,
+      Ptr<const Face> > m_outDOs; ///< @brief trace of outgoing DO
+
+      TracedCallback<Ptr<const DO>,
+      Ptr<const Face> > m_inDOs; ///< @brief trace of incoming DO
+
+      TracedCallback<Ptr<const DO>,
+      Ptr<const Face> > m_dropDOs;  ///< @brief trace of dropped DO
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const DU>,
+      Ptr<const Face> > m_outDUs; ///< @brief trace of outgoing DO
+
+      TracedCallback<Ptr<const DU>,
+      Ptr<const Face> > m_inDUs; ///< @brief trace of incoming DO
+
+      TracedCallback<Ptr<const DU>,
+      Ptr<const Face> > m_dropDUs;  ///< @brief trace of dropped DO
+
+      ////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const ndn::Interest>,
+      Ptr<const Face> > m_outInterests; ///< @brief Transmitted interests trace
+
+      TracedCallback<Ptr<const ndn::Interest>,
+      Ptr<const Face> > m_inInterests; ///< @brief trace of incoming Interests
+
+      TracedCallback<Ptr<const ndn::Interest>,
+      Ptr<const Face> > m_dropInterests; ///< @brief trace of dropped Interests
+
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback<Ptr<const ndn::Data>,
+      bool /*from cache*/,
+      Ptr<const Face> > m_outData; ///< @brief trace of outgoing Data
+
+      TracedCallback<Ptr<const ndn::Data>,
+      Ptr<const Face> > m_inData; ///< @brief trace of incoming Data
+
+      TracedCallback<Ptr<const ndn::Data>,
+      Ptr<const Face> > m_dropData;  ///< @brief trace of dropped Data
+
+      ////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////
+
+      TracedCallback< Ptr<const pit::Entry> > m_satisfiedInterests;
+      TracedCallback< Ptr<const pit::Entry> > m_timedOutInterests;
+
+      TracedCallback<> m_got3Nname;
+      TracedCallback<> m_no3Nname;
+
+    private:
+      // Number generator
+      boost::random::mt19937_64 gen;
+    };
+
+  } // namespace nnn
 } // namespace ns3
 
 #endif /* NNN_FORWARDING_STRATEGY_H */

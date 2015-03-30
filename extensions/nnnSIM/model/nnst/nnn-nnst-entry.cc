@@ -38,14 +38,14 @@ namespace ll = boost::lambda;
 
 NS_LOG_COMPONENT_DEFINE ("nnn.nnst.entry");
 
-namespace ns3 {
-  namespace nnn {
-    namespace nnst {
-
-      ///////////////////////////////////////////////////////////////////////////////
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnst
+    {
       Entry::Entry()
       {
-
       }
 
       Entry::Entry(Ptr<NNST> nnst, const Ptr<const NNNAddress> &name)
@@ -191,6 +191,16 @@ namespace ns3 {
 	return m_faces.get<i_nth> () [skip];
       }
 
+      std::pair<Ptr<Face>, Address>
+      Entry::FindBestCandidateFaceInfo (uint32_t skip/* = 0*/) const
+      {
+        FaceMetric tmp = FindBestCandidate(skip);
+
+        std::pair<Ptr<Face>, Address> ret = std::make_pair(tmp.GetFace (), tmp.GetAddress ());
+
+        return ret;
+      }
+
       void
       Entry::RemoveFace (const Ptr<Face> &face)
       {
@@ -299,21 +309,21 @@ namespace ns3 {
       }
 
       void
-      Entry::cleanExpired()
+      Entry::cleanExpired ()
       {
 	NS_LOG_FUNCTION (this);
 	fmtr_set_by_lease& lease_index = m_faces.get<i_lease> ();
-	Time now = Simulator::Now();
+	Time now = Simulator::Now ();
 
-	fmtr_set_by_lease::iterator it = lease_index.begin();
-	for (; it != lease_index.end();)
+	fmtr_set_by_lease::iterator it = lease_index.begin ();
+	for (; it != lease_index.end ();)
 	  {
 	    if (it->GetExpireTime() <= now)
-	      it = lease_index.erase(it);
+	      it = lease_index.erase (it);
 	    else
 	      ++it;
 
-	    if (it->GetExpireTime() > now)
+	    if (it->GetExpireTime () > now)
 	      break;
 	  }
       }
@@ -430,7 +440,6 @@ namespace ns3 {
 
 	return os;
       }
-
     } /* namespace nnst */
   } /* namespace nnn */
 } /* namespace ns3 */

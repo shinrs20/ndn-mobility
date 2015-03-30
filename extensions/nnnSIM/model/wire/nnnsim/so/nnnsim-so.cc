@@ -22,180 +22,141 @@
 NNN_NAMESPACE_BEGIN
 
 namespace wire {
-namespace nnnSIM {
+  namespace nnnSIM {
 
-NS_OBJECT_ENSURE_REGISTERED (SO);
+    NS_OBJECT_ENSURE_REGISTERED (SO);
 
-NS_LOG_COMPONENT_DEFINE ("nnn.wire.nnnSIM.SO");
+    NS_LOG_COMPONENT_DEFINE ("nnn.wire.nnnSIM.SO");
 
-SO::SO ()
-: m_so_p (Create<nnn::SO> ())
-{
-}
+    SO::SO ()
+    : CommonHeader<nnn::SO> ()
+    {
+    }
 
-SO::SO (Ptr<nnn::SO> so_p)
-: m_so_p (so_p)
-{
-}
+    SO::SO (Ptr<nnn::SO> so_p)
+    : CommonHeader<nnn::SO> (so_p)
+    {
+    }
 
-Ptr<nnn::SO>
-SO::GetSO ()
-{
-	return m_so_p;
-}
-
-Ptr<Packet>
-SO::ToWire (Ptr<const nnn::SO> so_p)
-{
-	Ptr<const Packet> p = so_p->GetWire ();
-	if (!p)
+    Ptr<Packet>
+    SO::ToWire (Ptr<const nnn::SO> so_p)
+    {
+      Ptr<const Packet> p = so_p->GetWire ();
+      if (!p)
 	{
-		Ptr<Packet> packet = Create<Packet> (*so_p->GetPayload ());
-		SO wireEncoding (ConstCast<nnn::SO> (so_p));
-		packet->AddHeader (wireEncoding);
-		so_p->SetWire (packet);
+	  Ptr<Packet> packet = Create<Packet> (*so_p->GetPayload ());
+	  SO wireEncoding (ConstCast<nnn::SO> (so_p));
+	  packet->AddHeader (wireEncoding);
+	  so_p->SetWire (packet);
 
-		p = packet;
+	  p = packet;
 	}
 
-	return p->Copy ();
-}
+      return p->Copy ();
+    }
 
-Ptr<nnn::SO>
-SO::FromWire (Ptr<Packet> packet)
-{
-	Ptr<nnn::SO> so_p = Create<nnn::SO> ();
-	Ptr<Packet> wire = packet->Copy ();
+    Ptr<nnn::SO>
+    SO::FromWire (Ptr<Packet> packet)
+    {
+      Ptr<nnn::SO> so_p = Create<nnn::SO> ();
+      Ptr<Packet> wire = packet->Copy ();
 
-	SO wireEncoding (so_p);
-	packet->RemoveHeader (wireEncoding);
+      SO wireEncoding (so_p);
+      packet->RemoveHeader (wireEncoding);
 
-	so_p->SetPayload (packet);
-	so_p->SetWire (wire);
+      so_p->SetPayload (packet);
+      so_p->SetWire (wire);
 
-	return so_p;
-}
+      return so_p;
+    }
 
-TypeId
-SO::GetTypeId (void)
-{
-	static TypeId tid = TypeId ("ns3::nnn::SO::nnnSIM")
-    		.SetGroupName ("Nnn")
-    		.SetParent<Header> ()
-    		.AddConstructor<SO> ()
-    		;
-	return tid;
-}
+    TypeId
+    SO::GetTypeId (void)
+    {
+      static TypeId tid = TypeId ("ns3::nnn::SO::nnnSIM")
+	  .SetGroupName ("Nnn")
+	  .SetParent<Header> ()
+	  .AddConstructor<SO> ()
+	  ;
+      return tid;
+    }
 
-TypeId
-SO::GetInstanceTypeId (void) const
-{
-	return GetTypeId ();
-}
+    TypeId
+    SO::GetInstanceTypeId (void) const
+    {
+      return GetTypeId ();
+    }
 
-uint32_t
-SO::GetSerializedSize () const
-{
-	size_t size =
-			4 +                                  /* Packetid */
-			2 +                                  /* Length of packet */
-			2 +                                  /* Timestamp */
-			NnnSim::SerializedSizeName (m_so_p->GetName ()) + /* Name size */
-			m_so_p->GetPayload ()->GetSerializedSize();    /* Payload data */
+    uint32_t
+    SO::GetSerializedSize () const
+    {
+      size_t size =
+	  CommonGetSerializedSize () +                    /* Common header */
+	  2 +                                             /* PDU Data type */
+	  NnnSim::SerializedSizeName (m_ptr->GetName ())  /* Name size */
+	  //m_ptr->GetPayload ()->GetSerializedSize()     /* Payload data */
+	  ;
+      return size;
+    }
 
-	NS_LOG_INFO ("Serialize size = " << size);
-	return size;
-}
+    void
+    SO::Serialize (Buffer::Iterator start) const
+    {
+      // Serialize the header
+      CommonSerialize(start);
 
-void
-SO::Serialize (Buffer::Iterator start) const
-{
-	// Get the total size of the serialized packet
-	uint32_t totalsize = GetSerializedSize ();
-	// Find out the payload size
-	uint32_t payloadsize = m_so_p->GetPayload ()->GetSerializedSize ();
-	// Create a buffer to be able to serialize the payload
-	uint8_t buffer[payloadsize];
+      // Remember that CommonSerialize doesn't write the Packet length
+      // Move the iterator forward
+      start.Next(CommonGetSerializedSize() -2);
 
-	// Serialize packetid
-	start.WriteU32(m_so_p->GetPacketId());
-	// Get the length of the packet
-	start.WriteU16(totalsize - 4); // Minus packetid size of 32 bits
-	// Check that the lifetime is within the limits
-	NS_ASSERT_MSG (0 <= m_so_p->GetLifetime ().ToInteger (Time::S) &&
-			m_so_p->GetLifetime ().ToInteger (Time::S) < 65535,
-			"Incorrect Lifetime (should not be smaller than 0 and larger than 65535");
+      NS_LOG_INFO ("Serialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Serialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Serialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Serialize -> Pkt Len = " << GetSerializedSize());
 
-	// Round lifetime to seconds
-	start.WriteU16 (static_cast<uint16_t> (m_so_p->GetLifetime ().ToInteger (Time::S)));
+      // Serialize the packet size
+      start.WriteU16(GetSerializedSize());
 
-	// Serialize
-	NnnSim::SerializeName(start, m_so_p->GetName());
+      // Serialize the PDU Data type
+      start.WriteU16(m_ptr->GetPDUPayloadType());
 
-	// Serialize the payload and place it in the variable buffer
-	m_so_p->GetPayload ()->Serialize (buffer, payloadsize);
+      // Serialize
+      NnnSim::SerializeName(start, m_ptr->GetName());
 
-	for (int i = 0; i < payloadsize; i++)
-	{
-		start.WriteU8(buffer[i]);
-	}
-}
+      NS_LOG_INFO("Finished serialization");
+    }
 
-uint32_t
-SO::Deserialize (Buffer::Iterator start)
-{
-	Buffer::Iterator i = start;
+    uint32_t
+    SO::Deserialize (Buffer::Iterator start)
+    {
+      Buffer::Iterator i = start;
 
-	// Read packet id
-	if (i.ReadU32 () != 1)
-		throw new NULLpException ();
+      // Deserialize the header
+      uint32_t skip = CommonDeserialize (i);
 
-	// Read length of packet
-	uint16_t packet_len = i.ReadU16 ();
+      NS_LOG_INFO ("Deserialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Deserialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Deserialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Deserialize -> Pkt len = " << m_packet_len);
 
-	// Read lifetime of the packet
-	m_so_p->SetLifetime (Seconds (i.ReadU16 ()));
+      // Check packet ID
+      if (m_ptr->GetPacketId() != nnn::SO_NNN)
+	throw new SOException ();
 
-	// Update the length. The resulting size is the packet size that
-	// we have to deserialize
-	packet_len -= 4;
+      // Move the iterator forward
+      i.Next(skip);
 
-	// Deserialize the name
-	m_so_p->SetName(NnnSim::DeserializeName(i));
+      // Deserialize the PDU Data type
+      m_ptr->SetPDUPayloadType(i.ReadU16());
 
-	// Substract the size of what we just got
-	packet_len -= NnnSim::SerializedSizeName (m_so_p->GetName ());
+      // Deserialize the name
+      m_ptr->SetName(NnnSim::DeserializeName(i));
 
-	// Obtain how big the buffer has to be (dividing by 8)
-	uint32_t bufsize = packet_len / 8;
+      NS_ASSERT (GetSerializedSize () == (i.GetDistanceFrom (start)));
 
-	// Create the buffer size
-	uint8_t buffer[bufsize];
-
-	// Read 8 bits at a time until the end of the packet
-	for (int j = 0; j < bufsize; j++)
-	{
-		buffer[j] = i.ReadU8 ();
-	}
-
-	// Create a packet from the deserialized information
-	Ptr<Packet> depacket = Create <Packet> (buffer, packet_len, true);
-
-	// Save the packet information
-	m_so_p->SetPayload (depacket);
-
-	NS_ASSERT (GetSerializedSize () == (i.GetDistanceFrom (start)));
-
-	return i.GetDistanceFrom (start);
-}
-
-void
-SO::Print (std::ostream &os) const
-{
-	m_so_p->Print (os);
-}
-
-}
+      return i.GetDistanceFrom (start);
+    }
+  }
 }
 
 NNN_NAMESPACE_END

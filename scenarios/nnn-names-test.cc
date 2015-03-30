@@ -148,12 +148,31 @@ int main (int argc, char *argv[])
 
 	NNNAddress higherSub ("ae.35");
 
+	NNNAddress maxTest = maxd + lowerStart;
+	NNNAddress maxTest2 = lowerStart + maxd;
+
+	cout << "Max append test: " << maxd << " + " << lowerStart << endl;
+	cout << "Max append test result: " << maxTest << endl;
+
+	cout << "Max append test: " << lowerStart << " + " << maxd << endl;
+	cout << "Max append test result: " << maxTest2 << endl;
+
 	cout << "Working address is: " << working << endl;
 
 	NNNAddress workingSector = working.getSectorName();
+	NNNAddress lastLabel = working.getLastLabel();
 	NNNAddress samesecSector = samesecM.getSectorName();
 
 	cout << "Sector is: " << workingSector << endl;
+	cout << "Last label is: " << lastLabel << endl;
+
+	NNNAddress appendTest = lowerStart + lastLabel;
+
+	cout << "Append test for: " << lowerStart << " with " << lastLabel << endl;
+
+	cout << "Result is: " << appendTest << endl;
+	cout << "Address used is: " << lowerStart << endl;
+	cout << "Label used is: " << lastLabel << endl;
 
 	cout << "Second working address is: " << samesecM << endl;
 
@@ -202,6 +221,10 @@ int main (int argc, char *argv[])
 	NNNAddress test4 ("b");
 	NNNAddress test5 ("b.1");
 	NNNAddress test6 ("b.1.1");
+	NNNAddress test7 ("1");
+	NNNAddress test8 ("a.2");
+	NNNAddress test9 ("a.1.23.4");
+	NNNAddress test10 ("a.2.3.5");
 
 	cout << "Closest working sector between " << start << " and " << test0 << " is " <<  start.getClosestSector(test0) << endl;
 	cout << "Closest working sector between " << start << " and " << test1 << " is " <<  start.getClosestSector(test1) << endl;
@@ -219,7 +242,59 @@ int main (int argc, char *argv[])
 	cout << "Distance between " << start << " and " << test4 << " is " << start.distance(test4) << endl;
 	cout << "Distance between " << start << " and " << test5 << " is " << start.distance(test5) << endl;
 	cout << "Distance between " << start << " and " << test6 << " is " << start.distance(test6) << endl;
+	cout << "Distance between " << test3 << " and " << test4 << " is " << test3.distance(test4) << endl;
+	cout << "Distance between " << test4 << " and " << test3 << " is " << test4.distance(test3) << endl;
+	cout << "Distance between " << test1 << " and " << test2 << " is " << test1.distance(test2) << endl;
+	cout << "Distance between " << test2 << " and " << test8 << " is " << test2.distance(test8) << endl;
+	cout << "Distance between " << test1 << " and " << test2 << " is " << test1.distance(test2) << endl;
+	cout << "Distance between " << test1 << " and " << test3 << " is " << test1.distance(test3) << endl;
+	cout << "Distance between " << test1 << " and " << test0 << " is " << test1.distance(test0) << endl;
 
+	cout << "--------------------" << endl;
+
+	cout << "Distance ordering results" << endl;
+	cout << test1 << " > " << start << ": " << (test1 > start) << endl;
+	cout << test1 << " < " << start << ": " << (test1 < start) << endl;
+	cout << test1 << " > " << test3 << ": " << (test1 > test3) << endl;
+	cout << test1 << " < " << test3 << ": " << (test1 < test3) << endl;
+	cout << test1 << " == " << start << ": " << (start == test1) << endl;
+	cout << test1 << " == " << test3 << ": " << (test3 == test1) << endl;
+	cout << test1 << " == " << test1 << ": " << (test1 == test1) << endl;
+
+	cout << "#####################" << endl;
+
+	cout << test8 << " > " << start << ": " << (test8 > start) << endl;
+	cout << test8 << " < " << start << ": " << (test8 < start) << endl;
+	cout << test8 << " > " << test1 << ": " << (test8 > test1) << endl;
+	cout << test8 << " < " << test1 << ": " << (test8 < test1) << endl;
+	cout << test8 << " == " << start << ": " << (start == test8) << endl;
+	cout << test8 << " == " << test3 << ": " << (test3 == test8) << endl;
+	cout << test8 << " == " << test8 << ": " << (test8 == test8) << endl;
+	cout << "--------------------" << endl;
+
+	cout << "Testing subsectors" << endl;
+
+	cout << "Is " << test9 << " sub-sector of " << test9 << ": " << (test9.isSubSector(test9)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << start << ": " << (test9.isSubSector(start)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test1 << ": " << (test9.isSubSector(test1)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test3 << ": " << (test9.isSubSector(test3)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test10 << ": " << (test9.isSubSector(test10)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test4 << ": " << (test9.isSubSector(test4)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test5 << ": " << (test9.isSubSector(test5)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test0 << ": " << (test9.isSubSector(test0)) << endl;
+	cout << "Is " << test9 << " sub-sector of " << test8 << ": " << (test9.isSubSector(test8)) << endl;
+
+	cout << "--------------------" << endl;
+
+	cout << "Testing parent sectors" << endl;
+
+	cout << "Is " << test9 << " parent sector of " << test9 << ": " << (test9.isParentSector(test9)) << endl;
+	cout << "Is " << start << " parent sector of " << test9 << ": " << (start.isParentSector(test9)) << endl;
+	cout << "Is " << test1 << " parent sector of " << test9 << ": " << (test1.isParentSector(test9)) << endl;
+	cout << "Is " << test3 << " parent sector of " << test9 << ": " << (test3.isParentSector(test9)) << endl;
+	cout << "Is " << test10 << " parent sector of " << test9 << ": " << (test10.isParentSector(test9)) << endl;
+	cout << "Is " << test4 << " parent sector of " << test9 << ": " << (test4.isParentSector(test9)) << endl;
+	cout << "Is " << test5 << " parent sector of " << test9 << ": " << (test5.isParentSector(test9)) << endl;
 
 	cout << "--------------------" << endl;
 
@@ -240,6 +315,26 @@ int main (int argc, char *argv[])
 	Buffer::Iterator i = buf.Begin();
 
 	wire::NnnSim::SerializeName(i, working);
+
+	cout << "Testing ordering of 3N names " << endl;
+
+	cout << "By operators" << endl;
+	cout << start << " and " << start << ": " << (start > start) << endl;
+	cout << start << " and " << test0 << ": " << (start > test0) << endl;
+	cout << start << " and " << test4 << ": " << (start > test4) << endl;
+	cout << start << " and " << test7 << ": " << (start > test7) << endl;
+	cout << start << " and " << test1 << ": " << (start > test1) << endl;
+	cout << start << " and " << test2 << ": " << (start > test2) << endl;
+	cout << start << " and " << test8 << ": " << (start > test8) << endl;
+
+	cout << "By compareLabels" << endl;
+	cout << start << " and " << start << ": " << (start.compareLabels(start)) << endl;
+	cout << start << " and " << test0 << ": " << (start.compareLabels(test0)) << endl;
+	cout << start << " and " << test4 << ": " << (start.compareLabels(test4)) << endl;
+	cout << start << " and " << test7 << ": " << (start.compareLabels(test7)) << endl;
+	cout << start << " and " << test1 << ": " << (start.compareLabels(test1)) << endl;
+	cout << start << " and " << test2 << ": " << (start.compareLabels(test2)) << endl;
+	cout << start << " and " << test8 << ": " << (start.compareLabels(test8)) << endl;
 
 	Simulator::Stop (Seconds (1.0));
 	Simulator::Run ();

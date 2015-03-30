@@ -22,156 +22,224 @@
 NNN_NAMESPACE_BEGIN
 
 namespace wire {
-namespace nnnSIM {
+  namespace nnnSIM {
 
-NS_OBJECT_ENSURE_REGISTERED (AEN);
+    NS_OBJECT_ENSURE_REGISTERED (AEN);
 
-NS_LOG_COMPONENT_DEFINE ("nnn.wire.nnnSIM.AEN");
+    NS_LOG_COMPONENT_DEFINE ("nnn.wire.nnnSIM.AEN");
 
-AEN::AEN ()
-: m_aen_p (Create<nnn::AEN> ())
-{
-}
+    AEN::AEN ()
+    : CommonHeader<nnn::AEN>()
+    {
+    }
 
-AEN::AEN (Ptr<nnn::AEN> aen_p)
-: m_aen_p (aen_p)
-{
-}
+    AEN::AEN (Ptr<nnn::AEN> aen_p)
+    : CommonHeader<nnn::AEN> (aen_p)
+    {
+    }
 
-Ptr<nnn::AEN>
-AEN::GetAEN ()
-{
-	return m_aen_p;
-}
+    TypeId
+    AEN::GetTypeId (void)
+    {
+      static TypeId tid = TypeId ("ns3::nnn::AEN::nnnSIM")
+	  .SetGroupName ("Nnn")
+	  .SetParent<Header> ()
+	  .AddConstructor<AEN> ()
+	  ;
+      return tid;
+    }
 
-TypeId
-AEN::GetTypeId (void)
-{
-	static TypeId tid = TypeId ("ns3::nnn::AEN::nnnSIM")
-    		.SetGroupName ("Nnn")
-    		.SetParent<Header> ()
-    		.AddConstructor<AEN> ()
-    		;
-	return tid;
-}
+    TypeId
+    AEN::GetInstanceTypeId (void) const
+    {
+      return GetTypeId ();
+    }
 
-TypeId
-AEN::GetInstanceTypeId (void) const
-{
-	return GetTypeId ();
-}
-
-Ptr<Packet>
-AEN::ToWire (Ptr<const nnn::AEN> aen_p)
-{
-	Ptr<const Packet> p = aen_p->GetWire ();
-	if (!p)
+    Ptr<Packet>
+    AEN::ToWire (Ptr<const nnn::AEN> aen_p)
+    {
+      Ptr<const Packet> p = aen_p->GetWire ();
+      if (!p)
 	{
-		// Mechanism packets have no payload, make an empty packet
-		Ptr<Packet> packet = Create<Packet> ();
-		AEN wireEncoding (ConstCast<nnn::AEN> (aen_p));
-		packet->AddHeader (wireEncoding);
-		aen_p->SetWire (packet);
+	  // Mechanism packets have no payload, make an empty packet
+	  Ptr<Packet> packet = Create<Packet> ();
+	  AEN wireEncoding (ConstCast<nnn::AEN> (aen_p));
+	  packet->AddHeader (wireEncoding);
+	  aen_p->SetWire (packet);
 
-		p = packet;
+	  p = packet;
 	}
-	return p->Copy ();
-}
+      return p->Copy ();
+    }
 
-Ptr<nnn::AEN>
-AEN::FromWire (Ptr<Packet> packet)
-{
-	Ptr<nnn::AEN> aen_p = Create<nnn::AEN> ();
-	Ptr<Packet> wire = packet->Copy ();
+    Ptr<nnn::AEN>
+    AEN::FromWire (Ptr<Packet> packet)
+    {
+      Ptr<nnn::AEN> aen_p = Create<nnn::AEN> ();
+      Ptr<Packet> wire = packet->Copy ();
 
-	AEN wireEncoding (aen_p);
-	packet->RemoveHeader (wireEncoding);
+      AEN wireEncoding (aen_p);
+      packet->RemoveHeader (wireEncoding);
 
-	// Mechanism packets have no payload, make an empty packet
-	aen_p->SetWire (wire);
+      // Mechanism packets have no payload, make an empty packet
+      aen_p->SetWire (wire);
 
-	return aen_p;
-}
+      return aen_p;
+    }
 
-uint32_t
-AEN::GetSerializedSize (void) const
-{
-	size_t size =
-			4 +                                  /* Packetid */
-			2 +                                  /* Length of packet */
-			2 +                                  /* Timestamp */
-			2 +                                  /* Lease time */
-			NnnSim::SerializedSizeName (m_aen_p->GetName ()); /* Name size */
+    uint32_t
+    AEN::GetSerializedSize (void) const
+    {
+      uint16_t poatype = m_ptr->GetPoaType ();
+      size_t poatype_size = 0;
+      size_t poa_num = 0;
 
+      if (poatype == 0)
+	{
+	  poa_num = m_ptr->GetNumPoa ();
+	  poatype_size = 6; // Hardcoded size of a Mac48Address
+	}
 
-	NS_LOG_INFO ("Serialize size = " << size);
-	return size;
-}
+      size_t size =
+	  CommonGetSerializedSize () +                    /* Common header */
+	  2 +                                             /* PoA Type */
+	  2 +                                             /* Number of PoAs */
+	  poa_num * poatype_size +                        /* Total size of PoAs */
+	  8 +                                             /* Lease time */
+	  NnnSim::SerializedSizeName (m_ptr->GetName ()); /* Name size */
 
-void
-AEN::Serialize (Buffer::Iterator start) const
-{
-	// Get the total size of the serialized packet
-	uint32_t totalsize = GetSerializedSize ();
+      return size;
+    }
 
-	// Serialize packetid
-	start.WriteU32(m_aen_p->GetPacketId());
+    void
+    AEN::Serialize (Buffer::Iterator start) const
+    {
+      // Serialize the header
+      CommonSerialize(start);
 
-	// Get the length of the packet
-	start.WriteU16(totalsize - 4); // Minus packetid size of 32 bits
+      // Remember that CommonSerialize doesn't write the Packet length
+      // Move the iterator forward
+      start.Next(CommonGetSerializedSize() -2);
 
-	// Check that the lifetime is within the limits
-	NS_ASSERT_MSG (0 <= m_aen_p->GetLifetime ().ToInteger (Time::S) &&
-			m_aen_p->GetLifetime ().ToInteger (Time::S) < 65535,
-			"Incorrect Lifetime (should not be smaller than 0 and larger than 65535");
+      NS_LOG_INFO ("Serialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Serialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Serialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Serialize -> Pkt Len = " << GetSerializedSize());
 
-	// Round lifetime to seconds
-	start.WriteU16 (static_cast<uint16_t> (m_aen_p->GetLifetime ().ToInteger (Time::S)));
+      // Serialize packet length
+      start.WriteU16(GetSerializedSize());
 
-	NS_ASSERT_MSG (0 <= m_aen_p->GetLeasetime ().ToInteger (Time::S) &&
-			m_aen_p->GetLeasetime ().ToInteger (Time::S) < 65535,
-			"Incorrect Lease time (should not be smaller than 0 and larger than 65535");
+      uint16_t poatype = m_ptr->GetPoaType ();
 
-	// Round lease time to seconds
-	start.WriteU16 (static_cast<uint16_t> (m_aen_p->GetLeasetime ().ToInteger (Time::S)));
+      NS_LOG_INFO ("Serialize -> PoA Type = " << poatype);
+      size_t bufsize = 0;
 
-	// Serialize NNN address
-	NnnSim::SerializeName(start, m_aen_p->GetName());
-}
+      if (poatype == 0)
+	bufsize = 6; // Hardcoded Mac48Address size
 
-uint32_t
-AEN::Deserialize (Buffer::Iterator start)
-{
-	Buffer::Iterator i = start;
+      // Create a buffer to be able to serialize PoAs
+      uint8_t buffer[bufsize];
 
-	// Read packet id
-	if (i.ReadU32 () != 1)
-		throw new AENException ();
+      uint32_t totalpoas = m_ptr->GetNumPoa();
 
-	// Read length of packet
-	uint16_t packet_len = i.ReadU16 ();
+      NS_LOG_INFO ("Serialize -> PoA Num = " << totalpoas);
 
-	// Read lifetime of the packet
-	m_aen_p->SetLifetime (Seconds (i.ReadU16 ()));
+      // Serialize PoA Type
+      start.WriteU16(poatype);
 
-	// Read the PoA Type
-	m_aen_p->SetLeasetime (Seconds (i.ReadU16 ()));
+      // Serialize Number of PoAs
+      start.WriteU16(totalpoas);
 
-	// Deserialize the name
-	m_aen_p->SetName(NnnSim::DeserializeName(i));
+      // Serialize PoAs
+      for (int i = 0; i < totalpoas; i++)
+	{
+	  // Use the CopyTo function to get the bit representation
+	  m_ptr->GetOnePoa(i).CopyTo(buffer);
 
-	NS_ASSERT (GetSerializedSize () == (i.GetDistanceFrom (start)));
+	  // Since the bit representation is in 8 bit chunks, serialize it
+	  // accordingly
+	  for (int j = 0; j < bufsize; j++)
+	    start.WriteU8(buffer[j]);
+	}
 
-	return i.GetDistanceFrom (start);
-}
+      uint64_t lease = static_cast<uint64_t> (m_ptr->GetLeasetime ().ToInteger (Time::S));
 
-void
-AEN::Print (std::ostream &os) const
-{
-	m_aen_p->Print (os);
-}
+      NS_ASSERT_MSG (0 <= lease &&
+                      lease < 0x7fffffffffffffffLL,
+                     "Incorrect Lease time (should not be smaller than 0 and larger than UINT64_MAX)");
 
-}
+      // Round lease time to seconds and serialize
+      start.WriteU64 (lease);
+      NS_LOG_INFO ("Serialize -> Lease time = " << lease);
+
+      // Serialize NNN address
+      NnnSim::SerializeName(start, m_ptr->GetName());
+      NS_LOG_INFO("Finished serialization");
+    }
+
+    uint32_t
+    AEN::Deserialize (Buffer::Iterator start)
+    {
+      Buffer::Iterator i = start;
+
+      // Deserialize the header
+      uint32_t skip = CommonDeserialize (i);
+
+      NS_LOG_INFO ("Deserialize -> PktID = " << m_ptr->GetPacketId());
+      NS_LOG_INFO ("Deserialize -> TTL = " << Seconds(static_cast<uint16_t> (m_ptr->GetLifetime ().ToInteger (Time::S))));
+      NS_LOG_INFO ("Deserialize -> Version = " << m_ptr->GetVersion ());
+      NS_LOG_INFO ("Deserialize -> Pkt len = " << m_packet_len);
+
+      // Check packet ID
+      if (m_ptr->GetPacketId() != nnn::AEN_NNN)
+	throw new AENException ();
+
+      // Move the iterator forward
+      i.Next(skip);
+
+      uint16_t poatype = i.ReadU16 ();
+      size_t bufsize = 0;
+
+      NS_LOG_INFO ("Deserialize -> PoA Type = " << poatype);
+
+      if (poatype == 0)
+	bufsize = 6; // Hardcoded Mac48Address size
+
+      uint16_t totalpoas = i.ReadU16 ();
+
+      NS_LOG_INFO ("Deserialize -> PoA Num = " << totalpoas);
+
+      // Create a buffer to be able to deserialize PoAs
+      uint8_t buffer[bufsize];
+
+      for (int k = 0; k < totalpoas; k++)
+	{
+	  for (int j = 0; j < bufsize; j++)
+	    {
+	      buffer[j] = i.ReadU8 ();
+	    }
+
+	  Address tmp = Address ();
+	  tmp.CopyFrom(buffer, bufsize);
+
+	  m_ptr->AddPoa(tmp);
+	}
+
+      uint64_t lease = i.ReadU64 ();
+
+      NS_LOG_INFO ("Deserialize ->  = Lease time " << lease);
+
+      // Deserialize and set the lease time
+      m_ptr->SetLeasetime (Seconds (lease));
+
+      // Deserialize the name
+      m_ptr->SetName(NnnSim::DeserializeName(i));
+
+      NS_ASSERT (GetSerializedSize () == (i.GetDistanceFrom (start)));
+
+      return i.GetDistanceFrom (start);
+    }
+  }
 }
 
 NNN_NAMESPACE_END

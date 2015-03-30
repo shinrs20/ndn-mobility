@@ -21,7 +21,6 @@
 #ifndef NNN_NNPT_H_
 #define NNN_NNPT_H_
 
-#include <ns3-dev/ns3/simple-ref-count.h>
 #include <ns3-dev/ns3/node.h>
 #include <ns3-dev/ns3/simulator.h>
 
@@ -41,36 +40,54 @@
 using boost::multi_index_container;
 using namespace ::boost::multi_index;
 
-
-namespace ns3 {
-  namespace nnn {
-
-    struct pair {};
-    struct lease {};
-
-    typedef multi_index_container<
-	NNPTEntry,
-	indexed_by<
-	ordered_unique<
-	tag<lease>,
-	identity<NNPTEntry>
-    >,
-
-    // sort by less<string> on NNNAddress
-    ordered_unique<
-    tag<pair>,
-    member<NNPTEntry,NNNAddress,&NNPTEntry::m_oldName>
-    >
-    >
-    > pair_set;
-
-    typedef pair_set::index<pair>::type pair_set_by_name;
-    typedef pair_set::index<lease>::type pair_set_by_lease;
-
-    class NNPT : public SimpleRefCount<NNPT>
+namespace ns3
+{
+  namespace nnn
+  {
+    namespace nnpt
     {
+      class Entry;
+    }
 
+    class NNPT : public Object
+    {
     public:
+      struct PtrNNNComp
+      {
+	bool operator () (const Ptr<const NNNAddress> &lhs , const Ptr<const NNNAddress>  &rhs) const  {
+	  return *lhs < *rhs;
+	}
+      };
+
+      struct oldname {};
+      struct newname {};
+      struct st_lease {};
+
+      typedef multi_index_container<
+      	nnpt::Entry,
+      	indexed_by<
+          ordered_unique<
+            tag<st_lease>,
+      	    identity<nnpt::Entry>
+          >,
+
+          ordered_unique<
+            tag<oldname>,
+            member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_oldName>
+          >,
+
+          ordered_unique<
+            tag<newname>,
+            member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_newName>,
+            PtrNNNComp
+          >
+        >
+      > pair_set;
+
+      typedef pair_set::index<oldname>::type pair_set_by_oldname;
+      typedef pair_set::index<newname>::type pair_set_by_newname;
+      typedef pair_set::index<st_lease>::type pair_set_by_lease;
+
       static TypeId GetTypeId ();
 
       NNPT();
@@ -79,40 +96,40 @@ namespace ns3 {
       ~NNPT();
 
       void
-      addEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire);
+      addEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName, Time lease_expire);
 
       void
-      addEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire, Time renew);
+      deleteEntry (Ptr<const NNNAddress> oldName);
 
       void
-      addEntry (NNPTEntry nnptEntry);
+      deleteEntry (nnpt::Entry nnptEntry);
 
       void
-      deleteEntry (NNNAddress oldName);
-
-      void
-      deleteEntry (NNPTEntry nnptEntry);
-
-      void
-      deleteEntry (NNNAddress oldName, NNNAddress newName);
+      deleteEntry (Ptr<const NNNAddress> oldName, Ptr<const NNNAddress> newName);
 
       bool
-      foundName (NNNAddress name);
+      foundOldName (Ptr<const NNNAddress> name);
 
-      NNNAddress
-      findPairedName (NNNAddress oldName);
+      bool
+      foundNewName (Ptr<const NNNAddress> name);
 
-      NNPTEntry
-      findEntry (NNNAddress name);
+      const NNNAddress&
+      findPairedName (Ptr<const NNNAddress> oldName);
 
-      NNNAddress
-      findNewestName ();
+      const NNNAddress&
+      findPairedOldName (Ptr<const NNNAddress> newName);
+
+      Ptr<const NNNAddress>
+      findPairedNamePtr (Ptr<const NNNAddress> oldName);
+
+      Ptr<const NNNAddress>
+      findPairedOldNamePtr (Ptr<const NNNAddress> newName);
+
+      nnpt::Entry
+      findEntry (Ptr<const NNNAddress> name);
 
       void
-      updateLeaseTime (NNNAddress oldName, Time lease_expire);
-
-      void
-      updateLeaseTime (NNNAddress oldName, Time lease_expire, Time renew);
+      updateLeaseTime (Ptr<const NNNAddress> oldName, Time lease_expire);
 
       uint32_t
       size ();
@@ -121,13 +138,16 @@ namespace ns3 {
       isEmpty ();
 
       Time
-      findNameExpireTime (NNNAddress name);
+      findNameExpireTime (Ptr<const NNNAddress> name);
 
       Time
-      findNameExpireTime (NNPTEntry nnptEntry);
+      findNameExpireTime (nnpt::Entry nnptEntry);
 
       void
       cleanExpired ();
+
+      void
+      Print (std::ostream &os) const;
 
       void
       printByAddress ();
@@ -135,12 +155,10 @@ namespace ns3 {
       void
       printByLease ();
 
-      void
-      informEntry (NNNAddress oldName, NNNAddress newName, Time lease_expire);
-
       pair_set container;
-
     };
+
+    std::ostream& operator<< (std::ostream& os, const NNPT &nnpt);
 
   } /* namespace nnn */
 } /* namespace ns3 */
