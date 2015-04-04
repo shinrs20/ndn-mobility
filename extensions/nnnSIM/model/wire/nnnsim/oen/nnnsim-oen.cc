@@ -225,7 +225,7 @@ namespace ns3
 	  // Serialize NNN address
 	  NnnSim::SerializeName(start, m_ptr->GetSrcName());
 
-	  NS_LOG_INFO("Finished serialization");
+	  NS_LOG_INFO("Finished serialization wrote " << GetSerializedSize ());
 	}
 
 	uint32_t
@@ -259,6 +259,7 @@ namespace ns3
 	  uint16_t totalpoas = i.ReadU16 ();
 
 	  NS_LOG_INFO ("Deserialize -> PoA Num = " << totalpoas);
+	  NS_LOG_INFO ("Deserialize -> Buffer size = " << bufsize);
 
 	  m_ptr->SetPoaType(poatype);
 
@@ -300,6 +301,7 @@ namespace ns3
 	    personal_bufsize = 6; // Hardcoded Mac48Address size
 
 	  NS_LOG_INFO ("Deserialize -> Personal PoA Num = " << personal_totalpoas);
+	  NS_LOG_INFO ("Deserialize -> Personal Buffer size = " << personal_bufsize);
 
 	  m_ptr->SetPersonalPoaType(personal_poatype);
 
@@ -316,11 +318,11 @@ namespace ns3
 	      Address tmp = Address ();
 	      tmp.CopyFrom(personal_buffer, personal_bufsize);
 
-	      m_ptr->AddPersonalPoa(tmp);
+	      m_ptr->AddPersonalPoa (tmp);
 	    }
 
 	  // Deserialize the src name
-	  m_ptr->SetSrcName(NnnSim::DeserializeName(i));
+	  m_ptr->SetSrcName (NnnSim::DeserializeName(i));
 
 	  NS_ASSERT (GetSerializedSize ()== (i.GetDistanceFrom (start)));
 

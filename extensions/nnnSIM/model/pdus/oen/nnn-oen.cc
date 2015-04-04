@@ -30,6 +30,7 @@ namespace ns3
     : NNNPDU (OEN_NNN, Seconds(0))
     , ENPDU ()
     {
+      SetPersonalPoaType (POA_MAC48);
     }
 
     OEN::OEN (Ptr<NNNAddress> name)
@@ -37,6 +38,7 @@ namespace ns3
     , ENPDU ()
     {
       SetName (name);
+      SetPersonalPoaType (POA_MAC48);
     }
 
     OEN::OEN (const NNNAddress &name)
@@ -44,6 +46,7 @@ namespace ns3
     , ENPDU ()
     {
       SetName (name);
+      SetPersonalPoaType (POA_MAC48);
     }
 
     OEN::~OEN ()
@@ -60,6 +63,9 @@ namespace ns3
       SetPoaType (oen_p.GetPoaType ());
       AddPoa (oen_p.GetPoas ());
       SetName (oen_p.GetName ());
+      SetPersonalPoaType (oen_p.GetPersonalPoaType ());
+      AddPersonalPoa (oen_p.GetPersonalPoas ());
+      SetSrcName (oen_p.GetSrcName ());
       SetWire (oen_p.GetWire ());
     }
 

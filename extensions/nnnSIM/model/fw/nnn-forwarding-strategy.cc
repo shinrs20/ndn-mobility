@@ -497,7 +497,6 @@ namespace ns3
 	  oen_p->SetLeasetime(absoluteLease);
 	  // Add the PoA names to the PDU
 	  oen_p->AddPoa(poaAddrs);
-
 	  // Add my name to the PDU
 	  oen_p->SetSrcName (GetNode3NName ());
 	  // Add personal PoAs
@@ -675,6 +674,10 @@ namespace ns3
 	  oen_p->SetLeasetime(absoluteLease);
 	  // Add the PoA names to the PDU
 	  oen_p->AddPoa(poaAddrs);
+	  // Add my name to the PDU
+	  oen_p->SetSrcName (GetNode3NName ());
+	  // Add personal PoAs
+	  oen_p->AddPersonalPoa (GetAllPoANames (face));
 
 	  // Send the create OEN PDU out the way it came
 	  face->SendOEN(oen_p, destAddr);
