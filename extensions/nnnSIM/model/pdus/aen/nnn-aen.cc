@@ -56,7 +56,6 @@ namespace ns3
       AEN ();
       SetVersion (aen_p.GetVersion ());
       SetLifetime (aen_p.GetLifetime ());
-      SetPoaType (aen_p.GetPoaType ());
       AddPoa (aen_p.GetPoas ());
       SetName (aen_p.GetName ());
       SetLeasetime (aen_p.GetLeasetime ());

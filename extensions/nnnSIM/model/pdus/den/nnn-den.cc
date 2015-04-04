@@ -53,7 +53,6 @@ namespace ns3
       DEN ();
       SetVersion (den_p.GetVersion ());
       SetLifetime (den_p.GetLifetime ());
-      SetPoaType (den_p.GetPoaType ());
       AddPoa (den_p.GetPoas ());
       SetName (den_p.GetName ());
       SetWire (den_p.GetWire ());

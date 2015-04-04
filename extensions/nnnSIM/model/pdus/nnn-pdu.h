@@ -44,11 +44,6 @@ namespace ns3
      */
     enum NNN_VER { A_NNN = 0 };
 
-    /**
-     * @brief enum for NNN POAs supported
-     */
-    enum POA_TYPES { POA_MAC48 = 0, POA_IP };
-
     class NNNPDU : public SimpleRefCount<NNNPDU>
     {
     public:

@@ -46,7 +46,6 @@ namespace ns3
       EN ();
       SetVersion (en_p.GetVersion ());
       SetLifetime (en_p.GetLifetime ());
-      SetPoaType (en_p.GetPoaType ());
       AddPoa (en_p.GetPoas ());
       SetWire (en_p.GetWire ());
     }

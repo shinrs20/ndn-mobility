@@ -680,6 +680,7 @@ namespace ns3
       Time m_3n_lease_time;
       Time m_3n_lease_ack_timeout;
       Time m_3n_lifetime;
+      Time m_ack_timeout;
       int32_t m_standardMetric;
 
       ////////////////////////////////////////////////////////////////////

@@ -58,7 +58,6 @@ namespace ns3
       REN ();
       SetVersion (ren_p.GetVersion ());
       SetLifetime (ren_p.GetLifetime ());
-      SetPoaType (ren_p.GetPoaType ());
       AddPoa (ren_p.GetPoas ());
       SetRemainLease (ren_p.GetRemainLease ());
       SetName (ren_p.GetName ());

@@ -30,7 +30,6 @@ namespace ns3
     : NNNPDU (OEN_NNN, Seconds(0))
     , ENPDU ()
     {
-      SetPersonalPoaType (POA_MAC48);
     }
 
     OEN::OEN (Ptr<NNNAddress> name)
@@ -38,7 +37,6 @@ namespace ns3
     , ENPDU ()
     {
       SetName (name);
-      SetPersonalPoaType (POA_MAC48);
     }
 
     OEN::OEN (const NNNAddress &name)
@@ -46,7 +44,6 @@ namespace ns3
     , ENPDU ()
     {
       SetName (name);
-      SetPersonalPoaType (POA_MAC48);
     }
 
     OEN::~OEN ()
@@ -60,10 +57,8 @@ namespace ns3
       SetVersion (oen_p.GetVersion ());
       SetLifetime (oen_p.GetLifetime ());
       SetLeasetime (oen_p.GetLeasetime ());
-      SetPoaType (oen_p.GetPoaType ());
       AddPoa (oen_p.GetPoas ());
       SetName (oen_p.GetName ());
-      SetPersonalPoaType (oen_p.GetPersonalPoaType ());
       AddPersonalPoa (oen_p.GetPersonalPoas ());
       SetSrcName (oen_p.GetSrcName ());
       SetWire (oen_p.GetWire ());
@@ -147,25 +142,12 @@ namespace ns3
       ENPDU::Print(os);
 
       os << "  <Giving Name>" << GetSrcName () << "</Giving Name>" << std::endl;
-      os << "  <Personal POA Type>" << GetPersonalPoaType () << "</Personal POA Type>"<< std::endl;
       os << "  <Personal POA Num>" << num << "</Personal POA Num>"<< std::endl;
       for (int i = 0; i < num; i++)
 	{
 	  os << "  <Personal POA" << i << ">" << GetPersonalOnePoa (i) << "</Personal POA" << i << ">"<< std::endl;
 	}
       os << "</OEN>" << std::endl;
-    }
-
-    uint16_t
-    OEN::GetPersonalPoaType () const
-    {
-      return m_personal_poa_type;
-    }
-
-    void
-    OEN::SetPersonalPoaType (uint16_t type)
-    {
-      m_personal_poa_type = type;
     }
 
     void

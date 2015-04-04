@@ -133,12 +133,10 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
 
   NS_LOG_INFO(buffer);
 
-  // Because the map sorts by std:less, the first position has the lowest distance
-  Config::Set(configbuf, SsidValue(ssid));
-
   // Search nodeNum in global map
-  last_seen_ssid_it = last_seen_ssid.find(mtId);
+  last_seen_ssid_it = last_seen_ssid.find (mtId);
 
+  // Check to know what action the ForwardingStrategy for the node should do
   if (last_seen_ssid_it != last_seen_ssid.end ())
     {
       // We know that we have connected somewhere before
@@ -148,7 +146,7 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
 	{
 	  NS_LOG_INFO ("Node " << mtId << " has changed AP to new " << ssid << " will disenroll");
 	  last_seen_ssid[mtId] = ssid;
-
+	  // Force a disenroll procedure
 	  nodeFW->Disenroll ();
 	}
     }
@@ -159,11 +157,38 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
       last_seen_ssid[mtId] = ssid;
 
       // Now continue to do the enroll procedure
-      nodeFW->Enroll();
+      nodeFW->Enroll ();
     }
 
+  // Because the map sorts by std:less, the first position has the lowest distance
+  Config::Set (configbuf, SsidValue (ssid));
+
   // Empty the maps
-  SsidDistance.clear();
+  SsidDistance.clear ();
+}
+
+// Function to force a change to a particular Ssid
+void SetForcedSSID (uint32_t mtId, uint32_t netId, Ssid ssid)
+{
+  NS_LOG_FUNCTION (mtId << netId);
+
+  char configbuf[250];
+
+  // Obtain the global list of Nodes in the simulation
+  NodeContainer global = NodeContainer::GetGlobal ();
+
+  // Get the ForwardingStrategy for the node in question
+  Ptr<nnn::ForwardingStrategy> nodeFW = global.Get (mtId)->GetObject<nnn::ForwardingStrategy> ();
+
+  // Since we know we are changing SSID, we don't do any checks
+  // Force a disenroll procedure
+  nodeFW->Disenroll ();
+
+  // This causes the device in mtId to change the SSID, forcing AP change
+  sprintf(configbuf, "/NodeList/%d/DeviceList/%d/$ns3::WifiNetDevice/Mac/Ssid", mtId, netId);
+
+  // Start the SSID change
+  Config::Set (configbuf, SsidValue (ssid));
 }
 
 void ApAssociation (std::string context, const Mac48Address mac)
@@ -455,7 +480,7 @@ int main (int argc, char *argv[])
   // Stack for nodes that use fixed connections
   nnn::NNNStackHelper ServerStack;
   // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-  ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "80s");
+  ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "120s");
   // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
   ServerStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
   // Set the FIB default routes
@@ -549,10 +574,11 @@ int main (int argc, char *argv[])
   NS_LOG_INFO ("------ SSID distance event changes ------");
   for (int i = 0; i < mobileNodeIds.size (); i++)
     {
-      for (int j = 40; j < endTime; j += 50)
+      for (int j = 50; j < endTime; j += 50)
 	{
 	  NS_LOG_INFO ("Scheduling SSID calculation for Node " << mobileNodeIds[i] << " wireless device 0 at " << j);
-	  Simulator::Schedule (Seconds(j), &SetSSIDviaDistance, mobileNodeIds[i], 0, apTerminalMobility);
+	  // Simulator::Schedule (Seconds(j), &SetSSIDviaDistance, mobileNodeIds[i], 0, apTerminalMobility);
+	  Simulator::Schedule (Seconds(j), &SetForcedSSID, mobileNodeIds[i], 0, ssidV[1]);
 	}
     }
 

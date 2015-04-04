@@ -38,24 +38,6 @@ namespace ns3
       ~ENPDU ();
 
       /**
-       * \brief Set the PoA type
-       *
-       * @param  type PoA type
-       *
-       **/
-      uint16_t
-      GetPoaType () const;
-
-      /**
-       * \brief Set the PoA type
-       *
-       * @param  type PoA type
-       *
-       **/
-      void
-      SetPoaType (uint16_t type);
-
-      /**
        * \brief Get number of PoAs stored
        *
        * @param  const reference to Name object
@@ -99,7 +81,6 @@ namespace ns3
       Print (std::ostream &os) const;
 
     protected:
-      uint16_t m_poa_type;      ///< @brief Type of PoA in EN type PDU
       std::vector<Address> m_poas;  ///<@brief vector of PoA names
     };
 
