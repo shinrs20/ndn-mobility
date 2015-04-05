@@ -191,7 +191,7 @@ namespace ns3
 	  ////////////////////////////////////////////////////////////////////
 	  ////////////////////////////////////////////////////////////////////
 
-	  .AddTraceSource ("SatisfiedInterets", "SatisfiedInterests", MakeTraceSourceAccessor (&ForwardingStrategy::m_satisfiedInterests))
+	  .AddTraceSource ("SatisfiedInterests", "SatisfiedInterests", MakeTraceSourceAccessor (&ForwardingStrategy::m_satisfiedInterests))
 	  .AddTraceSource ("TimedOutInterests", "TimedOutInterests", MakeTraceSourceAccessor (&ForwardingStrategy::m_timedOutInterests))
 
 	  ////////////////////////////////////////////////////////////////////
@@ -775,7 +775,7 @@ namespace ns3
 	      outFace = it->first;
 	      destAddr = it->second;
 
-	      NS_LOG_INFO ("Pushing DEN out Face " << outFace);
+	      NS_LOG_INFO ("Pushing DEN out Face " << *outFace);
 
 	      outFace->SendDEN (den_p, destAddr);
 
@@ -955,23 +955,13 @@ namespace ns3
 
       m_inSOs (so_p, face);
 
-      Ptr<const NNNAddress> checkName = so_p->GetNamePtr();
-      // For minimum security purposes, if the SO name is not enrolled, drop the PDU
-      if (m_leased_names->foundName(checkName) || m_node_names->foundName(checkName))
-	{
-	  //Give us a rw copy of the packet
-	  Ptr<Packet> icn_pdu = so_p->GetPayload ()->Copy ();
+      //Give us a rw copy of the packet
+      Ptr<Packet> icn_pdu = so_p->GetPayload ()->Copy ();
 
-	  // To be able to simplify code, convert pointer to common type
-	  Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(so_p);
+      // To be able to simplify code, convert pointer to common type
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU>(so_p);
 
-	  ProcessICNPDU (pdu, face, icn_pdu);
-	}
-      else
-	{
-	  NS_LOG_INFO ("Obtained a non-enrolled PDU in " << GetNode3NName () << " from: " << *checkName);
-	  m_dropSOs (so_p, face);
-	}
+      ProcessICNPDU (pdu, face, icn_pdu);
     }
 
     void
@@ -997,23 +987,13 @@ namespace ns3
 
       m_inDUs (du_p, face);
 
-      Ptr<const NNNAddress> checkName = du_p->GetSrcNamePtr();
-      // For minimum security purposes, if the DU Src name is not enrolled, drop the PDU
-      if (m_leased_names->foundName(checkName) || m_node_names->foundName(checkName))
-	{
-	  //Give us a rw copy of the packet
-	  Ptr<Packet> icn_pdu = du_p->GetPayload ()->Copy ();
+      //Give us a rw copy of the packet
+      Ptr<Packet> icn_pdu = du_p->GetPayload ()->Copy ();
 
-	  // To be able to simplify code, convert pointer to common type
-	  Ptr<NNNPDU> pdu = DynamicCast<NNNPDU> (du_p);
+      // To be able to simplify code, convert pointer to common type
+      Ptr<NNNPDU> pdu = DynamicCast<NNNPDU> (du_p);
 
-	  ProcessICNPDU (pdu, face, icn_pdu);
-	}
-      else
-	{
-	  NS_LOG_INFO ("Obtained a non-enrolled PDU in " << GetNode3NName () << " from: " << *checkName);
-	  m_dropDUs (du_p, face);
-	}
+      ProcessICNPDU (pdu, face, icn_pdu);
     }
 
     void
@@ -1348,6 +1328,10 @@ namespace ns3
 	  NS_LOG_INFO ("Scheduling an enroll should things go south");
 	  // Schedule the another enroll, should things go bad
 	  Simulator::Schedule (m_ack_timeout, &ForwardingStrategy::Enroll, this);
+	}
+      else
+	{
+	  NS_LOG_INFO ("Node has name (" << GetNode3NName () << "), no more need for enrollment for now");
 	}
     }
 
@@ -1746,6 +1730,24 @@ namespace ns3
 
 	      BOOST_FOREACH (Ptr<NNNAddress> i, addrs)
 	      {
+		// If the aggregation is the same as the 3N Name the node is using, then
+		// everything aggregated is probably connected to it
+		if (subSector)
+		  {
+		    NS_LOG_INFO ("We are satisfying Interests to nodes that are directly connected to us, continue");
+		  }
+		// We are pushing to a different sector
+		else
+		  {
+		    NNNAddress myAddr = GetNode3NName ();
+		    NS_LOG_INFO ("On (" << myAddr << ") satisfying for 3N names in different subsector (" << *j << "), destination: (" << *i << ")");
+		    if (sentSomething)
+		      {
+			NS_LOG_INFO ("On (" << myAddr << "), we seem to have already sent to subsector (" << *j << ") about to skip");
+			continue;
+		      }
+		  }
+
 		// First check to see if we happen to be the destination
 		if (m_node_names->foundName(i))
 		  {
@@ -1801,208 +1803,96 @@ namespace ns3
 		    sentSomething = true;
 		  }
 
-		// If the aggregation is the same as the 3N Name the node is using, then
-		// everything aggregated is probably connected to it
-		if (subSector)
-		  {
-		    NS_LOG_INFO ("We are satisfying Interests to nodes that are directly connected to us");
+		// Go through the normal forwarding methods
 
-		    // Check if the NNPT has any information for this particular 3N name
-		    if (m_nnpt->foundOldName (i))
+		// Check if the NNPT has any information for this particular 3N name
+		// Retrieve the new 3N name destination
+		newdst = m_nnpt->findPairedNamePtr (i)->getName ();
+
+		// Roughly pick the next hop that would bring us closer to newdst
+		std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (newdst, 0);
+
+		Ptr<Face> outFace = tmp.first;
+		Address destAddr = tmp.second;
+
+		if (wasNULL || wasSO || wasDO)
+		  {
+		    NS_LOG_INFO ("Satisfying for 3N name (" << *i << ") using DO in subsector");
+		    // Since we don't have more information about this 3N name, create a DO to push the
+		    // Data to a new location
+		    Ptr<DO> do_o_spec = Create<DO> ();
+		    // Set the new 3N name
+		    do_o_spec->SetName (newdst);
+		    // Set the lifetime of the 3N PDU
+		    do_o_spec->SetLifetime (m_3n_lifetime);
+		    // Configure payload for PDU
+		    do_o_spec->SetPayload (icn_pdu);
+		    // Signal that the PDU had an ICN PDU as payload
+		    do_o_spec->SetPDUPayloadType (NDN_NNN);
+
+		    // Send the DO PDU out the selected Face
+		    ok = outFace->SendDO (do_o_spec, destAddr);
+
+		    // Log that a Data PDU was sent
+		    DidSendOutData (inFace, outFace, data, pitEntry);
+		    // Log that a DO PDU was sent
+		    m_outDOs (do_o_spec, outFace);
+
+		    // Something caused an error
+		    if (!ok)
 		      {
-			// Retrieve the new 3N name destination
-			newdst = m_nnpt->findPairedNamePtr (i)->getName ();
+			// Log Data drops
+			m_dropData (data, incoming.m_face);
+			// Log DO PDU drop
+			m_dropDOs (do_o_spec, outFace);
+			NS_LOG_DEBUG ("Cannot satisfy data to (" << newdst << ") via "<< *incoming.m_face);
 		      }
 		    else
 		      {
-			newdst = *i;
-		      }
-
-		    // Roughly pick the next hop that would bring us closer to newdst
-		    std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (newdst, 0);
-
-		    Ptr<Face> outFace = tmp.first;
-		    Address destAddr = tmp.second;
-
-		    if (wasNULL || wasSO || wasDO)
-		      {
-			NS_LOG_INFO ("Satisfying for 3N name " << *i << " using DO in subsector");
-			// Since we don't have more information about this 3N name, create a DO to push the
-			// Data to a new location
-			Ptr<DO> do_o_spec = Create<DO> ();
-			// Set the new 3N name
-			do_o_spec->SetName (newdst);
-			// Set the lifetime of the 3N PDU
-			do_o_spec->SetLifetime (m_3n_lifetime);
-			// Configure payload for PDU
-			do_o_spec->SetPayload (icn_pdu);
-			// Signal that the PDU had an ICN PDU as payload
-			do_o_spec->SetPDUPayloadType (NDN_NNN);
-
-			// Send the DO PDU out the selected Face
-			ok = outFace->SendDO (do_o_spec, destAddr);
-
-			// Log that a Data PDU was sent
-			DidSendOutData (inFace, outFace, data, pitEntry);
-			// Log that a DO PDU was sent
-			m_outDOs (do_o_spec, outFace);
-
-			// Something caused an error
-			if (!ok)
-			  {
-			    // Log Data drops
-			    m_dropData (data, incoming.m_face);
-			    // Log DO PDU drop
-			    m_dropDOs (do_o_spec, outFace);
-			    NS_LOG_DEBUG ("Cannot satisfy data to " << newdst << " via "<< *incoming.m_face);
-			  }
-			else
-			  {
-			    if (incoming.m_face == outFace)
-			      // Actually sent something using this Face
-			      sentSomething = true;
-			  }
-		      }
-		    else if (wasDU)
-		      {
-			NS_LOG_INFO ("Satisfying for 3N name " << *i << " using DU in subsector");
-			// We know that the Data was brought by a DU PDU, meaning we know the origin
-			// Create a new DU PDU to send the data
-			Ptr<DU> du_o_spec = Create<DU> ();
-			// Use the original DU's Src 3N name
-			du_o_spec->SetSrcName (du_i->GetSrcName ());
-			// Set the new 3N name destination
-			du_o_spec->SetDstName (newdst);
-			// Set the lifetime of the 3N PDU
-			du_o_spec->SetLifetime (m_3n_lifetime);
-			// Configure payload for PDU
-			du_o_spec->SetPayload (icn_pdu);
-			// Signal that the PDU had an ICN PDU as payload
-			du_o_spec->SetPDUPayloadType (NDN_NNN);
-
-			// Send the DU PDU out the selected Face
-			ok = outFace->SendDU (du_o_spec, destAddr);
-
-			// Log that a Data PDU was sent
-			DidSendOutData (inFace, outFace, data, pitEntry);
-			// Log that a DO PDU was sent
-			m_outDUs (du_o_spec, outFace);
-
-			// Something caused an error
-			if (!ok)
-			  {
-			    // Log Data drops
-			    m_dropData (data, incoming.m_face);
-			    // Log DU PDU drop
-			    m_dropDUs (du_o_spec, outFace);
-			    NS_LOG_DEBUG ("Cannot satisfy data to " << newdst << " via "<< *incoming.m_face);
-			  }
-			else
-			  {
-			    if (incoming.m_face == outFace)
-			      // Actually sent something using this Face
-			      sentSomething = true;
-			  }
+			if (incoming.m_face == outFace)
+			  // Actually sent something using this Face
+			  sentSomething = true;
 		      }
 		  }
-
-		if (!subSector && !sentSomething)
+		else if (wasDU)
 		  {
-		    NS_LOG_INFO ("Satisfying for 3N names in different subsector (" << *j << "), destination: (" << *i << ")");
+		    NS_LOG_INFO ("Satisfying for 3N name (" << *i << ") using DU in subsector");
+		    // We know that the Data was brought by a DU PDU, meaning we know the origin
+		    // Create a new DU PDU to send the data
+		    Ptr<DU> du_o_spec = Create<DU> ();
+		    // Use the original DU's Src 3N name
+		    du_o_spec->SetSrcName (du_i->GetSrcName ());
+		    // Set the new 3N name destination
+		    du_o_spec->SetDstName (newdst);
+		    // Set the lifetime of the 3N PDU
+		    du_o_spec->SetLifetime (m_3n_lifetime);
+		    // Configure payload for PDU
+		    du_o_spec->SetPayload (icn_pdu);
+		    // Signal that the PDU had an ICN PDU as payload
+		    du_o_spec->SetPDUPayloadType (NDN_NNN);
 
-		    // Only push a new PDU if the 3N name has changed
-		    // Check if the NNPT has any information for this particular 3N name
-		    if (m_nnpt->foundOldName (i))
+		    // Send the DU PDU out the selected Face
+		    ok = outFace->SendDU (du_o_spec, destAddr);
+
+		    // Log that a Data PDU was sent
+		    DidSendOutData (inFace, outFace, data, pitEntry);
+		    // Log that a DO PDU was sent
+		    m_outDUs (du_o_spec, outFace);
+
+		    // Something caused an error
+		    if (!ok)
 		      {
-			// Retrieve the new 3N name destination
-			newdst = m_nnpt->findPairedNamePtr (i)->getName ();
-
-			// Roughly pick the next hop that would bring us closer to newdst
-			std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (newdst, 0);
-
-			Ptr<Face> outFace = tmp.first;
-			Address destAddr = tmp.second;
-
-			if (wasNULL || wasSO || wasDO)
-			  {
-			    NS_LOG_INFO ("Satisfying for 3N name " << *i << " now using " << newdst << " using DO");
-			    // Since we don't have more information about this 3N name, create a DO to push the
-			    // Data to a new location
-			    Ptr<DO> do_o_spec = Create<DO> ();
-			    // Set the new 3N name
-			    do_o_spec->SetName (newdst);
-			    // Set the lifetime of the 3N PDU
-			    do_o_spec->SetLifetime (m_3n_lifetime);
-			    // Configure payload for PDU
-			    do_o_spec->SetPayload (icn_pdu);
-			    // Signal that the PDU had an ICN PDU as payload
-			    do_o_spec->SetPDUPayloadType (NDN_NNN);
-
-			    // Send the DO PDU out the selected Face
-			    ok = outFace->SendDO (do_o_spec, destAddr);
-
-			    // Log that a Data PDU was sent
-			    DidSendOutData (inFace, outFace, data, pitEntry);
-			    // Log that a DO PDU was sent
-			    m_outDOs (do_o_spec, outFace);
-
-			    // Something caused an error
-			    if (!ok)
-			      {
-				// Log Data drops
-				m_dropData (data, incoming.m_face);
-				// Log DO PDU drop
-				m_dropDOs (do_o_spec, outFace);
-				NS_LOG_DEBUG ("Cannot satisfy data to " << newdst << " via "<< *incoming.m_face);
-			      }
-			    else
-			      {
-				if (incoming.m_face == outFace)
-				  // Actually sent something using this Face
-				  sentSomething = true;
-			      }
-			  }
-			else if (wasDU)
-			  {
-			    NS_LOG_INFO ("Satisfying for 3N name " << *i << " now using " << newdst << " using DU");
-			    // We know that the Data was brought by a DU PDU, meaning we know the origin
-			    // Create a new DU PDU to send the data
-			    Ptr<DU> du_o_spec = Create<DU> ();
-			    // Use the original DU's Src 3N name
-			    du_o_spec->SetSrcName (du_i->GetSrcName ());
-			    // Set the new 3N name destination
-			    du_o_spec->SetDstName (newdst);
-			    // Set the lifetime of the 3N PDU
-			    du_o_spec->SetLifetime (m_3n_lifetime);
-			    // Configure payload for PDU
-			    du_o_spec->SetPayload (icn_pdu);
-			    // Signal that the PDU had an ICN PDU as payload
-			    du_o_spec->SetPDUPayloadType (NDN_NNN);
-
-			    // Send the DU PDU out the selected Face
-			    ok = outFace->SendDU (du_o_spec, destAddr);
-
-			    // Log that a Data PDU was sent
-			    DidSendOutData (inFace, outFace, data, pitEntry);
-			    // Log that a DO PDU was sent
-			    m_outDUs (du_o_spec, outFace);
-
-			    // Something caused an error
-			    if (!ok)
-			      {
-				// Log Data drops
-				m_dropData (data, incoming.m_face);
-				// Log DU PDU drop
-				m_dropDUs (du_o_spec, outFace);
-				NS_LOG_DEBUG ("Cannot satisfy data to " << newdst << " via "<< *incoming.m_face);
-			      }
-			    else
-			      {
-				if (incoming.m_face == outFace)
-				  // Actually sent something using this Face
-				  sentSomething = true;
-			      }
-			  }
+			// Log Data drops
+			m_dropData (data, incoming.m_face);
+			// Log DU PDU drop
+			m_dropDUs (du_o_spec, outFace);
+			NS_LOG_DEBUG ("Cannot satisfy data to " << newdst << " via "<< *incoming.m_face);
+		      }
+		    else
+		      {
+			if (incoming.m_face == outFace)
+			  // Actually sent something using this Face
+			  sentSomething = true;
 		      }
 		  }
 
@@ -2482,7 +2372,8 @@ namespace ns3
 
 	  // Here we pick the next place to forward to using the ICN strategy
 	  BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())
-	      {
+	  {
+	    NS_LOG_DEBUG ("Trying " << boost::cref(metricFace));
 	    if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED ||
 		metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_YELLOW)
 	      break; //propagate only to green faces
@@ -2492,10 +2383,9 @@ namespace ns3
 	      {
 		continue;
 	      }
-
 	    propagatedCount++;
 	    break; // propagate only one interest
-	    }
+	  }
 
 	  // If filtering the Yellow and Red Faces, didn't let us send anything out, attempt the
 	  // using the Yellow Faces.
