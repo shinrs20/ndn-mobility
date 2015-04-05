@@ -209,8 +209,6 @@ namespace ns3
       interest->SetName                (nameWithSequence);
       interest->SetInterestLifetime    (m_interestLifeTime);
 
-
-
       WillSendOutInterest (seq);
 
       ndn::FwHopCountTag hopCountTag;
