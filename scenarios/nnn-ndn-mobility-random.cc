@@ -120,7 +120,7 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
   Ptr<nnn::ForwardingStrategy> nodeFW;
 
   if (use3N)
-    global.Get (mtId)->GetObject<nnn::ForwardingStrategy> ();
+    nodeFW = global.Get (mtId)->GetObject<nnn::ForwardingStrategy> ();
 
   // This causes the device in mtId to change the SSID, forcing AP change
   sprintf(configbuf, "/NodeList/%d/DeviceList/%d/$ns3::WifiNetDevice/Mac/Ssid", mtId, netId);
@@ -817,6 +817,7 @@ int main (int argc, char *argv[])
 
   if (use3N)
     {
+      sprintf(routeType, "%s", "3n");
       NS_LOG_INFO ("------ Installing Server 3N stack ------");
       // Stack for nodes that use fixed connections
       nnn::NNNStackHelper ServerStack;
