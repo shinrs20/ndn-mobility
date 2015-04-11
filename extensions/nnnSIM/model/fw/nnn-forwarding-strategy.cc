@@ -261,6 +261,7 @@ namespace ns3
     , m_leased_names         (Create<NamesContainer> ())
     , m_node_pdu_buffer      (Create<PDUBuffer> ())
     , m_producedNameNumber   (0)
+    , m_no_oen               (false)
     {
       m_node_names->RegisterCallbacks(
 	  MakeCallback (&ForwardingStrategy::Reenroll, this),
@@ -616,7 +617,7 @@ namespace ns3
 		      // Add the information the the leased NodeNameContainer
 		      m_leased_names->addEntry(newName, absoluteLeaseTime, false);
 
-		      NS_LOG_INFO("Saving face " << *face << "for REN purposes");
+		      NS_LOG_INFO("Saving face " << *face << " for REN purposes");
 		      // Add the Face where the AEN came from (used for REN purposes)
 		      m_returnEN_faces.insert (face);
 
@@ -884,6 +885,7 @@ namespace ns3
 	  // If you start using the 3N name, execute the following
 	  if (willUseName)
 	    {
+	      m_no_oen = true;
 	      NS_LOG_INFO("Pushing AEN with Node name (" << *obtainedName << ") with lease until " << lease.GetSeconds ());
 	      // Now create the AEN PDU to respond
 	      Ptr<AEN> aen_p = Create<AEN> (*obtainedName);
@@ -1353,7 +1355,7 @@ namespace ns3
       std::set <Ptr<Face>, PtrFaceComp>::iterator it;
 
       // Check whether this node has a 3N name
-      if (Has3NName ())
+      if (Has3NName () && !m_no_oen)
 	{
 	  bool ok = false;
 	  Ptr<Face> tmp;
@@ -1392,13 +1394,25 @@ namespace ns3
 		      ren_o->AddPoa (poanames[i]);
 		    }
 
+		  NS_LOG_INFO ("Sending out REN via " << *tmp << " with (" << GetNode3NName () << ")");
+
+
 		  // Send the REN throughout the Faces
 		  ok = tmp->SendREN (ren_o);
 
 		  if (ok)
 		    m_outRENs (ren_o, tmp);
+
+		  NS_LOG_INFO ("Scheduling an reenroll should things go south");
+		  // Schedule the another enroll, should things go bad
+		  Simulator::Schedule (m_ack_timeout, &ForwardingStrategy::Reenroll, this);
 		}
 	    }
+	}
+      else
+	{
+	  NS_LOG_INFO ("On (" << GetNode3NName () << ") have reenrolled, flagging");
+	  m_no_oen = false;
 	}
     }
 

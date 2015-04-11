@@ -74,10 +74,13 @@ int main (int argc, char *argv[])
   Mac48Address n5_mac00 = Mac48Address ("20:1E:03:04:FF:06");
   Mac48Address n5_mac01 = Mac48Address ("20:1E:03:04:05:F6");
 
+  Mac48Address n6_mac00 = Mac48Address ("20:1E:03:65:FF:06");
+  Mac48Address n6_mac01 = Mac48Address ("20:1E:03:32:05:F6");
+
   // Expire times
   Time n1_expire = Seconds (5);
   Time n2_expire = Seconds (10);
-  Time n3_expire = Seconds (15);
+  Time n3_expire = Seconds (50);
 
   std::vector<Address> n1_poas;
 
@@ -127,6 +130,15 @@ int main (int argc, char *argv[])
   Ptr<NNNAddress> n4_test = Create<NNNAddress> ("be.34.26");
 
   Ptr<NNNAddress> prefixTest = Create<NNNAddress> ("be.34");
+  Ptr<NNNAddress> prefixTest02 = Create<NNNAddress> ("e.4.34");
+
+  Ptr<NNNAddress> n5_test = Create<NNNAddress> ("a.1");
+  Ptr<NNNAddress> n6_test = Create<NNNAddress> ("a.1.0.0");
+
+  Ptr<NNNAddress> prefixTest2 = Create<NNNAddress> ("a.0.0.0");
+  Ptr<NNNAddress> prefixTest3 = Create<NNNAddress> ("a.0.0");
+  Ptr<NNNAddress> prefixTest4 = Create<NNNAddress> ("a.0");
+  Ptr<NNNAddress> prefixTest5 = Create<NNNAddress> ("a");
 
   Ptr<NNST> ptrn1_nnst = CreateObject<NNST> ();
   Ptr<ForwardingStrategy> fw = CreateObject<ForwardingStrategy> ();
@@ -231,15 +243,38 @@ int main (int argc, char *argv[])
   ptrn1_nnst->Add(n3_test, ptrFace01, n3_poas_1, n3_expire, cost);
   ptrn1_nnst->Add(n3_test, ptrFace02, n3_mac04.operator ns3::Address(), n3_expire, cost);
   ptrn1_nnst->Add(n4_test, ptrFace00, n4_mac01.operator ns3::Address(), n3_expire, cost);
+  ptrn1_nnst->Add(n5_test, ptrFace02, n6_mac00.operator ns3::Address(), n3_expire, cost);
+  ptrn1_nnst->Add(prefixTest3, ptrFace00, n6_mac01.operator ns3::Address(), n3_expire, cost);
 
   std::cout << "###########################################" << std::endl;
 
+  std::cout << *ptrn1_nnst << std::endl;
   std::cout << "Testing sector info" << std::endl;
   std::vector<Ptr<const NNNAddress> > addrs;
 
   std::cout << "Closest sector info with: " << *prefixTest << std::endl;
 
   std::cout << *ptrn1_nnst->ClosestSectorNameInfo(prefixTest) << std::endl;
+
+  std::cout << "Closest sector info with: " << *prefixTest02 << std::endl;
+
+  std::cout << *ptrn1_nnst->ClosestSectorNameInfo(prefixTest02) << std::endl;
+
+  std::cout << "Closest sector info with: " << *prefixTest2 << std::endl;
+
+  std::cout << *ptrn1_nnst->ClosestSectorNameInfo(prefixTest2) << std::endl;
+
+  std::cout << "Closest sector info with: " << *prefixTest3 << std::endl;
+
+  std::cout << *ptrn1_nnst->ClosestSectorNameInfo(prefixTest3) << std::endl;
+
+  std::cout << "Closest sector info with: " << *prefixTest4 << std::endl;
+
+  std::cout << *ptrn1_nnst->ClosestSectorNameInfo(prefixTest4) << std::endl;
+
+  std::cout << "Closest sector info with: " << *prefixTest5 << std::endl;
+
+  std::cout << *ptrn1_nnst->ClosestSectorNameInfo(prefixTest5) << std::endl;
 
   std::cout << "One hop sector info with: " << *prefixTest << std::endl;
 

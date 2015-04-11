@@ -146,7 +146,7 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
     {
       // We know that we have connected somewhere before
       if (last_seen_ssid[mtId] == ssid)
-	NS_LOG_INFO ("Node " << mtId << " was already connected to AP with SSID" << ssid);
+	NS_LOG_INFO ("Node " << mtId << " was already connected to AP with SSID " << ssid);
       else
 	{
 	  NS_LOG_INFO ("Node " << mtId << " has changed AP to new " << ssid << " will disenroll");
