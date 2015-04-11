@@ -261,30 +261,16 @@ namespace ns3
     , m_node_names           (Create<NamesContainer> ())
     , m_leased_names         (Create<NamesContainer> ())
     , m_node_pdu_buffer      (Create<PDUBuffer> ())
+    , m_producedNameNumber   (0)
     {
       m_node_names->RegisterCallbacks(
 	  MakeCallback (&ForwardingStrategy::Reenroll, this),
 	  MakeCallback (&ForwardingStrategy::Enroll, this)
       );
-
-      // Make sure to seed our random
-      Time now = Simulator::Now();
-
-      gen.seed((long long)(now.GetMilliSeconds()) + (long long)getpid() << 32);
     }
 
     ForwardingStrategy::~ForwardingStrategy ()
     {
-    }
-
-    uint64_t
-    ForwardingStrategy::obtain_Num (uint64_t min, uint64_t max)
-    {
-      NS_LOG_FUNCTION (this << "min " << min << " max " << max);
-
-      boost::random::uniform_int_distribution<> dist (min, max);
-
-      return dist (gen);
     }
 
     void
@@ -335,7 +321,7 @@ namespace ns3
 	      // Create a random numerical component
 	      name::Component tmp = name::Component ();
 	      // Add the information
-	      tmp.fromNumber(obtain_Num(1, MAX3NLABEL));
+	      tmp.fromNumber(m_producedNameNumber);
 
 	      // Create a NNNAddress with base
 	      ret = Create <NNNAddress> (base.toDotHex());
@@ -352,6 +338,7 @@ namespace ns3
 	      else
 		{
 		  NS_LOG_INFO ("We have already produced " << *ret << " cycling through");
+		  m_producedNameNumber++;
 		}
 	    }
 
@@ -1834,7 +1821,7 @@ namespace ns3
 		// Retrieve the new 3N name destination
 		newdst = m_nnpt->findPairedNamePtr (i)->getName ();
 
-		NS_LOG_INFO ("Going to look at NNST size: " << m_nnst->GetSize());
+		NS_LOG_INFO ("On (" << myAddr << ") Going to look at NNST size: " << m_nnst->GetSize());
 		NS_LOG_INFO (*m_nnst);
 
 		// Roughly pick the next hop that would bring us closer to newdst

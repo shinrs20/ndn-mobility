@@ -131,10 +131,6 @@ namespace ns3
       ForwardingStrategy ();
       virtual ~ForwardingStrategy ();
 
-      // Obtain a random number between min and max
-      uint64_t
-      obtain_Num(uint64_t min, uint64_t max);
-
       virtual void
       SetNode3NName (Ptr<const NNNAddress> name, Time lease, bool fixed);
 
@@ -682,6 +678,7 @@ namespace ns3
       Time m_3n_lifetime;
       Time m_ack_timeout;
       int32_t m_standardMetric;
+      uint64_t m_producedNameNumber;
 
       ////////////////////////////////////////////////////////////////////
 
