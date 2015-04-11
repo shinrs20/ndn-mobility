@@ -633,7 +633,7 @@ int main (int argc, char *argv[])
       // Stack for nodes that use fixed connections
       nnn::NNNStackHelper ServerStack;
 
-      sprintf(buffer, "%ds", (int)endTime+5);
+      sprintf(buffer, "%ds", (int)endTime+35);
 
       std::string timeStr (buffer);
 

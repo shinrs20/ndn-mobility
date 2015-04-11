@@ -21,13 +21,6 @@
  *  along with nnn-face.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- *  \file
- *  \author		Zhu Li, Jairo Eduardo Lopez
- *  \copyright	Waseda University, Sato Laboratory
- *  \date 		2014
- */
-
 #include <boost/ref.hpp>
 
 #include <ns3-dev/ns3/assert.h>

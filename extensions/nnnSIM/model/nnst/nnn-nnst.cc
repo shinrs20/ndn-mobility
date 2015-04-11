@@ -89,7 +89,10 @@ namespace ns3
         // Find the closest entry to prefix.
         Ptr<nnst::Entry> tmp = ClosestSector(prefix);
 
-        return tmp->FindBestCandidateFaceInfo(skip);
+        if (tmp == 0)
+          return std::make_pair (Ptr<Face> (), Address ());
+        else
+          return tmp->FindBestCandidateFaceInfo(skip);
     }
 
     std::pair<Ptr<Face>, Address>

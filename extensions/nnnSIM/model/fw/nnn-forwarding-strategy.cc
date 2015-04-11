@@ -23,7 +23,6 @@
 // nnnSIM - 3N data
 #include "nnn-forwarding-strategy.h"
 
-#include "../nnn-face.h"
 #include "../nnn-naming.h"
 
 #include "../nnn-pdus.h"
@@ -234,7 +233,7 @@ namespace ns3
 	                 MakeTimeChecker ())
 
 	  .AddAttribute ("AckTimeout", "Timeout for ACK based PDUs",
-	                 StringValue ("10s"),
+	                 StringValue ("5s"),
 	                 MakeTimeAccessor (&ForwardingStrategy::m_ack_timeout),
 	                 MakeTimeChecker ())
 
@@ -328,8 +327,7 @@ namespace ns3
 	      // Append the new component
 	      ret->append(tmp);
 
-	      // Check if the random has by unfortunate circumstances created a name
-	      // that has already been leased
+	      // Check if by unfortunate circumstances the created name has already been leased
 	      if (! (m_leased_names->foundName(ret) || (m_node_lease_times.find (ret) != m_node_lease_times.end ())))
 		{
 		  produced = true;
@@ -466,8 +464,6 @@ namespace ns3
       NS_LOG_FUNCTION (this << face->GetId ());
 
       m_inENs (en_p, face);
-
-      NS_LOG_DEBUG ("Our 3N lease time is " << m_3n_lease_time.GetMinutes ());
 
       // Find if we can produce 3N names
       if (m_produce3Nnames && Has3NName ())
@@ -619,6 +615,10 @@ namespace ns3
 		      NS_LOG_INFO("Adding lease information for (" << tmp << ") until " << absoluteLeaseTime.GetSeconds ());
 		      // Add the information the the leased NodeNameContainer
 		      m_leased_names->addEntry(newName, absoluteLeaseTime, false);
+
+		      NS_LOG_INFO("Saving face " << *face << "for REN purposes");
+		      // Add the Face where the AEN came from (used for REN purposes)
+		      m_returnEN_faces.insert (face);
 
 		      // If there is an NNPT entry, it means we had a REN before. We need to
 		      // ensure the network of this change
@@ -1350,6 +1350,8 @@ namespace ns3
     ForwardingStrategy::Reenroll ()
     {
       NS_LOG_FUNCTION (this);
+      std::set <Ptr<Face>, PtrFaceComp>::iterator it;
+
       // Check whether this node has a 3N name
       if (Has3NName ())
 	{
@@ -1360,6 +1362,15 @@ namespace ns3
 	    {
 	      // Get a Face
 	      tmp = m_faces->Get (i);
+	      // Check to see
+	      it = m_returnEN_faces.find (tmp);
+
+	      if (it != m_returnEN_faces.end ())
+		{
+		  NS_LOG_INFO ("Face " << *tmp << " has been used to answer EN, skipping");
+		  continue;
+		}
+
 	      // Check that the Face is not of type APPLICATION
 	      if (!tmp->isAppFace ())
 		{

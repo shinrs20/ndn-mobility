@@ -31,6 +31,7 @@
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 
+#include "../nnn-face.h"
 #include "../nnn-naming.h"
 
 namespace ns3
@@ -56,8 +57,6 @@ namespace ns3
     namespace fw
     {
     }
-
-    class Face;
 
     class NNNAddress;
 
@@ -113,7 +112,16 @@ namespace ns3
     public:
       struct PtrNNNComp
       {
-	bool operator () (const Ptr<const NNNAddress> &lhs , const Ptr<const NNNAddress>  &rhs) const  {
+	bool operator () (const Ptr<const NNNAddress> &lhs , const Ptr<const NNNAddress>  &rhs) const
+	{
+	  return *lhs < *rhs;
+	}
+      };
+
+      struct PtrFaceComp
+      {
+	bool operator () (const Ptr<Face> &lhs, const Ptr<Face> &rhs) const
+	{
 	  return *lhs < *rhs;
 	}
       };
@@ -667,6 +675,7 @@ namespace ns3
       Ptr<ndn::ContentStore> m_contentStore; ///< \brief Content store (for caching purposes only)
 
       std::map <Ptr<const NNNAddress>, Time, PtrNNNComp> m_node_lease_times;
+      std::set <Ptr<Face>, PtrFaceComp> m_returnEN_faces;
 
       bool m_cacheUnsolicitedDataFromApps;
       bool m_cacheUnsolicitedData;
