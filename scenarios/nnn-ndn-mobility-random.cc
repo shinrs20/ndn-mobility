@@ -745,6 +745,10 @@ int main (int argc, char *argv[])
 
   char routeType[250];
 
+  sprintf(buffer, "%d", csSize);
+
+  std::string cs (buffer);
+
   // Now install content stores and the rest on the middle node. Leave
   // out clients and the mobile node
   if (useNDN)
@@ -771,7 +775,7 @@ int main (int argc, char *argv[])
 
       sprintf(buffer, "%d", csSize);
 
-      ndnHelperRouters.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", buffer);
+      ndnHelperRouters.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", cs);
       ndnHelperRouters.SetDefaultRoutes (true);
       // Install on ICN capable routers
       ndnHelperRouters.Install (allNdnNodes);
@@ -822,15 +826,19 @@ int main (int argc, char *argv[])
       // Stack for nodes that use fixed connections
       nnn::NNNStackHelper ServerStack;
 
-      sprintf(buffer, "%d", endTime + 5);
+      sprintf(buffer, "%ds", (int)endTime + 5);
 
-      // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", buffer);
+      std::string timeStr (buffer);
 
-      sprintf(buffer, "%d", csSize);
+      NS_LOG_INFO ("Setting lease time to: " << timeStr);
+
+      // Set the Forwarding Strategy and have it have a 3N name lease time of 300 seconds
+      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", timeStr);
+
+      NS_LOG_INFO ("Setting Content Store size: " << cs);
 
       // Set the Content Store for the primary stack, Normal LRU ContentStore
-      ServerStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", buffer);
+      ServerStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", cs);
       // Set the FIB default routes
       ServerStack.SetDefaultRoutes (true);
       // Install the stack
@@ -849,14 +857,11 @@ int main (int argc, char *argv[])
       // Stack for a Node that is given a node name
       nnn::NNNStackHelper APStack;
 
-      sprintf(buffer, "%d", endTime + 5);
-
       // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", buffer);
+      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", timeStr);
       // Set the Content Store for the primary stack, Normal LRU ContentStore
 
-      sprintf(buffer, "%d", csSize);
-      APStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", buffer);
+      APStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", cs);
       // Set the FIB default routes
       APStack.SetDefaultRoutes (true);
       // Install the stack

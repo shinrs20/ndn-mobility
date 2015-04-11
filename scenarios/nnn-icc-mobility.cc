@@ -280,7 +280,6 @@ int main (int argc, char *argv[])
   bool smart = false;                           // Tells to run the simulation with SmartFlooding
   bool bestr = false;                           // Tells to run the simulation with BestRoute
   char results[250] = "results";                // Directory to place results
-  double endTime = 1 + (400 / speed);                         // Number of seconds to run the simulation
   double MBps = 0.15;                           // MB/s data rate desired for applications
   // 0.15 MB/s equals to 1.2 Mb/s which is the bitrate for
   // 480p livestream video according to Adobe
@@ -288,8 +287,11 @@ int main (int argc, char *argv[])
   int maxSeq = -1;                              // Maximum number of Data packets to request
   double retxtime = 0.05;                       // How frequent Interest retransmission timeouts should be checked (seconds)
   int csSize = 10000000;                        // How big the Content Store should be
-  bool use3N = false;
-  bool useNDN = false;
+  bool use3N = false;                           // Flags use of 3N based scenario
+  bool useNDN = false;                          // Flags use of NDN based scenario
+  double initialWait = 10;                      // How much time we should wait to start the simulation (Mostly to deal with 3N naming)
+  double initialPos = -speed*initialWait;       // Where to put the initial node
+  double endTime = 1 + initialWait + (400 / speed);                         // Number of seconds to run the simulation
 
   // Variable for buffer
   char buffer[250];
@@ -434,10 +436,12 @@ int main (int argc, char *argv[])
 
   Ptr<ListPositionAllocator> initialMobile = CreateObject<ListPositionAllocator> ();
 
+  add = 0;
   for (int i = 0; i < mobile; i++)
     {
-      Vector pos (0, 200, 0.0);
+      Vector pos (initialPos, 200 + add, 0.0);
       initialMobile->Add (pos);
+      add += 10;
     }
 
   mobileStations.SetPositionAllocator(initialMobile);
@@ -549,6 +553,10 @@ int main (int argc, char *argv[])
 
   char routeType[250];
 
+  sprintf(buffer, "%d", csSize);
+
+  std::string cs (buffer);
+
   // Now install content stores and the rest on the middle node. Leave
   // out clients and the mobile node
   if (useNDN)
@@ -572,10 +580,9 @@ int main (int argc, char *argv[])
       }
 
       // Set the Content Stores
+      NS_LOG_INFO ("Setting Content Store size: " << buffer);
 
-      sprintf(buffer, "%d", csSize);
-
-      ndnHelperRouters.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", buffer);
+      ndnHelperRouters.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", cs);
       ndnHelperRouters.SetDefaultRoutes (true);
       // Install on ICN capable routers
       ndnHelperRouters.Install (allNdnNodes);
@@ -610,7 +617,7 @@ int main (int argc, char *argv[])
       ndn::AppHelper consumerHelper ("ns3::ndn::ConsumerCbr");
       consumerHelper.SetPrefix ("/waseda/sato");
       consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
-      consumerHelper.SetAttribute ("StartTime", TimeValue (Seconds(1)));
+      consumerHelper.SetAttribute ("StartTime", TimeValue (Seconds(initialWait)));
       consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
       if (maxSeq > 0)
@@ -626,15 +633,19 @@ int main (int argc, char *argv[])
       // Stack for nodes that use fixed connections
       nnn::NNNStackHelper ServerStack;
 
-      sprintf(buffer, "%d", endTime + 5);
+      sprintf(buffer, "%ds", (int)endTime+5);
 
-      // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", buffer);
+      std::string timeStr (buffer);
 
-      sprintf(buffer, "%d", csSize);
+      NS_LOG_INFO ("Setting lease time to: " << timeStr);
+
+      // Set the Forwarding Strategy and have it have a 3N name lease time of 300 seconds
+      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", timeStr);
+
+      NS_LOG_INFO ("Setting Content Store size: " << cs);
 
       // Set the Content Store for the primary stack, Normal LRU ContentStore
-      ServerStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", buffer);
+      ServerStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", cs);
       // Set the FIB default routes
       ServerStack.SetDefaultRoutes (true);
       // Install the stack
@@ -653,14 +664,11 @@ int main (int argc, char *argv[])
       // Stack for a Node that is given a node name
       nnn::NNNStackHelper APStack;
 
-      sprintf(buffer, "%d", endTime + 5);
-
-      // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", buffer);
+      // Set the Forwarding Strategy and have it have a 3N name lease time of 300 seconds
+      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", timeStr);
       // Set the Content Store for the primary stack, Normal LRU ContentStore
 
-      sprintf(buffer, "%d", csSize);
-      APStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", buffer);
+      APStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", cs);
       // Set the FIB default routes
       APStack.SetDefaultRoutes (true);
       // Install the stack
@@ -703,7 +711,7 @@ int main (int argc, char *argv[])
       producerHelper.SetPrefix ("/waseda/sato");
       // Payload size is in bytes
       producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
-      producerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
+      producerHelper.SetAttribute("StartTime", TimeValue (Seconds(initialWait)));
       producerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime -1)));
       // Install producer on AP
       producerHelper.Install (serverNodes);
@@ -715,7 +723,7 @@ int main (int argc, char *argv[])
       nnn::AppHelper consumerHelper ("ns3::nnn::ConsumerCbr");
       consumerHelper.SetPrefix ("/waseda/sato");
       consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
-      consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
+      consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(initialWait)));
       consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
       consumerHelper.SetAttribute("UseSO", BooleanValue(true));
       consumerHelper.Install (mobileTerminalContainer);
