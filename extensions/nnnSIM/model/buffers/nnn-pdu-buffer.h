@@ -58,25 +58,49 @@ namespace ns3
       ~PDUBuffer ();
 
       void
+      AddDestination (const NNNAddress &addr);
+
+      void
       AddDestination (Ptr<NNNAddress> addr);
+
+      void
+      RemoveDestination (const NNNAddress &addr);
 
       void
       RemoveDestination (Ptr<NNNAddress> addr);
 
       bool
+      DestinationExists (const NNNAddress &addr);
+
+      bool
       DestinationExists (Ptr<NNNAddress> addr);
+
+      void
+      PushSO (const NNNAddress &addr, Ptr<const SO> so_p);
 
       void
       PushSO (Ptr<NNNAddress> addr, Ptr<const SO> so_p);
 
       void
+      PushDO (const NNNAddress &addr, Ptr<const DO> do_p);
+
+      void
       PushDO (Ptr<NNNAddress> addr, Ptr<const DO> do_p);
+
+      void
+      PushDU (const NNNAddress &addr, Ptr<const DU> du_p);
 
       void
       PushDU (Ptr<NNNAddress> addr, Ptr<const DU> du_p);
 
       std::queue<Ptr<Packet> >
+      PopQueue (const NNNAddress &addr);
+
+      std::queue<Ptr<Packet> >
       PopQueue (Ptr<NNNAddress> addr);
+
+      uint
+      QueueSize (const NNNAddress &addr);
 
       uint
       QueueSize (Ptr<NNNAddress> addr);
