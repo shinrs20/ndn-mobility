@@ -53,6 +53,11 @@
 #include <ns3-dev/ns3/point-to-point-module.h>
 #include <ns3-dev/ns3/wifi-module.h>
 
+// ndnSIM modules
+#include <ns3-dev/ns3/ndnSIM-module.h>
+#include <ns3-dev/ns3/ndnSIM/utils/tracers/ipv4-rate-l3-tracer.h>
+#include <ns3-dev/ns3/ndnSIM/utils/tracers/ipv4-seqs-app-tracer.h>
+
 // nnnSIM modules
 #include "nnnSIM/nnnSIM-module.h"
 
@@ -101,7 +106,7 @@ double obtain_Num(double min, double max)
 }
 
 // Function to change the SSID of a Node, depending on distance
-void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr<MobilityModel> > aps)
+void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr<MobilityModel> > aps, bool use3N)
 {
   NS_LOG_FUNCTION (mtId << netId);
 
@@ -112,7 +117,10 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
   NodeContainer global = NodeContainer::GetGlobal ();
 
   Ptr<MobilityModel> nodeMM = global.Get (mtId)->GetObject<MobilityModel> ();
-  Ptr<nnn::ForwardingStrategy> nodeFW = global.Get (mtId)->GetObject<nnn::ForwardingStrategy> ();
+  Ptr<nnn::ForwardingStrategy> nodeFW;
+
+  if (use3N)
+    nodeFW = global.Get (mtId)->GetObject<nnn::ForwardingStrategy> ();
 
   // This causes the device in mtId to change the SSID, forcing AP change
   sprintf(configbuf, "/NodeList/%d/DeviceList/%d/$ns3::WifiNetDevice/Mac/Ssid", mtId, netId);
@@ -141,13 +149,17 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
     {
       // We know that we have connected somewhere before
       if (last_seen_ssid[mtId] == ssid)
-	NS_LOG_INFO ("Node " << mtId << " was already connected to AP with SSID" << ssid);
+	NS_LOG_INFO ("Node " << mtId << " was already connected to AP with SSID " << ssid);
       else
 	{
 	  NS_LOG_INFO ("Node " << mtId << " has changed AP to new " << ssid << " will disenroll");
 	  last_seen_ssid[mtId] = ssid;
-	  // Force a disenroll procedure
-	  nodeFW->Disenroll ();
+
+	  if (use3N)
+	    {
+	      // Force a disenroll procedure
+	      nodeFW->Disenroll ();
+	    }
 	}
     }
   else
@@ -156,8 +168,11 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
       // Save the Address
       last_seen_ssid[mtId] = ssid;
 
-      // Now continue to do the enroll procedure
-      nodeFW->Enroll ();
+      if (use3N)
+	{
+	  // Now continue to do the enroll procedure
+	  nodeFW->Enroll ();
+	}
     }
 
   // Because the map sorts by std:less, the first position has the lowest distance
@@ -168,7 +183,7 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
 }
 
 // Function to force a change to a particular Ssid
-void SetForcedSSID (uint32_t mtId, uint32_t netId, Ssid ssid)
+void SetForcedSSID (uint32_t mtId, uint32_t netId, Ssid ssid, bool use3N)
 {
   NS_LOG_FUNCTION (mtId << netId);
 
@@ -177,12 +192,15 @@ void SetForcedSSID (uint32_t mtId, uint32_t netId, Ssid ssid)
   // Obtain the global list of Nodes in the simulation
   NodeContainer global = NodeContainer::GetGlobal ();
 
-  // Get the ForwardingStrategy for the node in question
-  Ptr<nnn::ForwardingStrategy> nodeFW = global.Get (mtId)->GetObject<nnn::ForwardingStrategy> ();
+  if (use3N)
+    {
+      // Get the ForwardingStrategy for the node in question
+      Ptr<nnn::ForwardingStrategy> nodeFW = global.Get (mtId)->GetObject<nnn::ForwardingStrategy> ();
 
-  // Since we know we are changing SSID, we don't do any checks
-  // Force a disenroll procedure
-  nodeFW->Disenroll ();
+      // Since we know we are changing SSID, we don't do any checks
+      // Force a disenroll procedure
+      nodeFW->Disenroll ();
+    }
 
   // This causes the device in mtId to change the SSID, forcing AP change
   sprintf(configbuf, "/NodeList/%d/DeviceList/%d/$ns3::WifiNetDevice/Mac/Ssid", mtId, netId);
@@ -263,6 +281,9 @@ int main (int argc, char *argv[])
   bool useMobility = false;                     // Tells to run the simulation with mobility support
   char results[250] = "results";                // Directory to place results
   double endTime = 100;                         // Number of seconds to run the simulation
+  double MBps = 0.15;                           // MB/s data rate desired for applications
+  bool use3N = false;                           // Flags use of 3N based scenario
+  bool useNDN = false;                          // Flags use of NDN based scenario
 
   // Variable for buffer
   char buffer[250];
@@ -274,7 +295,28 @@ int main (int argc, char *argv[])
   cmd.AddValue ("start", "Starting second", sec);
   cmd.AddValue ("trace", "Enable trace files", traceFiles);
   cmd.AddValue ("mobility", "Enable mobility support", useMobility);
+  cmd.AddValue ("mbps", "Data transmission rate for App in MBps", MBps);
+  cmd.AddValue ("3n", "Uses 3N scenario", use3N);
+  cmd.AddValue ("ndn", "Uses NDN scenario", useNDN);
   cmd.Parse (argc,argv);
+
+  if (! (use3N || useNDN))
+    {
+      cerr << "ERROR: Must choose a network type to test!" << endl;
+      return 1;
+    }
+
+  if (use3N && useNDN)
+    {
+      cerr << "ERROR: Cannot run 3N and NDN scenarios at the same time! Pick one!" << endl;
+      return 1;
+    }
+
+  // What the NDN Data packet payload size is fixed to 1024 bytes
+  uint32_t payLoadsize = 1024;
+
+  // How many Interests/second a producer creates
+  double intFreq = (MBps * 1000000) / payLoadsize;
 
   NS_LOG_INFO ("------Creating nodes------");
 
@@ -474,101 +516,164 @@ int main (int argc, char *argv[])
 
   // Now install content stores and the rest on the middle node. Leave
   // out clients and the mobile node
-  NS_LOG_INFO ("------ Installing 3N stacks ------");
-
-  NS_LOG_INFO ("------ Installing Server 3N stack ------");
-  // Stack for nodes that use fixed connections
-  nnn::NNNStackHelper ServerStack;
-  // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-  ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "120s");
-  // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
-  ServerStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
-  // Set the FIB default routes
-  ServerStack.SetDefaultRoutes (true);
-  // Install the stack
-  ServerStack.Install (ServerContainer);
-
-  // Create the initial 3N name
-  Ptr<nnn::NNNAddress> firstName = Create <nnn::NNNAddress> ("a");
-  // Get the ForwardingStrategy object from the node
-  Ptr<nnn::ForwardingStrategy> fwServer = ServerContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
-  // Give a 3N name for the first AP - ensure it is longer than the actual simulation
-  fwServer->SetNode3NName (firstName, Seconds (endTime + 5), true);
-
-  ///////////////////////////////////////////////////////
-
-  NS_LOG_INFO ("------ Installing AP 3N stack ------");
-  // Stack for a Node that is given a node name
-  nnn::NNNStackHelper APStack;
-  // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-  APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "80s");
-  // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
-  APStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
-  // Set the FIB default routes
-  APStack.SetDefaultRoutes (true);
-  // Install the stack
-  APStack.Install (APContainer);
-
-  // Vector of all forwarding strategies for APs
-  std::vector<Ptr<nnn::ForwardingStrategy> > fwAPs;
-
-  // Force Enrollment for the APs
-  for (int i = 0; i < aps; i++)
+  if (useNDN)
     {
-      fwAPs.push_back (APContainer.Get (i)->GetObject<nnn::ForwardingStrategy> ());
+      NS_LOG_INFO ("------Installing NDN stack on routers------");
+      ndn::StackHelper ndnHelperRouters;
+
+      // Decide what Forwarding strategy to use depending on user command line input
+
+      sprintf(routeType, "%s", "smart");
+      NS_LOG_INFO ("NDN Utilizing SmartFlooding");
+      ndnHelperRouters.SetForwardingStrategy ("ns3::ndn::fw::SmartFlooding::PerOutFaceLimits", "Limit", "ns3::ndn::Limits::Window");
+      ndnHelperRouters.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "1000000");
+      ndnHelperRouters.SetDefaultRoutes (true);
+      // Install on ICN capable routers
+      ndnHelperRouters.Install (APContainer);
+      ndnHelperRouters.Install (ServerContainer);
+
+      NS_LOG_INFO ("------Installing NDN stack on user nodes ------");
+      // Create a NDN stack for the clients and mobile node
+      ndn::StackHelper ndnHelperUsers;
+      // These nodes have only one interface, so BestRoute forwarding makes sense
+      ndnHelperUsers.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
+      // No Content Stores are installed on these machines
+      ndnHelperUsers.SetContentStore ("ns3::ndn::cs::Nocache");
+      ndnHelperUsers.SetDefaultRoutes (true);
+      ndnHelperUsers.Install (MNContainer);
+
+      NS_LOG_INFO ("------Installing NDN Producer Application------");
+
+      NS_LOG_INFO ("Producer Payload size: " << payLoadsize);
+
+      // Create the producer on the mobile node
+      ndn::AppHelper producerHelper ("ns3::ndn::Producer");
+      producerHelper.SetPrefix ("/waseda/sato");
+      producerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
+      // Payload size is in bytes
+      producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
+      producerHelper.Install (ServerContainer);
+
+      NS_LOG_INFO ("------Installing NDN Consumer Application------");
+
+      NS_LOG_INFO ("Consumer Interests/Second frequency: " << intFreq);
+
+      // Create the consumer on the randomly selected node
+      ndn::AppHelper consumerHelper ("ns3::ndn::ConsumerCbr");
+      consumerHelper.SetPrefix ("/waseda/sato");
+      consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
+      consumerHelper.SetAttribute ("StartTime", TimeValue (Seconds(2)));
+      consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
+
+      consumerHelper.Install (MNContainer);
     }
 
-  for (int i = 0; i < aps; i++)
+  if (use3N)
     {
-      Simulator::Schedule(Seconds (0), &nnn::ForwardingStrategy::Enroll, fwAPs[i]);
+      sprintf(routeType, "%s", "3n");
+      // Now install content stores and the rest on the middle node. Leave
+      // out clients and the mobile node
+      NS_LOG_INFO ("------ Installing 3N stacks ------");
+
+      NS_LOG_INFO ("------ Installing Server 3N stack ------");
+      // Stack for nodes that use fixed connections
+      nnn::NNNStackHelper ServerStack;
+      // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
+      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "120s");
+      // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
+      ServerStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
+      // Set the FIB default routes
+      ServerStack.SetDefaultRoutes (true);
+      // Install the stack
+      ServerStack.Install (ServerContainer);
+
+      // Create the initial 3N name
+      Ptr<nnn::NNNAddress> firstName = Create <nnn::NNNAddress> ("a");
+      // Get the ForwardingStrategy object from the node
+      Ptr<nnn::ForwardingStrategy> fwServer = ServerContainer.Get (0)->GetObject<nnn::ForwardingStrategy> ();
+      // Give a 3N name for the first AP - ensure it is longer than the actual simulation
+      fwServer->SetNode3NName (firstName, Seconds (endTime + 5), true);
+
+      ///////////////////////////////////////////////////////
+
+      NS_LOG_INFO ("------ Installing AP 3N stack ------");
+      // Stack for a Node that is given a node name
+      nnn::NNNStackHelper APStack;
+      // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
+      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "80s");
+      // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
+      APStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
+      // Set the FIB default routes
+      APStack.SetDefaultRoutes (true);
+      // Install the stack
+      APStack.Install (APContainer);
+
+      // Vector of all forwarding strategies for APs
+      std::vector<Ptr<nnn::ForwardingStrategy> > fwAPs;
+
+      // Force Enrollment for the APs
+      for (int i = 0; i < aps; i++)
+	{
+	  fwAPs.push_back (APContainer.Get (i)->GetObject<nnn::ForwardingStrategy> ());
+	}
+
+      for (int i = 0; i < aps; i++)
+	{
+	  Simulator::Schedule(Seconds (0), &nnn::ForwardingStrategy::Enroll, fwAPs[i]);
+	}
+
+      ///////////////////////////////////////////////////////
+
+      NS_LOG_INFO ("------ Installing mobile 3N stack ------");
+      // Stack for nodes that are mobile;
+      nnn::NNNStackHelper mobileStack;
+      // No Content Store for mobile stack
+      mobileStack.SetContentStore ("ns3::ndn::cs::Nocache");
+      // Do not produce 3N names for these nodes
+      mobileStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "Produce3Nnames", "false");
+      // Set the FIB default routes
+      mobileStack.SetDefaultRoutes (true);
+      // Install the stack
+      mobileStack.Install (MNContainer);
+
+      // Create the applications
+      NS_LOG_INFO ("------ Installing Producer Application------ ");
+      // Create the producer on the AP node - same as in NDN
+      nnn::AppHelper producerHelper ("ns3::nnn::Producer");
+      producerHelper.SetPrefix ("/waseda/sato");
+      producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
+      producerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
+      producerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime -1)));
+      // Install producer on AP
+      producerHelper.Install (ServerContainer);
+
+      NS_LOG_INFO ("------ Installing Consumer Application------ ");
+      // Create the consumer node on the mobile node - same as in NDN
+      nnn::AppHelper consumerHelper ("ns3::nnn::ConsumerCbr");
+      consumerHelper.SetPrefix ("/waseda/sato");
+      consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
+      consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
+      consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
+      if (useMobility)
+	{
+	  NS_LOG_INFO ("Consumer is using mobility 3N SO support");
+	  consumerHelper.SetAttribute("UseSO", BooleanValue(true));
+	}
+      consumerHelper.Install (MNContainer);
     }
-
-  ///////////////////////////////////////////////////////
-
-  NS_LOG_INFO ("------ Installing mobile 3N stack ------");
-  // Stack for nodes that are mobile;
-  nnn::NNNStackHelper mobileStack;
-  // No Content Store for mobile stack
-  mobileStack.SetContentStore ("ns3::ndn::cs::Nocache");
-  // Do not produce 3N names for these nodes
-  mobileStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "Produce3Nnames", "false");
-  // Set the FIB default routes
-  mobileStack.SetDefaultRoutes (true);
-  // Install the stack
-  mobileStack.Install (MNContainer);
-
-  // Create the applications
-  NS_LOG_INFO ("------ Installing Producer Application------ ");
-  // Create the producer on the AP node - same as in NDN
-  nnn::AppHelper producerHelper ("ns3::nnn::Producer");
-  producerHelper.SetPrefix ("/waseda/sato");
-  producerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
-  producerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime -1)));
-  // Install producer on AP
-  producerHelper.Install (ServerContainer);
-
-  NS_LOG_INFO ("------ Installing Consumer Application------ ");
-  // Create the consumer node on the mobile node - same as in NDN
-  nnn::AppHelper consumerHelper ("ns3::nnn::ConsumerCbr");
-  consumerHelper.SetPrefix ("/waseda/sato");
-  consumerHelper.SetAttribute ("Frequency", DoubleValue (0.1));
-  consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
-  consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
-  if (useMobility)
-    {
-      NS_LOG_INFO ("Consumer is using mobility 3N SO support");
-      consumerHelper.SetAttribute("UseSO", BooleanValue(true));
-    }
-  consumerHelper.Install (MNContainer);
 
   NS_LOG_INFO ("------ Creating the AP Association Callbacks ------");
   char configbuf[250];
 
-  for (int i = 0; i < mobileNodeIds.size (); i++)
+  // The AP association callbacks are only useful in 3N setting
+  if (use3N)
     {
-      NS_LOG_INFO ("Establishing callbacks for Node " << mobileNodeIds[i] << " wireless device 0");
-      sprintf (configbuf, "/NodeList/%d/DeviceList/%d/$ns3::WifiNetDevice/Mac/$ns3::StaWifiMac/Assoc", mobileNodeIds[i], 0);
-      Config::Connect(configbuf, MakeCallback (&ApAssociation));
+      for (int i = 0; i < mobileNodeIds.size (); i++)
+	{
+	  NS_LOG_INFO ("Establishing callbacks for Node " << mobileNodeIds[i] << " wireless device 0");
+	  sprintf (configbuf, "/NodeList/%d/DeviceList/%d/$ns3::WifiNetDevice/Mac/$ns3::StaWifiMac/Assoc", mobileNodeIds[i], 0);
+	  Config::Connect(configbuf, MakeCallback (&ApAssociation));
+	}
     }
 
   NS_LOG_INFO ("------ SSID distance event changes ------");
@@ -578,7 +683,7 @@ int main (int argc, char *argv[])
 	{
 	  NS_LOG_INFO ("Scheduling SSID calculation for Node " << mobileNodeIds[i] << " wireless device 0 at " << j);
 	  // Simulator::Schedule (Seconds(j), &SetSSIDviaDistance, mobileNodeIds[i], 0, apTerminalMobility);
-	  Simulator::Schedule (Seconds(j), &SetForcedSSID, mobileNodeIds[i], 0, ssidV[1]);
+	  Simulator::Schedule (Seconds(j), &SetForcedSSID, mobileNodeIds[i], 0, ssidV[1], use3N);
 	}
     }
 
@@ -593,7 +698,7 @@ int main (int argc, char *argv[])
       char fileId[250];
 
       // Create the file identifier
-      sprintf(fileId, "%02d-%03d-%03d.txt", mobile, servers, aps);
+      sprintf(fileId, "%s-%02d-%03d-%03d.txt", routeType, mobile, servers, aps);
 
       sprintf(filename, "%s/%s-clients-%s", results, scenario, fileId);
 
@@ -620,15 +725,43 @@ int main (int argc, char *argv[])
 
       serverFile.close();
 
-      NS_LOG_INFO ("Installing Application tracers");
-      // 3N App Tracer
-      sprintf (filename, "%s/%s-app-delays-%s", results, scenario, fileId);
-      nnn::AppDelayTracer::InstallAll (filename);
+      NS_LOG_INFO ("Installing tracers");
+      if (useNDN)
+	{
+	  NS_LOG_INFO ("Installing NDN tracers");
+	  // NDN Aggregate tracer
+	  sprintf (filename, "%s/%s-aggregate-trace-%s", results, scenario, fileId);
+	  ndn::L3AggregateTracer::InstallAll(filename, Seconds (1.0));
 
-      NS_LOG_INFO ("Installing Aggregate tracers");
-      // 3N Aggregate tracer
-      sprintf (filename, "%s/%s-aggregate-trace-%s", results, scenario, fileId);
-      nnn::L3AggregateTracer::InstallAll(filename, Seconds (1.0));
+	  // NDN L3 tracer
+	  sprintf (filename, "%s/%s-rate-trace-%s", results, scenario, fileId);
+	  ndn::L3RateTracer::InstallAll (filename, Seconds (1.0));
+
+	  // NDN App Tracer
+	  sprintf (filename, "%s/%s-app-delays-%s", results, scenario, fileId);
+	  ndn::AppDelayTracer::InstallAll (filename);
+
+	  // L2 Drop rate tracer
+	  sprintf (filename, "%s/%s-drop-trace-%s", results, scenario, fileId);
+	  L2RateTracer::InstallAll (filename, Seconds (0.5));
+
+	  // Content Store tracer
+	  sprintf (filename, "%s/%s-cs-trace-%s", results, scenario, fileId);
+	  ndn::CsTracer::InstallAll (filename, Seconds (1));
+	}
+
+      if (use3N)
+	{
+	  NS_LOG_INFO ("Installing Application tracers");
+	  // 3N App Tracer
+	  sprintf (filename, "%s/%s-app-delays-%s", results, scenario, fileId);
+	  nnn::AppDelayTracer::InstallAll (filename);
+
+	  NS_LOG_INFO ("Installing Aggregate tracers");
+	  // 3N Aggregate tracer
+	  sprintf (filename, "%s/%s-aggregate-trace-%s", results, scenario, fileId);
+	  nnn::L3AggregateTracer::InstallAll(filename, Seconds (1.0));
+	}
   }
 
   NS_LOG_INFO ("------Scheduling events - SSID changes------");

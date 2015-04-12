@@ -289,14 +289,12 @@ namespace ns3
     const NNNAddress&
     ForwardingStrategy::GetNode3NName ()
     {
-      NS_LOG_FUNCTION (this);
       return *m_node_names->findNewestName();
     }
 
     Ptr<const NNNAddress>
     ForwardingStrategy::GetNode3NNamePtr ()
     {
-      NS_LOG_FUNCTION (this);
       return m_node_names->findNewestName();
     }
 
@@ -362,16 +360,20 @@ namespace ns3
     ForwardingStrategy::flushBuffer(Ptr<Face> face, Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName)
     {
       NS_LOG_FUNCTION (this << face->GetId () << *oldName << " to " << *newName);
+      NNNAddress myAddr = GetNode3NName ();
       if (m_node_pdu_buffer->DestinationExists(oldName))
 	{
-	  NS_LOG_INFO ("We have found a queue for (" << *oldName << "), attempting to flush");
+
+	  NS_LOG_INFO ("On (" << myAddr << ") found a queue for (" << *oldName << "), attempting to flush");
 	  // The actual queue
 	  std::queue<Ptr<Packet> > addrQueue = m_node_pdu_buffer->PopQueue(oldName);
 
 	  // Dummy Pointers to the PDU types
 	  Ptr<DO> do_o_orig;
-	  Ptr<SO> so_o_orig;
 	  Ptr<DU> du_o_orig;
+
+	  uint32_t do_flush = 0;
+	  uint32_t du_flush = 0;
 
 	  std::pair<Ptr<Face>, Address> closestSector;
 
@@ -385,21 +387,6 @@ namespace ns3
 
 	      switch(HeaderHelper::GetNNNHeaderType(queuePDU))
 	      {
-		case SO_NNN:
-		  // Convert the Packet back to a SO for manipulation
-		  so_o_orig = wire::nnnSIM::SO::FromWire(queuePDU);
-
-		  // Renew the SO lifetime
-		  so_o_orig->SetLifetime(m_3n_lifetime);
-		  // Change the SO 3N name to the new name
-		  so_o_orig->SetName(newName);
-
-		  NS_LOG_INFO ("flushBuffer : flushing SO using " << *newName);
-		  // The SO PDU is a little more complicated, so we pass it through
-		  // the normal OnSO flow, using the modified SO
-		  OnSO (face, so_o_orig);
-
-		  break;
 		case DO_NNN:
 		  // Convert the Packet back to a DO for manipulation
 		  do_o_orig = wire::nnnSIM::DO::FromWire(queuePDU);
@@ -415,11 +402,11 @@ namespace ns3
 		  outFace = closestSector.first;
 		  destAddr = closestSector.second;
 
-		  NS_LOG_INFO ("flushBuffer : flushing DO using " << *newName);
 		  // Send the created DO PDU
 		  outFace->SendDO(do_o_orig, destAddr);
 		  // Log the DO sending
 		  m_outDOs(do_o_orig, outFace);
+		  do_flush++;
 		  break;
 		case DU_NNN:
 		  // Convert the Packet back to a DU for manipulation
@@ -441,14 +428,14 @@ namespace ns3
 		  outFace = closestSector.first;
 		  destAddr = closestSector.second;
 
-		  NS_LOG_INFO ("flushBuffer : flushing DU using " << *newName);
 		  // Send the created DU PDU
 		  outFace->SendDU(du_o_orig, destAddr);
 		  // Log the DU sending
 		  m_outDUs(du_o_orig, outFace);
+		  du_flush++;
 		  break;
 		default:
-		  NS_LOG_INFO("flushBuffer obtained unknown PDU");
+		  NS_LOG_INFO("Obtained unknown PDU");
 	      }
 	      // Pop the queue and continue
 	      addrQueue.pop ();
@@ -456,6 +443,12 @@ namespace ns3
 
 	  // Make sure we delete the entry for oldName in the buffer
 	  m_node_pdu_buffer->RemoveDestination(oldName);
+
+	  NS_LOG_INFO ("On (" << myAddr << ") flushed (" << *oldName << ") -> (" << *newName << ") <->  DO: " << do_flush << " DU: " << du_flush );
+	}
+      else
+	{
+	  NS_LOG_INFO ("On (" << myAddr << ") no buffer found for (" << *oldName << "), continuing");
 	}
     }
 
@@ -763,7 +756,7 @@ namespace ns3
       NNNAddress myAddr = GetNode3NName ();
       Ptr<NNNAddress> leavingAddr = Create<NNNAddress> (den_p->GetNamePtr ()->getName ());
 
-      NS_LOG_INFO ("We are in (" << myAddr << "), (" << *leavingAddr << ") is leaving");
+      NS_LOG_INFO ("On (" << myAddr << "), (" << *leavingAddr << ") is leaving");
       NS_LOG_INFO ("Adding (" << *leavingAddr << ") to buffers");
 
       // We know the node sending the DEN is moving. His lease time will be maintained
@@ -774,13 +767,15 @@ namespace ns3
       // forward the DEN packet to the parent of this node
       if (leavingAddr->distance (myAddr) <= 2 && leavingAddr->isSubSector (myAddr))
 	{
-	  NS_LOG_INFO ("We can still propagate the DEN");
+	  NS_LOG_INFO ("We can still attempt to propagate DEN");
 	  // Now we forward the DEN information to the higher hierarchical nodes
 	  std::vector<std::pair<Ptr<Face>, Address> > hierarchicalFaces = m_nnst->OneHopParentSectorFaceInfo (myAddr, 0);
 	  std::vector<std::pair<Ptr<Face>, Address> >::iterator it;
 
 	  Ptr<Face> outFace;
 	  Address destAddr;
+	  bool propagated = false;
+	  bool ok = false;
 
 	  for (it = hierarchicalFaces.begin (); it != hierarchicalFaces.end (); ++it)
 	    {
@@ -789,11 +784,23 @@ namespace ns3
 
 	      NS_LOG_INFO ("Pushing DEN out Face " << *outFace);
 
-	      outFace->SendDEN (den_p, destAddr);
+	      ok = outFace->SendDEN (den_p, destAddr);
 
 	      // Log that the DEN PDU was sent
 	      m_outDENs (den_p, outFace);
+
+	      if (ok)
+		propagated = true;
 	    }
+
+	  if (propagated)
+	    NS_LOG_INFO ("On (" << myAddr << ") found parent sectors to propagate DEN to");
+	  else
+	    NS_LOG_INFO ("On (" << myAddr << ") no parent sectors to propagate DEN to, stopping propagation");
+	}
+      else
+	{
+	  NS_LOG_INFO ("On (" << myAddr << ") we have left the sector and are too far, stopping propagation");
 	}
     }
 
@@ -914,16 +921,17 @@ namespace ns3
 
       m_inINFs (inf_p, face);
 
+      NNNAddress myAddr = GetNode3NName ();
+
       Ptr<NNNAddress> oldName = Create<NNNAddress> (inf_p->GetOldName ());
       Ptr<NNNAddress> newName = Create<NNNAddress> (inf_p->GetNewName ());
 
-      NS_LOG_INFO ("Creating NNPT Entry for Old: (" << *oldName << ") -> New: (" << *newName << ")");
+      NS_LOG_INFO ("On (" << myAddr << ") creating NNPT Entry for Old: (" << *oldName << ") -> New: (" << *newName << ")");
 
       // Update our NNPT with the information in the INF PDU
       m_nnpt->addEntry (inf_p->GetOldNamePtr (), inf_p->GetNewNamePtr (), inf_p->GetRemainLease ());
 
       NNNAddress endSector = inf_p->GetOldNamePtr ()->getSectorName ();
-      NNNAddress myAddr = GetNode3NName ();
 
       // We have inserted the INF information. Now flush the relevant buffer
       flushBuffer (face, oldName, newName);
@@ -942,6 +950,10 @@ namespace ns3
 
           // Log that the INF PDU was sent
           m_outINFs (inf_p, outFace);
+	}
+      else
+	{
+	  NS_LOG_INFO ("On (" << myAddr << ") reached sector, ending");
 	}
     }
 
@@ -1842,6 +1854,23 @@ namespace ns3
 
 		// Go through the normal forwarding methods
 
+		// We may have obtained a DEN so we need to check
+		if (m_node_pdu_buffer->DestinationExists (i) && !m_nnpt->foundOldName(i))
+		  {
+		    NS_LOG_INFO ("We are on (" << myAddr << ") we have been told to buffer this PDU to (" << *i << ")");
+
+		    if (wasDO)
+		      {
+			NS_LOG_INFO ("Buffering DO");
+			m_node_pdu_buffer->PushDO (i, do_i);
+		      }
+		    else if (wasDU)
+		      {
+			NS_LOG_INFO ("Buffering DU");
+			m_node_pdu_buffer->PushDU (i, du_i);
+		      }
+		  }
+
 		// Check if the NNPT has any information for this particular 3N name
 		// Retrieve the new 3N name destination
 		newdst = m_nnpt->findPairedNamePtr (i)->getName ();
@@ -2336,6 +2365,26 @@ namespace ns3
 	  if (m_node_names->foundName(constdstPtr))
 	    {
 	      // We have reached the destination return
+	      return true;
+	    }
+
+	  // We may have obtained a DEN so we need to check
+	  if (m_node_pdu_buffer->DestinationExists (newdst) && !m_nnpt->foundOldName(constdstPtr))
+	    {
+	      NS_LOG_INFO ("We are on (" << GetNode3NName () << ") we have been told to buffer this PDU to (" << newdst << ")");
+
+	      if (wasDO)
+		{
+		  NS_LOG_INFO ("Buffering DO");
+		  m_node_pdu_buffer->PushDO (newdst, do_i);
+		}
+	      else if (wasDU)
+		{
+		  NS_LOG_INFO ("Buffering DU");
+		  m_node_pdu_buffer->PushDU (newdst, du_i);
+		}
+
+	      // Having saved the buffer return
 	      return true;
 	    }
 
