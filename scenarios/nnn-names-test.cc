@@ -226,6 +226,11 @@ int main (int argc, char *argv[])
 	NNNAddress test9 ("a.1.23.4");
 	NNNAddress test10 ("a.2.3.5");
 
+	NNNAddress nnstTest1 ("a.1");
+	NNNAddress nnstTest2 ("a.1.0.0");
+
+	NNNAddress testee ("a.0.0.0");
+
 	cout << "Closest working sector between " << start << " and " << test0 << " is " <<  start.getClosestSector(test0) << endl;
 	cout << "Closest working sector between " << start << " and " << test1 << " is " <<  start.getClosestSector(test1) << endl;
 	cout << "Closest working sector between " << start << " and " << test2 << " is " <<  start.getClosestSector(test2) << endl;
@@ -249,6 +254,11 @@ int main (int argc, char *argv[])
 	cout << "Distance between " << test1 << " and " << test2 << " is " << test1.distance(test2) << endl;
 	cout << "Distance between " << test1 << " and " << test3 << " is " << test1.distance(test3) << endl;
 	cout << "Distance between " << test1 << " and " << test0 << " is " << test1.distance(test0) << endl;
+
+	cout << "--------------------" << endl;
+
+	cout << "Distance between " << nnstTest1 << " and " << testee << " is " << nnstTest1.distance(testee) << endl;
+	cout << "Distance between " << nnstTest2 << " and " << testee << " is " << nnstTest2.distance(testee) << endl;
 
 	cout << "--------------------" << endl;
 

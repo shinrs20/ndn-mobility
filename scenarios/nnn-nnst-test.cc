@@ -244,7 +244,6 @@ int main (int argc, char *argv[])
   ptrn1_nnst->Add(n3_test, ptrFace02, n3_mac04.operator ns3::Address(), n3_expire, cost);
   ptrn1_nnst->Add(n4_test, ptrFace00, n4_mac01.operator ns3::Address(), n3_expire, cost);
   ptrn1_nnst->Add(n5_test, ptrFace02, n6_mac00.operator ns3::Address(), n3_expire, cost);
-  ptrn1_nnst->Add(prefixTest3, ptrFace00, n6_mac01.operator ns3::Address(), n3_expire, cost);
 
   std::cout << "###########################################" << std::endl;
 

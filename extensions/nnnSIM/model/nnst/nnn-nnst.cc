@@ -59,9 +59,27 @@ namespace ns3
       super::iterator item = super::longest_prefix_match (prefix);
 
       if (item == super::end ())
-	return 0;
+	{
+	  // We don't have a longest prefix with with the given address, attempt to order by distance
+	  Ptr<nnst::Entry> curr;
+	  Ptr<nnst::Entry> closest = Begin ();
+	  for (curr = Begin(); curr != End (); curr = Next(curr))
+	    {
+	      if (curr->GetAddressPtr ()->distance(prefix) < closest->GetAddressPtr ()->distance (prefix))
+		{
+                  NS_LOG_INFO ("Found (" << *curr->GetAddressPtr () << ") to be closer to (" << prefix << ")");
+		  closest = curr;
+		}
+	    }
+          NS_LOG_INFO ("Returning closest prefix (" << *closest->GetAddressPtr () << ")");
+	  return closest;
+	}
       else
-	return item->payload ();
+	{
+	  Ptr<nnst::Entry> tmp = item->payload ();
+	  NS_LOG_INFO ("Returning the longest prefix (" << *tmp->GetAddressPtr () << ")");
+	  return tmp;
+	}
     }
 
     Ptr<const NNNAddress>
