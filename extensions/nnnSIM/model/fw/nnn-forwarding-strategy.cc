@@ -334,7 +334,7 @@ namespace ns3
 		}
 	      else
 		{
-		  NS_LOG_INFO ("We have already produced " << *ret << " cycling through");
+		  NS_LOG_INFO ("We have already produced (" << *ret << ") cycling through");
 		  m_producedNameNumber++;
 		}
 	    }
@@ -982,6 +982,10 @@ namespace ns3
 
       m_inSOs (so_p, face);
 
+      NNNAddress myAddr = GetNode3NName ();
+
+      NS_LOG_INFO ("On (" << myAddr << ") got SO from (" << so_p->GetName() << ")");
+
       //Give us a rw copy of the packet
       Ptr<Packet> icn_pdu = so_p->GetPayload ()->Copy ();
 
@@ -998,6 +1002,10 @@ namespace ns3
 
       m_inDOs (do_p, face);
 
+      NNNAddress myAddr = GetNode3NName ();
+
+      NS_LOG_INFO ("On (" << myAddr << ") got DO headed to (" << do_p->GetName() << ")");
+
       //Give us a rw copy of the packet
       Ptr<Packet> icn_pdu = do_p->GetPayload ()->Copy ();
 
@@ -1013,6 +1021,10 @@ namespace ns3
       NS_LOG_FUNCTION (this << face->GetId () << face->GetFlags());
 
       m_inDUs (du_p, face);
+
+      NNNAddress myAddr = GetNode3NName ();
+
+      NS_LOG_INFO ("On (" << myAddr << ") got DU from (" << du_p->GetSrcName() << ") to (" << du_p->GetDstName() << ")");
 
       //Give us a rw copy of the packet
       Ptr<Packet> icn_pdu = du_p->GetPayload ()->Copy ();
@@ -1118,6 +1130,9 @@ namespace ns3
       // Log the Interest PDU
       m_inInterests (interest, face);
 
+      NNNAddress myAddr = GetNode3NName ();
+      NS_LOG_INFO ("On (" << myAddr << ") processing Interest for " << interest->GetName ().get (-1).toSeqNum ());
+
       // Search for the PIT with the Interest
       Ptr<pit::Entry> pitEntry = m_pit->Lookup (*interest);
       bool similarInterest = true;
@@ -1202,6 +1217,10 @@ namespace ns3
       NS_LOG_FUNCTION (this << face->GetId () << data->GetName ());
       // Log the Data PDU
       m_inData (data, face);
+
+      NNNAddress myAddr = GetNode3NName ();
+
+      NS_LOG_INFO ("On (" << myAddr << ") processing DATA " << data->GetName ().get (-1).toSeqNum ());
 
       // Lookup PIT entry
       Ptr<pit::Entry> pitEntry = m_pit->Lookup (*data);
@@ -1727,7 +1746,7 @@ namespace ns3
 	bool ok = false;
 	bool sentSomething = false;
 
-	NS_LOG_INFO ("Satisfying for Face " << incoming.m_face->GetId() << " of type " << incoming.m_face->GetFlags() << " at (" << GetNode3NName () << ")");
+	NS_LOG_INFO ("On (" << myAddr << ") Satisfying for Face " << incoming.m_face->GetId() << " of type " << incoming.m_face->GetFlags() << " at (" << GetNode3NName () << ")");
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 	// Obtain the distinct 3N names associated to this Face and go through them
@@ -1735,12 +1754,12 @@ namespace ns3
 	// It is possible for the face to have no destinations
 	if (distinct.empty())
 	  {
-	    NS_LOG_INFO ("Our PIT has no 3N names aggregated");
+	    NS_LOG_INFO ("On (" << myAddr << ") Our PIT has no 3N names aggregated");
 	    // If we had received a NULL PDU with this Interest at some point, and have no 3N names
 	    // saved, return a NULL PDU with the information
 	    if (pitEntry->GetReceivedNULLPDU() && !sentSomething)
 	      {
-		NS_LOG_INFO ("Satisfying previous sent NULL PDU");
+		NS_LOG_INFO ("On (" << myAddr << ") Satisfying previous sent NULL PDU");
 		Ptr<NULLp> null_p_o = Create<NULLp> ();
 		// Set the lifetime of the 3N PDU
 		null_p_o->SetLifetime (m_3n_lifetime);
@@ -1769,7 +1788,7 @@ namespace ns3
 	  }
 	else
 	  {
-	    NS_LOG_INFO ("Our PIT has 3N names aggregated");
+	    NS_LOG_INFO ("On (" << myAddr << ") Our PIT has 3N names aggregated");
 
 	    // There is at least one 3N name in this list - go through the code
 	    BOOST_FOREACH (Ptr<NNNAddress> j, distinct)
@@ -1785,7 +1804,7 @@ namespace ns3
 		// everything aggregated is probably connected to it
 		if (subSector)
 		  {
-		    NS_LOG_INFO ("We are satisfying Interests to nodes that are directly connected to us, continue");
+		    NS_LOG_INFO ("We are satisfying Interests to nodes that are directly connected to us (" << *i << ", continue");
 		  }
 		// We are pushing to a different sector
 		else
@@ -1802,7 +1821,7 @@ namespace ns3
 		// First check to see if we happen to be the destination
 		if (m_node_names->foundName(i))
 		  {
-		    NS_LOG_INFO ("We are the desired 3N named node destination");
+		    NS_LOG_INFO ("On (" << myAddr << ") We are the desired 3N named node destination");
 		    // This also happens to mean that we satisfying an Application - do not know if
 		    // this holds in future references
 		    if (wasNULL)
@@ -1852,12 +1871,20 @@ namespace ns3
 		      }
 
 		    sentSomething = true;
+		    continue;
 		  }
 
 		// Go through the normal forwarding methods
 
+		// Check if the NNPT has any information for this particular 3N name
+		// Retrieve the new 3N name destination
+		bool redirect = m_nnpt->foundOldName(i);
+
+		if (redirect)
+		  NS_LOG_INFO ("We are on (" << myAddr << ") we are directing (" << i << ")");
+
 		// We may have obtained a DEN so we need to check
-		if (m_node_pdu_buffer->DestinationExists (i) && !m_nnpt->foundOldName(i))
+		if (m_node_pdu_buffer->DestinationExists (i) && !redirect)
 		  {
 		    NS_LOG_INFO ("We are on (" << myAddr << ") we have been told to buffer this PDU to (" << *i << ")");
 
@@ -1873,11 +1900,9 @@ namespace ns3
 		      }
 		  }
 
-		// Check if the NNPT has any information for this particular 3N name
-		// Retrieve the new 3N name destination
 		newdst = m_nnpt->findPairedNamePtr (i)->getName ();
 
-		NS_LOG_INFO ("On (" << myAddr << ") Going to look at NNST size: " << m_nnst->GetSize());
+		NS_LOG_INFO ("On (" << myAddr << ") Going to look at NNST size: " << m_nnst->GetSize() << " to send to (" << newdst << ")");
 		NS_LOG_INFO (*m_nnst);
 
 		// Roughly pick the next hop that would bring us closer to newdst
@@ -1886,9 +1911,9 @@ namespace ns3
 		Ptr<Face> outFace = tmp.first;
 		Address destAddr = tmp.second;
 
-		if (wasNULL || wasSO || wasDO)
+		if ((wasNULL || wasSO || wasDO) && (!sentSomething || redirect))
 		  {
-		    NS_LOG_INFO ("Satisfying for 3N name (" << *i << ") using DO in subsector");
+		    NS_LOG_INFO ("On (" << myAddr << ") Satisfying for 3N name (" << *i << ") using DO");
 		    // Since we don't have more information about this 3N name, create a DO to push the
 		    // Data to a new location
 		    Ptr<DO> do_o_spec = Create<DO> ();
@@ -1921,13 +1946,16 @@ namespace ns3
 		    else
 		      {
 			if (incoming.m_face == outFace)
-			  // Actually sent something using this Face
-			  sentSomething = true;
+			  {
+			    // Actually sent something using this Face
+			    sentSomething = true;
+			    continue;
+			  }
 		      }
 		  }
-		else if (wasDU)
+		else if (wasDU && (!sentSomething || redirect))
 		  {
-		    NS_LOG_INFO ("Satisfying for 3N name (" << *i << ") using DU in subsector");
+		    NS_LOG_INFO ("On (" << myAddr << ") Satisfying for 3N name (" << *i << ") using DU");
 		    // We know that the Data was brought by a DU PDU, meaning we know the origin
 		    // Create a new DU PDU to send the data
 		    Ptr<DU> du_o_spec = Create<DU> ();
@@ -1962,8 +1990,11 @@ namespace ns3
 		    else
 		      {
 			if (incoming.m_face == outFace)
-			  // Actually sent something using this Face
-			  sentSomething = true;
+			  {
+			    // Actually sent something using this Face
+			    sentSomething = true;
+			    continue;
+			  }
 		      }
 		  }
 
@@ -1971,6 +2002,7 @@ namespace ns3
 		// haven't pushed anything in previous sections, we should do it now
 		if (pitEntry->GetReceivedNULLPDU() && !sentSomething)
 		  {
+		    NS_LOG_INFO ("On (" << myAddr << ") Satisfying using NULLp");
 		    Ptr<NULLp> null_p_o = Create<NULLp> ();
 		    // Set the lifetime of the 3N PDU
 		    null_p_o->SetLifetime (m_3n_lifetime);

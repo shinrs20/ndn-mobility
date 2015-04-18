@@ -322,7 +322,9 @@ namespace ns3
       entry = m_seqFullDelay.find (seq);
       if (entry != m_seqFullDelay.end ())
 	{
-	  m_firstInterestDataDelay (this, seq, Simulator::Now () - entry->time, m_seqRetxCounts[seq], hopCount);
+	  Time delay = Simulator::Now () - entry->time;
+	  NS_LOG_INFO ("< DATA for " << seq << " delay: " << delay.GetSeconds());
+	  m_firstInterestDataDelay (this, seq, delay, m_seqRetxCounts[seq], hopCount);
 	}
 
       m_seqRetxCounts.erase (seq);
