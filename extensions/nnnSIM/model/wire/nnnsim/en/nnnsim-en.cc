@@ -141,6 +141,11 @@ namespace wire {
 	  uint8_t addrSize = tmpaddr.GetLength ();
 	  uint8_t buffer[serialSize];
 
+	  NS_LOG_INFO ("Serialize Addr: " << i);
+	  NS_LOG_INFO ("Address: " << tmpaddr);
+	  NS_LOG_INFO ("Serialized Length: " << serialSize);
+	  NS_LOG_INFO ("Address length: " << addrSize);
+
 	  // Use the CopyTo function to get the bit representation
 	  m_ptr->GetOnePoa (i).CopyAllTo (buffer, addrSize);
 
