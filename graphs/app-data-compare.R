@@ -44,6 +44,8 @@ option_list <- list (
               help="Title for the graph")
 )
 
+tbreak = seq (0, 100, 10)
+
 # Load the parser
 opt = parse_args(OptionParser(option_list=option_list, description="Creates graphs from ndnSIM App Delay Tracer data"))
 
@@ -109,7 +111,9 @@ if (opt$delay) {
       ggtitle (name) +
       ylab ("Delay [Seconds]") +
       xlab ("Time") +
-      scale_colour_discrete(name = "Strategies", labels = c(mobile1name, mobile2name))
+      scale_colour_discrete(name = "Strategies", labels = c(mobile1name, mobile2name)) +
+      scale_x_continuous (breaks=tbreak)
+      
     
     outpng = sprintf("%s/%s-compare-app-delay.png", opt$output, noext)
     
