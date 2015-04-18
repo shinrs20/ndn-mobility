@@ -222,7 +222,7 @@ namespace ns3
       // If not mobile, then we can send NULLp packets
       if (m_useSO && m_has3Nname)
 	{
-	  NS_LOG_INFO ("> Interest for " << seq << " using SO PDU");
+	  NS_LOG_INFO ("> Interest for " << std::dec << seq << " using SO PDU");
 	  Ptr<SO> so_o = Create<SO> ();
 	  so_o->SetPDUPayloadType(NDN_NNN);
 	  so_o->SetPayload(retPkt);
@@ -234,7 +234,7 @@ namespace ns3
 	}
       else
 	{
-	  NS_LOG_INFO ("> Interest for " << seq << " using NULLp PDU");
+	  NS_LOG_INFO ("> Interest for " << std::dec << seq << " using NULLp PDU");
 	  Ptr<NULLp> nullp_o = Create<NULLp> ();
 
 	  nullp_o->SetPDUPayloadType (NDN_NNN);
@@ -304,7 +304,7 @@ namespace ns3
       // NS_LOG_INFO ("Received content object: " << boost::cref(*data));
 
       uint32_t seq = data->GetName ().get (-1).toSeqNum ();
-      NS_LOG_INFO ("< DATA for " << seq);
+      NS_LOG_INFO ("< DATA for " << std::dec << seq);
 
       int hopCount = -1;
       ndn::FwHopCountTag hopCountTag;
@@ -432,7 +432,7 @@ namespace ns3
 
       // NS_LOG_INFO ("Received NACK: " << boost::cref(*interest));
       uint32_t seq = interest->GetName ().get (-1).toSeqNum ();
-      NS_LOG_INFO ("< NACK for " << seq);
+      NS_LOG_INFO ("< NACK for " << std::dec << seq);
       // std::cout << Simulator::Now ().ToDouble (Time::S) << "s -> " << "NACK for " << seq << "\n";
 
       // put in the queue of interests to be retransmitted
@@ -461,7 +461,7 @@ namespace ns3
     void
     Consumer::WillSendOutInterest (uint32_t sequenceNumber)
     {
-      NS_LOG_DEBUG ("Trying to add " << sequenceNumber << " with " << Simulator::Now () << ". already " << m_seqTimeouts.size () << " items");
+      NS_LOG_DEBUG ("Trying to add " << std::dec << sequenceNumber << " with " << Simulator::Now () << ". already " << m_seqTimeouts.size () << " items");
 
       m_seqTimeouts.insert (SeqTimeout (sequenceNumber, Simulator::Now ()));
       m_seqFullDelay.insert (SeqTimeout (sequenceNumber, Simulator::Now ()));

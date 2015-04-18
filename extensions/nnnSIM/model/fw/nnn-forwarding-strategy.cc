@@ -261,7 +261,8 @@ namespace ns3
     , m_leased_names         (Create<NamesContainer> ())
     , m_node_pdu_buffer      (Create<PDUBuffer> ())
     , m_producedNameNumber   (0)
-    , m_no_oen               (false)
+    , m_sent_ren             (false)
+    , m_on_ren_oen           (false)
     {
       m_node_names->RegisterCallbacks(
 	  MakeCallback (&ForwardingStrategy::Reenroll, this),
@@ -894,7 +895,13 @@ namespace ns3
 	  // If you start using the 3N name, execute the following
 	  if (willUseName)
 	    {
-	      m_no_oen = true;
+	      // If this came from a REN PDU, signal that you have received
+	      if (m_sent_ren)
+		{
+		  m_sent_ren = false;
+		  m_on_ren_oen = true;
+		}
+
 	      NS_LOG_INFO("Pushing AEN with Node name (" << *obtainedName << ") with lease until " << lease.GetSeconds ());
 	      // Now create the AEN PDU to respond
 	      Ptr<AEN> aen_p = Create<AEN> (*obtainedName);
@@ -1131,7 +1138,7 @@ namespace ns3
       m_inInterests (interest, face);
 
       NNNAddress myAddr = GetNode3NName ();
-      NS_LOG_INFO ("On (" << myAddr << ") processing Interest for " << interest->GetName ().get (-1).toSeqNum ());
+      NS_LOG_INFO ("On (" << myAddr << ") processing Interest for " << std::dec << interest->GetName ().get (-1).toSeqNum ());
 
       // Search for the PIT with the Interest
       Ptr<pit::Entry> pitEntry = m_pit->Lookup (*interest);
@@ -1220,7 +1227,7 @@ namespace ns3
 
       NNNAddress myAddr = GetNode3NName ();
 
-      NS_LOG_INFO ("On (" << myAddr << ") processing DATA " << data->GetName ().get (-1).toSeqNum ());
+      NS_LOG_INFO ("On (" << myAddr << ") processing DATA " << std::dec << data->GetName ().get (-1).toSeqNum ());
 
       // Lookup PIT entry
       Ptr<pit::Entry> pitEntry = m_pit->Lookup (*data);
@@ -1388,7 +1395,7 @@ namespace ns3
       std::set <Ptr<Face>, PtrFaceComp>::iterator it;
 
       // Check whether this node has a 3N name
-      if (Has3NName () && !m_no_oen)
+      if (Has3NName () && !m_on_ren_oen)
 	{
 	  bool ok = false;
 	  Ptr<Face> tmp;
@@ -1434,7 +1441,10 @@ namespace ns3
 		  ok = tmp->SendREN (ren_o);
 
 		  if (ok)
-		    m_outRENs (ren_o, tmp);
+		    {
+		      m_outRENs (ren_o, tmp);
+		      m_sent_ren = true;
+		    }
 
 		  NS_LOG_INFO ("Scheduling an reenroll should things go south");
 		  // Schedule the another enroll, should things go bad
@@ -1444,8 +1454,10 @@ namespace ns3
 	}
       else
 	{
-	  NS_LOG_INFO ("On (" << GetNode3NName () << ") have reenrolled, flagging");
-	  m_no_oen = false;
+	  NS_LOG_INFO ("On (" << GetNode3NName () << ") have reenrolled");
+	  // Reset everything
+	  m_sent_ren = false;
+	  m_on_ren_oen = false;
 	}
     }
 
@@ -1487,7 +1499,12 @@ namespace ns3
 		  ok = tmp->SendDEN (den_o);
 
 		  if (ok)
-		    m_outDENs (den_o, tmp);
+		    {
+		      m_outDENs (den_o, tmp);
+		      // At this point, we should at least reset the REN flags
+		      m_sent_ren = false;
+		      m_on_ren_oen = false;
+		    }
 		}
 	    }
 	}

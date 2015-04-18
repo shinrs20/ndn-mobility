@@ -688,7 +688,8 @@ namespace ns3
       Time m_ack_timeout;
       int32_t m_standardMetric;
       uint64_t m_producedNameNumber;
-      bool m_no_oen;
+      bool m_on_ren_oen;
+      bool m_sent_ren;
 
       ////////////////////////////////////////////////////////////////////
 
