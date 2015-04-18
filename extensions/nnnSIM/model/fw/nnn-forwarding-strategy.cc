@@ -599,23 +599,8 @@ namespace ns3
 			  return;
 			}
 
-		      NS_LOG_INFO("Adding NNST information for (" << tmp << ") until " << absoluteLeaseTime.GetSeconds ());
-
-		      // Add the new information to the NNST
-		      m_nnst->Add(newName, face, storedPoas, absoluteLeaseTime, m_standardMetric);
-
-		      NS_LOG_DEBUG ("On (" << myAddr << "): " << *m_nnst);
-
-		      NS_LOG_INFO("Adding lease information for (" << tmp << ") until " << absoluteLeaseTime.GetSeconds ());
-		      // Add the information the the leased NodeNameContainer
-		      m_leased_names->addEntry(newName, absoluteLeaseTime, false);
-
-		      NS_LOG_INFO("Saving face " << *face << " for REN purposes");
-		      // Add the Face where the AEN came from (used for REN purposes)
-		      m_returnEN_faces.insert (face);
-
 		      // If there is an NNPT entry, it means we had a REN before. We need to
-		      // ensure the network of this change
+		      // assure the network of this change
 		      if (m_nnpt->foundNewName (newName))
 			{
 			  Ptr<NNNAddress> registeredOldName = Create<NNNAddress> (m_nnpt->findPairedOldName(newName));
@@ -623,9 +608,6 @@ namespace ns3
 
 			  NS_LOG_INFO("We have had a reenrolling node used to go by (" << *registeredOldName << ") now uses (" << *registeredNewName << ")");
 			  NS_LOG_INFO("Attempting to flush buffer");
-			  // If we happen to be in the same subsector, the buffer will have something
-			  // the check is good practice
-			  flushBuffer (face, registeredOldName, registeredNewName);
 
 			  // Check if the Node was in our subsector
 			  if (! registeredOldName->isSubSector (myAddr))
@@ -652,7 +634,26 @@ namespace ns3
 			      // Log that the INF PDU was sent
 			      m_outINFs (inf_o, outFace);
 			    }
+
+			  // If we happen to be in the same subsector, the buffer will have something
+			  // the check is good practice
+			  flushBuffer (face, registeredOldName, registeredNewName);
 			}
+
+		      NS_LOG_INFO("Adding NNST information for (" << tmp << ") until " << absoluteLeaseTime.GetSeconds ());
+
+		      // Add the new information to the NNST
+		      m_nnst->Add(newName, face, storedPoas, absoluteLeaseTime, m_standardMetric);
+
+		      NS_LOG_DEBUG ("On (" << myAddr << "): " << *m_nnst);
+
+		      NS_LOG_INFO("Adding lease information for (" << tmp << ") until " << absoluteLeaseTime.GetSeconds ());
+		      // Add the information the the leased NodeNameContainer
+		      m_leased_names->addEntry(newName, absoluteLeaseTime, false);
+
+		      NS_LOG_INFO("Saving face " << *face << " for REN purposes");
+		      // Add the Face where the AEN came from (used for REN purposes)
+		      m_returnEN_faces.insert (face);
 		    }
 		  else
 		    {
@@ -757,11 +758,6 @@ namespace ns3
       Ptr<NNNAddress> leavingAddr = Create<NNNAddress> (den_p->GetNamePtr ()->getName ());
 
       NS_LOG_INFO ("On (" << myAddr << "), (" << *leavingAddr << ") is leaving");
-      NS_LOG_INFO ("Adding (" << *leavingAddr << ") to buffers");
-
-      // We know the node sending the DEN is moving. His lease time will be maintained
-      // All we need to do is tell the buffer to keep the packets to that destination
-      m_node_pdu_buffer->AddDestination (leavingAddr);
 
       // If the DEN packet arrives at a node that is less than 2 hops away, then we
       // forward the DEN packet to the parent of this node
@@ -802,6 +798,12 @@ namespace ns3
 	{
 	  NS_LOG_INFO ("On (" << myAddr << ") we have left the sector and are too far, stopping propagation");
 	}
+
+      NS_LOG_INFO ("Adding (" << *leavingAddr << ") to buffers");
+
+      // We know the node sending the DEN is moving. His lease time will be maintained
+      // All we need to do is tell the buffer to keep the packets to that destination
+      m_node_pdu_buffer->AddDestination (leavingAddr);
     }
 
     void
@@ -928,33 +930,33 @@ namespace ns3
 
       NS_LOG_INFO ("On (" << myAddr << ") creating NNPT Entry for Old: (" << *oldName << ") -> New: (" << *newName << ")");
 
-      // Update our NNPT with the information in the INF PDU
-      m_nnpt->addEntry (inf_p->GetOldNamePtr (), inf_p->GetNewNamePtr (), inf_p->GetRemainLease ());
-
       NNNAddress endSector = inf_p->GetOldNamePtr ()->getSectorName ();
-
-      // We have inserted the INF information. Now flush the relevant buffer
-      flushBuffer (face, oldName, newName);
 
       if (myAddr != endSector)
 	{
 	  NS_LOG_INFO("On (" << myAddr << ") receiving an INF. Have not yet reached delegated Sector. Forwarding to (" << endSector << ")");
 
 	  // Roughly pick the next hop that would bring us closer to the endSector
-          std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (endSector, 0);
+	  std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (endSector, 0);
 
-          Ptr<Face> outFace = tmp.first;
-          Address destAddr = tmp.second;
+	  Ptr<Face> outFace = tmp.first;
+	  Address destAddr = tmp.second;
 
-          outFace->SendINF (inf_p, destAddr);
+	  outFace->SendINF (inf_p, destAddr);
 
-          // Log that the INF PDU was sent
-          m_outINFs (inf_p, outFace);
+	  // Log that the INF PDU was sent
+	  m_outINFs (inf_p, outFace);
 	}
       else
 	{
 	  NS_LOG_INFO ("On (" << myAddr << ") reached sector, ending");
 	}
+
+      // We have inserted the INF information. Now flush the relevant buffer
+      flushBuffer (face, oldName, newName);
+
+      // Update our NNPT with the information in the INF PDU
+      m_nnpt->addEntry (inf_p->GetOldNamePtr (), inf_p->GetNewNamePtr (), inf_p->GetRemainLease ());
     }
 
     void
@@ -2383,9 +2385,6 @@ namespace ns3
 		  NS_LOG_INFO ("Buffering DU");
 		  m_node_pdu_buffer->PushDU (newdst, du_i);
 		}
-
-	      // Having saved the buffer return
-	      return true;
 	    }
 
 	  // Check if the NNPT has any information for this particular 3N name
