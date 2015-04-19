@@ -155,7 +155,7 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
 	  if (use3N)
 	    {
 	      // Force a disenroll procedure
-	      nodeFW->Disenroll ();
+	      Simulator::Schedule (Seconds (0), &nnn::ForwardingStrategy::Disenroll, nodeFW);
 	    }
 	}
     }
@@ -168,7 +168,7 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
       if (use3N)
 	{
 	  // Now continue to do the enroll procedure
-	  nodeFW->Enroll ();
+	  Simulator::Schedule (Seconds (0), &nnn::ForwardingStrategy::Enroll, nodeFW);
 	}
     }
 
@@ -196,7 +196,7 @@ void SetForcedSSID (uint32_t mtId, uint32_t netId, Ssid ssid, bool use3N)
 
       // Since we know we are changing SSID, we don't do any checks
       // Force a disenroll procedure
-      nodeFW->Disenroll ();
+      Simulator::Schedule (Seconds (0), &nnn::ForwardingStrategy::Disenroll, nodeFW);
     }
 
   // This causes the device in mtId to change the SSID, forcing AP change
@@ -242,7 +242,7 @@ void ApAssociation (std::string context, const Mac48Address mac)
 	  if (!nodeFW->Has3NName())
 	    {
 	      NS_LOG_INFO ("Node " << nodeNum << " still doesn't have a 3N name, reattempting");
-	      nodeFW->Enroll ();
+	      Simulator::Schedule (Seconds (0), &nnn::ForwardingStrategy::Enroll, nodeFW);
 	    }
 	}
       else
@@ -250,7 +250,7 @@ void ApAssociation (std::string context, const Mac48Address mac)
 	  NS_LOG_INFO ("Node " << nodeNum << " has changed AP to " << nowAddr << " will reenroll");
 	  last_seen_mac[nodeNum] = nowAddr;
 
-	  nodeFW->Reenroll ();
+	  Simulator::Schedule (Seconds (0), &nnn::ForwardingStrategy::Reenroll, nodeFW );
 	}
     }
   else
@@ -260,7 +260,7 @@ void ApAssociation (std::string context, const Mac48Address mac)
       last_seen_mac[nodeNum] = nowAddr;
 
       // Now continue to do the enroll procedure
-      nodeFW->Enroll ();
+      Simulator::Schedule (Seconds (0), &nnn::ForwardingStrategy::Enroll, nodeFW);
     }
 }
 

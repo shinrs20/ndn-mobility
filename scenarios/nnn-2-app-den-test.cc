@@ -158,7 +158,7 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
 	  if (use3N)
 	    {
 	      // Force a disenroll procedure
-	      nodeFW->Disenroll ();
+	      Simulator::Schedule (Seconds (0), &nnn::ForwardingStrategy::Disenroll, nodeFW);
 	    }
 	}
     }
@@ -171,7 +171,7 @@ void SetSSIDviaDistance(uint32_t mtId, uint32_t netId, std::map<std::string, Ptr
       if (use3N)
 	{
 	  // Now continue to do the enroll procedure
-	  nodeFW->Enroll ();
+	  Simulator::Schedule (Seconds (0), &nnn::ForwardingStrategy::Enroll, nodeFW);
 	}
     }
 
