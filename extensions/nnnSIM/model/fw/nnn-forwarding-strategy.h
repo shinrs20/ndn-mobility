@@ -686,6 +686,7 @@ namespace ns3
       Time m_3n_lease_ack_timeout;
       Time m_3n_lifetime;
       Time m_ack_timeout;
+      Time m_interest_rtx;
       int32_t m_standardMetric;
       uint64_t m_producedNameNumber;
       bool m_on_ren_oen;

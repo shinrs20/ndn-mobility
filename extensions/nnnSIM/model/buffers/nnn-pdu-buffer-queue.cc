@@ -43,7 +43,7 @@ namespace ns3
     void
     PDUQueue::clear ()
     {
-      std::queue<Ptr<Packet> > empty;
+      std::queue<std::pair<Time, Ptr<Packet> > > empty;
 
       std::swap(buffer, empty);
     }
@@ -51,36 +51,36 @@ namespace ns3
     Ptr<Packet>
     PDUQueue::pop ()
     {
-      Ptr<Packet> tmp = buffer.front ();
+      Ptr<Packet> tmp = buffer.front ().second;
       buffer.pop();
       return tmp;
     }
 
     void
-    PDUQueue::push (Ptr<Packet> pdu)
+    PDUQueue::push (Ptr<Packet> pdu, Time retx)
     {
-      buffer.push (pdu);
+      buffer.push (std::make_pair((Simulator::Now () + retx), pdu));
     }
 
     void
-    PDUQueue::pushSO (Ptr<const SO> so_p)
+    PDUQueue::pushSO (Ptr<const SO> so_p, Time retx)
     {
-      buffer.push(Wire::FromSO(so_p, Wire::WIRE_FORMAT_NNNSIM));
+      buffer.push(std::make_pair((Simulator::Now () + retx), Wire::FromSO(so_p, Wire::WIRE_FORMAT_NNNSIM)));
     }
 
     void
-    PDUQueue::pushDO (Ptr<const DO> do_p)
+    PDUQueue::pushDO (Ptr<const DO> do_p, Time retx)
     {
-      buffer.push(Wire::FromDO(do_p, Wire::WIRE_FORMAT_NNNSIM));
+      buffer.push(std::make_pair((Simulator::Now () + retx), Wire::FromDO(do_p, Wire::WIRE_FORMAT_NNNSIM)));
     }
 
     void
-    PDUQueue::pushDU (Ptr<const DU> du_p)
+    PDUQueue::pushDU (Ptr<const DU> du_p, Time retx)
     {
-      buffer.push(Wire::FromDU(du_p, Wire::WIRE_FORMAT_NNNSIM));
+      buffer.push(std::make_pair((Simulator::Now () + retx), Wire::FromDU(du_p, Wire::WIRE_FORMAT_NNNSIM)));
     }
 
-    std::queue<Ptr<Packet> >
+    std::queue<std::pair<Time, Ptr<Packet> > >
     PDUQueue::popQueue ()
     {
       return buffer;

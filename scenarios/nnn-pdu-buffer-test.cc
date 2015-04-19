@@ -33,6 +33,41 @@ using namespace std;
 using namespace nnn;
 using namespace wire;
 
+void dealQueue (Ptr<PDUBuffer> buf, NNNAddress &addr)
+{
+  Ptr<nnn::SO> target6;
+  Ptr<nnn::DO> target2;
+  Ptr<nnn::DU> target8;
+
+  std::queue<Ptr<Packet> > tmp = buf->PopQueue(addr);
+  std::cout << "Queue size for " << addr << " received " << tmp.size () << std::endl;
+
+  std::cout << "---- Dealing with queue for " << addr << std::endl;
+  while (!tmp.empty())
+    {
+      Ptr<Packet> tmp2 = tmp.front ();
+
+      switch (HeaderHelper::GetNNNHeaderType(tmp2))
+      {
+	case SO_NNN:
+	  target6 = wire::nnnSIM::SO::FromWire(tmp2);
+	  std::cout << std::endl << "After " << std::endl << *target6 << std::endl;
+	  break;
+	case DO_NNN:
+	  target2 = wire::nnnSIM::DO::FromWire(tmp2);
+	  std::cout << std::endl << "After " << std::endl << *target2 << std::endl;
+	  break;
+	case DU_NNN:
+	  target8 = wire::nnnSIM::DU::FromWire(tmp2);
+	  std::cout << std::endl << "After " << std::endl << *target8 << std::endl;
+	  break;
+	default:
+	  std::cout << "Something unexpected happened" << std::endl;
+      }
+      tmp.pop ();
+    }
+}
+
 int main (int argc, char *argv[])
 {
 
@@ -135,66 +170,12 @@ int main (int argc, char *argv[])
   if (!buf->DestinationExists(addr3))
     std::cout << "Queue for " << *addr3 << " doesn't exist!" << std::endl;
 
-  std::queue<Ptr<Packet> > tmp = buf->PopQueue(addr);
-  std::cout << "Queue size for " << *addr << " received " << tmp.size () << std::endl;
+  Simulator::Schedule(MilliSeconds (20), &dealQueue, buf, *addr2);
 
-  std::queue<Ptr<Packet> > tmp4 = buf->PopQueue(addr2);
-  std::cout << "Queue size for " << *addr2 << " received " << tmp4.size () << std::endl;
+  Simulator::Schedule(MilliSeconds (60), &dealQueue, buf, *addr);
 
-  std::queue<Ptr<Packet> > tmp3 = buf->PopQueue(addr3);
-  std::cout << "Queue size for " << *addr3 << " received " << tmp3.size () << std::endl;
+  Simulator::Stop (Seconds (20));
+  Simulator::Run ();
+  Simulator::Destroy ();
 
-  Ptr<nnn::SO> target6;
-  Ptr<nnn::DO> target2;
-  Ptr<nnn::DU> target8;
-
-  std::cout << "---- Dealing with queue for " << *addr << std::endl;
-  while (!tmp.empty())
-    {
-      Ptr<Packet> tmp2 = tmp.front ();
-
-      switch (HeaderHelper::GetNNNHeaderType(tmp2))
-      {
-	case SO_NNN:
-	  target6 = wire::nnnSIM::SO::FromWire(tmp2);
-	  std::cout << std::endl << "After " << std::endl << *target6 << std::endl;
-	  break;
-	case DO_NNN:
-	  target2 = wire::nnnSIM::DO::FromWire(tmp2);
-	  std::cout << std::endl << "After " << std::endl << *target2 << std::endl;
-	  break;
-	case DU_NNN:
-	  target8 = wire::nnnSIM::DU::FromWire(tmp2);
-	  std::cout << std::endl << "After " << std::endl << *target8 << std::endl;
-	  break;
-	default:
-	  std::cout << "Something unexpected happened" << std::endl;
-      }
-      tmp.pop ();
-    }
-
-  std::cout << "---- Dealing with queue for " << *addr2 << std::endl;
-    while (!tmp4.empty())
-      {
-        Ptr<Packet> tmp2 = tmp4.front ();
-
-        switch (HeaderHelper::GetNNNHeaderType(tmp2))
-        {
-  	case SO_NNN:
-  	  target6 = wire::nnnSIM::SO::FromWire(tmp2);
-  	  std::cout << std::endl << "After " << std::endl << *target6 << std::endl;
-  	  break;
-  	case DO_NNN:
-  	  target2 = wire::nnnSIM::DO::FromWire(tmp2);
-  	  std::cout << std::endl << "After " << std::endl << *target2 << std::endl;
-  	  break;
-  	case DU_NNN:
-  	  target8 = wire::nnnSIM::DU::FromWire(tmp2);
-  	  std::cout << std::endl << "After " << std::endl << *target8 << std::endl;
-  	  break;
-  	default:
-  	  std::cout << "Something unexpected happened" << std::endl;
-        }
-        tmp4.pop ();
-      }
 }

@@ -39,6 +39,12 @@ namespace ns3
     }
 
     PDUBuffer::PDUBuffer ()
+    : m_retx (MilliSeconds (50))
+    {
+    }
+
+    PDUBuffer::PDUBuffer (Time retx)
+    : m_retx (retx)
     {
     }
 
@@ -122,7 +128,7 @@ namespace ns3
 	  NS_LOG_INFO("PushPDU SO, found " << addr << " inserting");
 	  Ptr<PDUQueue> tmp = item->payload();
 
-	  tmp->pushSO(so_p);
+	  tmp->pushSO(so_p, m_retx);
 	}
     }
 
@@ -146,7 +152,7 @@ namespace ns3
 	  NS_LOG_INFO("PushPDU DO, found " << addr << " inserting");
 	  Ptr<PDUQueue> tmp = item->payload();
 
-	  tmp->pushDO(do_p);
+	  tmp->pushDO(do_p, m_retx);
 	}
     }
 
@@ -167,10 +173,10 @@ namespace ns3
 
       if (item != super::end ())
 	{
-	  NS_LOG_INFO("PushPDU DU, found " << addr << " inserting ToWire " << *du_p);
+	  NS_LOG_INFO("PushPDU DU, found " << addr << " inserting");
 	  Ptr<PDUQueue> tmp = item->payload();
 
-	  tmp->pushDU(du_p);
+	  tmp->pushDU(du_p, m_retx);
 	}
     }
 
@@ -185,28 +191,60 @@ namespace ns3
     {
       NS_LOG_FUNCTION(this << addr);
 
-      NS_LOG_INFO ("Looking for " << addr);
+      NS_LOG_INFO ("Looking for (" << addr << ")");
 
       super::iterator item = super::find_exact(addr);
 
-      std::queue<Ptr<Packet> > empty;
+      std::queue<Ptr<Packet> > pdu_queue;
+      uint32_t pushed = 0;
+      uint32_t discarded = 0;
 
-      if (item == super::end ())
-	return empty;
-      else
+      if (item != super::end ())
 	{
-	  NS_LOG_INFO("Found 3N name " << addr);
+	  NS_LOG_INFO("Found 3N name (" << addr << ")");
 	  if (item->payload() == 0)
 	    {
 	      NS_LOG_INFO("No info found");
-	      return empty;
 	    }
 	  else
 	    {
 	      NS_LOG_INFO("Found info, obtaining queue");
-	      return item->payload()->popQueue();
+	      std::queue<std::pair<Time, Ptr<Packet> > > queue_with_time = item->payload()->popQueue();
+
+	      Time now = Simulator::Now ();
+
+	      // Go through the queue and get those PDUs that haven't yet hit the retransmission time
+	      while (!queue_with_time.empty ())
+		{
+		  // Get the PDU at the front of the queue
+		  std::pair<Time,Ptr<Packet> > queue_pair = queue_with_time.front ();
+
+		  Time expiry = queue_pair.first;
+
+		  // If the expiry time has not been reached, add it to the returning queue
+		  if (now <= expiry)
+		    {
+		      NS_LOG_DEBUG ("Now is " << now << " PDU has expiry of " << expiry << " inserting PDU");
+
+		      pdu_queue.push (queue_pair.second);
+
+		      pushed++;
+		    }
+		  else
+		    {
+		      NS_LOG_DEBUG ("Now is " << now << " PDU has expiry of " << expiry << " discarding PDU");
+		      discarded++;
+		    }
+
+		  // Pop the queue and continue
+		  queue_with_time.pop ();
+		}
 	    }
 	}
+
+      NS_LOG_INFO ("Buffer for (" << addr << ") being returned with " << std::dec << pushed << " PDUs having discarded " << discarded);
+
+      return pdu_queue;
     }
 
     std::queue<Ptr<Packet> >
@@ -246,6 +284,18 @@ namespace ns3
     PDUBuffer::QueueSize (Ptr<NNNAddress> addr)
     {
       return QueueSize (*addr);
+    }
+
+    void
+    PDUBuffer::SetReTX (Time rtx)
+    {
+      m_retx = rtx;
+    }
+
+    Time
+    PDUBuffer::GetReTX () const
+    {
+      return m_retx;
     }
   } /* namespace nnn */
 } /* namespace ns3 */

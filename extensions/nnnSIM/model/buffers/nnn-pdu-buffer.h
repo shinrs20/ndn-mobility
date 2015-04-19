@@ -54,6 +54,9 @@ namespace ns3
       static TypeId GetTypeId (void);
 
       PDUBuffer ();
+
+      PDUBuffer (Time retx);
+
       virtual
       ~PDUBuffer ();
 
@@ -104,6 +107,15 @@ namespace ns3
 
       uint
       QueueSize (Ptr<NNNAddress> addr);
+
+      void
+      SetReTX (Time rtx);
+
+      Time
+      GetReTX () const;
+
+    private:
+      Time m_retx;
     };
 
     std::ostream& operator<< (std::ostream& os, const PDUBuffer &buffer);
