@@ -47,25 +47,25 @@ namespace ns3
       pop ();
 
       void
-      push (Ptr<Packet> pdu);
+      push (Ptr<Packet> pdu, Time retx);
 
       void
-      pushSO (Ptr<const SO> so_p);
+      pushSO (Ptr<const SO> so_p, Time retx);
 
       void
-      pushDO (Ptr<const DO> do_p);
+      pushDO (Ptr<const DO> do_p, Time retx);
 
       void
-      pushDU (Ptr<const DU> du_p);
+      pushDU (Ptr<const DU> du_p, Time retx);
 
-      std::queue<Ptr<Packet> >
+      std::queue<std::pair<Time, Ptr<Packet> > >
       popQueue ();
 
       uint
       size ();
 
     private:
-      std::queue<Ptr<Packet> > buffer;
+      std::queue<std::pair<Time,Ptr<Packet> > > buffer;
     };
 
   } /* namespace nnn */

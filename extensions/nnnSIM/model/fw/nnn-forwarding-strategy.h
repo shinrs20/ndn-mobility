@@ -159,6 +159,12 @@ namespace ns3
       GoesBy3NName (Ptr<NNNAddress> addr);
 
       virtual void
+      SetRetxTimer (Time retx);
+
+      virtual Time
+      GetRetxTimer () const;
+
+      virtual void
       flushBuffer (Ptr<Face> face, Ptr<NNNAddress> oldName, Ptr<NNNAddress> newName);
 
       /**
