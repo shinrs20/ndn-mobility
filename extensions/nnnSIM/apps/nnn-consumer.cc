@@ -180,11 +180,13 @@ namespace ns3
       NS_LOG_FUNCTION_NOARGS ();
 
       uint32_t seq=std::numeric_limits<uint32_t>::max (); //invalid
+      bool retransmission = false;
 
       while (m_retxSeqs.size ())
 	{
 	  seq = *m_retxSeqs.begin ();
 	  m_retxSeqs.erase (m_retxSeqs.begin ());
+	  retransmission = true;
 	  break;
 	}
 
@@ -200,6 +202,9 @@ namespace ns3
 
 	  seq = m_seq++;
 	}
+
+      if (retransmission)
+	NS_LOG_INFO ("> Retransmitting Interest seq " << std::dec << seq);
 
       Ptr<ndn::Name> nameWithSequence = Create<ndn::Name> (m_interestName);
       nameWithSequence->appendSeqNum (seq);
