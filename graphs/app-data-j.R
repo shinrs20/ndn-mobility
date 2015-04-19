@@ -1,7 +1,7 @@
 #!/usr/bin/Rscript
 
 # app-data-j.R
-# Simple R script to make graphs from ndnSIM tracers - App delay
+# Simple R script to make graphs from tracers - App delay
 #
 # Copyright (c) 2014 Waseda University, Sato Laboratory
 # Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
@@ -33,8 +33,12 @@ option_list <- list (
               help="Tell the script to graph delay data"),
   make_option(c("-j", "--hop"), action="store_true", default=FALSE,
               help="Tell the script to graph hop data"),
+  make_option(c("-r", "--retx"), action="store_true", default=FALSE,
+              help="Tell the script to graph retransmission data"),
   make_option(c("-o", "--output"), type="character", default=".",
               help="Output directory for graphs.\n\t\t[Default \"%default\"]"),
+  make_option(c("-s", "--seq"), type="integer", default=10,
+              help="Sets how apart the ticks are on graph.\n\t\t[Default \"%default\"]"),
   make_option(c("-e", "--node"), type="character", default="",
               help="Node data to graph. Can be a comma separated list.\n\t\tDefault graphs data for all nodes."),
   make_option(c("-t", "--title"), type="character", default="NDN App",
@@ -42,7 +46,7 @@ option_list <- list (
 )
 
 # Load the parser
-opt = parse_args(OptionParser(option_list=option_list, description="Creates graphs from ndnSIM App Delay Tracer data"))
+opt = parse_args(OptionParser(option_list=option_list, description="Creates graphs from App Delay Tracer data"))
 
 data = read.table (opt$file, header=T)
 data$Node = factor (data$Node)
@@ -71,15 +75,21 @@ filename = tmpname[length(tmpname)]
 # Get rid of the extension
 noext = gsub("\\..*", "", filename)
 
+data.combined = summaryBy (. ~ TimeSec + Type, data=data, FUN=mean)
+
+# Sequence for ticks
+tbreak = seq (0, round (nrow (data.combined), -1), opt$seq)
+
 if (opt$delay) {
+  cat ("Creating Average Network Delay graph\n")
   name = sprintf("%s Average Network Delay", opt$title)
-  
-  data.combined = summaryBy (. ~ TimeSec + Type, data=data, FUN=mean)
+
   g.all <- ggplot (data.combined, aes(colour=Legend)) +
     geom_line (aes (x=TimeSec, y=DelayS.mean, colour="Avg Delay"), size=1) +
     ggtitle (name) +
     ylab ("Delay [Seconds]") +
-    xlab ("Time")
+    xlab ("Time") +
+    scale_x_continuous (breaks=tbreak)
   
   outpng = sprintf("%s/%s-app-delay.png", opt$output, noext)
   
@@ -89,17 +99,35 @@ if (opt$delay) {
 }
 
 if (opt$hop) {
+  cat ("Creating Average Hopcount graph\n")
   name = sprintf("%s Average Packet Hop Count", opt$title)
-  
-  data.combined = summaryBy (. ~ TimeSec + Type, data=data, FUN=mean)
   
   g.all <- ggplot (data.combined, aes(colour=Legend)) +
     geom_line (aes (x=TimeSec, y=HopCount.mean, colour="Avg Hops"), size=1) +
     ggtitle (name) +
     ylab ("Hop Count") +
-    xlab ("Time")
+    xlab ("Time") +
+    scale_x_continuous (breaks=tbreak)
   
   outpng = sprintf("%s/%s-app-hop.png", opt$output, noext)
+  
+  png (outpng, width=1024, height=768)
+  print (g.all)
+  x = dev.off ()
+}
+
+if (opt$retx) {
+  cat ("Creating Average Transmission count graph\n")
+  name = sprintf("%s Average Transmission Count", opt$title)
+  
+  g.all <- ggplot (data.combined, aes(colour=Legend)) +
+    geom_line (aes (x=TimeSec, y=RetxCount.mean, colour="Avg Transmissions"), size=1) +
+    ggtitle (name) +
+    ylab ("Transmission Count") +
+    xlab ("Time") +
+    scale_x_continuous (breaks=tbreak)
+  
+  outpng = sprintf("%s/%s-app-retx.png", opt$output, noext)
   
   png (outpng, width=1024, height=768)
   print (g.all)
