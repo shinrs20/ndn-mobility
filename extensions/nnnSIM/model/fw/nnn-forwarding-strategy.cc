@@ -242,6 +242,12 @@ namespace ns3
 	                 MakeIntegerAccessor (&ForwardingStrategy::m_standardMetric),
 	                 MakeIntegerChecker<int32_t>())
 
+	  .AddAttribute ("RetxTimer",
+	                 "Timeout defining what is the retransmission time threshold for buffered PDUs (Should be linked directly to Application layer protocols timeouts)",
+	                 StringValue ("50ms"),
+	                 MakeTimeAccessor (&ForwardingStrategy::GetRetxTimer, &ForwardingStrategy::SetRetxTimer),
+	                 MakeTimeChecker ())
+
 	  .AddTraceSource ("Got3NName", "Traces when the forwarding strategy has a 3N name",
 			   MakeTraceSourceAccessor (&ForwardingStrategy::m_got3Nname))
 
@@ -355,6 +361,18 @@ namespace ns3
     ForwardingStrategy::GoesBy3NName (Ptr<NNNAddress> addr)
     {
       return m_node_names->foundName (addr);
+    }
+
+    void
+    ForwardingStrategy::SetRetxTimer (Time retx)
+    {
+      m_node_pdu_buffer->SetReTX(retx);
+    }
+
+    Time
+    ForwardingStrategy::GetRetxTimer () const
+    {
+      return m_node_pdu_buffer->GetReTX();
     }
 
     void

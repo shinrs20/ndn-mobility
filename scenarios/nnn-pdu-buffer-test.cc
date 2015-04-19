@@ -40,7 +40,7 @@ void dealQueue (Ptr<PDUBuffer> buf, NNNAddress &addr)
   Ptr<nnn::DU> target8;
 
   std::queue<Ptr<Packet> > tmp = buf->PopQueue(addr);
-  std::cout << "Queue size for " << addr << " received " << tmp.size () << std::endl;
+  std::cout << "Queue size for " << addr << " received " << tmp.size () << " at " << Simulator::Now () << std::endl;
 
   std::cout << "---- Dealing with queue for " << addr << std::endl;
   while (!tmp.empty())
