@@ -637,10 +637,15 @@ int main (int argc, char *argv[])
 
       std::string timeStr (buffer);
 
+      sprintf(buffer, "%dms", (int)(retxtime*1000));
+
+      std::string retxch (buffer);
+
       NS_LOG_INFO ("Setting lease time to: " << timeStr);
+      NS_LOG_INFO ("Setting retransmission times to: " << retxch);
 
       // Set the Forwarding Strategy and have it have a 3N name lease time of 300 seconds
-      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", timeStr);
+      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", timeStr, "RetxTimer", retxch);
 
       NS_LOG_INFO ("Setting Content Store size: " << cs);
 
@@ -665,7 +670,7 @@ int main (int argc, char *argv[])
       nnn::NNNStackHelper APStack;
 
       // Set the Forwarding Strategy and have it have a 3N name lease time of 300 seconds
-      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", timeStr);
+      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", timeStr, "RetxTimer", retxch);
       // Set the Content Store for the primary stack, Normal LRU ContentStore
 
       APStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", cs);
@@ -696,7 +701,7 @@ int main (int argc, char *argv[])
       // No Content Store for mobile stack
       mobileStack.SetContentStore ("ns3::ndn::cs::Nocache");
       // Do not produce 3N names for these nodes
-      mobileStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "Produce3Nnames", "false");
+      mobileStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "Produce3Nnames", "false", "RetxTimer", retxch);
       // Set the FIB default routes
       mobileStack.SetDefaultRoutes (true);
       // Install the stack
@@ -725,6 +730,7 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
       consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(initialWait)));
       consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
+      consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
       consumerHelper.SetAttribute("UseSO", BooleanValue(true));
       consumerHelper.Install (mobileTerminalContainer);
     }

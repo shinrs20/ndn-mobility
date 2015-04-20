@@ -285,6 +285,7 @@ int main (int argc, char *argv[])
   char results[250] = "results";                // Directory to place results
   double endTime = 100;                         // Number of seconds to run the simulation
   double MBps = 0.15;                           // MB/s data rate desired for applications
+  double retxtime = 0.05;                       // How frequent Interest retransmission timeouts should be checked (seconds)
   bool use3N = false;                           // Flags use of 3N based scenario
   bool useNDN = false;                          // Flags use of NDN based scenario
 
@@ -299,6 +300,7 @@ int main (int argc, char *argv[])
   cmd.AddValue ("trace", "Enable trace files", traceFiles);
   cmd.AddValue ("mobility", "Enable mobility support", useMobility);
   cmd.AddValue ("mbps", "Data transmission rate for App in MBps", MBps);
+  cmd.AddValue ("retx", "How frequent Interest retransmission timeouts should be checked in seconds", retxtime);
   cmd.AddValue ("3n", "Uses 3N scenario", use3N);
   cmd.AddValue ("ndn", "Uses NDN scenario", useNDN);
   cmd.Parse (argc,argv);
@@ -567,6 +569,7 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
       consumerHelper.SetAttribute ("StartTime", TimeValue (Seconds(2)));
       consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
+      consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
 
       consumerHelper.Install (MNContainer);
     }
@@ -574,6 +577,11 @@ int main (int argc, char *argv[])
   if (use3N)
     {
       sprintf(routeType, "%s", "3n");
+      sprintf(buffer, "%dms", (int)(retxtime*1000));
+
+      std::string retxch (buffer);
+      NS_LOG_INFO ("Setting retransmission times to: " << retxch);
+
       // Now install content stores and the rest on the middle node. Leave
       // out clients and the mobile node
       NS_LOG_INFO ("------ Installing 3N stacks ------");
@@ -582,7 +590,7 @@ int main (int argc, char *argv[])
       // Stack for nodes that use fixed connections
       nnn::NNNStackHelper ServerStack;
       // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "120s");
+      ServerStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "120s", "RetxTimer", retxch);
       // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
       ServerStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
       // Set the FIB default routes
@@ -603,7 +611,7 @@ int main (int argc, char *argv[])
       // Stack for a Node that is given a node name
       nnn::NNNStackHelper APStack;
       // Set the Forwarding Strategy and have it have a 3N name lease time of 50 seconds
-      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "80s");
+      APStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "3NLeasetime", "80s", "RetxTimer", retxch);
       // Set the Content Store for the primary stack, Normal LRU ContentStore of 10000000 objects
       APStack.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "10000000");
       // Set the FIB default routes
@@ -633,7 +641,7 @@ int main (int argc, char *argv[])
       // No Content Store for mobile stack
       mobileStack.SetContentStore ("ns3::ndn::cs::Nocache");
       // Do not produce 3N names for these nodes
-      mobileStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "Produce3Nnames", "false");
+      mobileStack.SetForwardingStrategy ("ns3::nnn::ForwardingStrategy", "Produce3Nnames", "false", "RetxTimer", retxch);
       // Set the FIB default routes
       mobileStack.SetDefaultRoutes (true);
       // Install the stack
@@ -657,6 +665,7 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
       consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
       consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
+      consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
       if (useMobility)
 	{
 	  NS_LOG_INFO ("Consumer is using mobility 3N SO support");
@@ -668,8 +677,8 @@ int main (int argc, char *argv[])
   NS_LOG_INFO ("------ Creating the AP Association Callbacks ------");
   char configbuf[250];
 
-  // The AP association callbacks are only useful in 3N setting
-  if (use3N)
+  // The AP association callbacks are only useful in 3N Mobility setting
+  if (useMobility)
     {
       for (int i = 0; i < mobileNodeIds.size (); i++)
 	{
@@ -686,7 +695,7 @@ int main (int argc, char *argv[])
 	{
 	  NS_LOG_INFO ("Scheduling SSID calculation for Node " << mobileNodeIds[i] << " wireless device 0 at " << j);
 	  // Simulator::Schedule (Seconds(j), &SetSSIDviaDistance, mobileNodeIds[i], 0, apTerminalMobility);
-	  Simulator::Schedule (Seconds(j), &SetForcedSSID, mobileNodeIds[i], 0, ssidV[1], use3N);
+	  Simulator::Schedule (Seconds(j), &SetForcedSSID, mobileNodeIds[i], 0, ssidV[1], useMobility);
 	}
     }
 
