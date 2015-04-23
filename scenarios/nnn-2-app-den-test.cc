@@ -282,6 +282,7 @@ int main (int argc, char *argv[])
   double sec = 0.0;                             // Movement start
   bool traceFiles = false;                      // Tells to run the simulation with traceFiles
   bool useMobility = false;                     // Tells to run the simulation with mobility support
+  bool producer = false;                        // Tells to run the simulation with the Provider moving
   char results[250] = "results";                // Directory to place results
   double endTime = 100;                         // Number of seconds to run the simulation
   double MBps = 0.15;                           // MB/s data rate desired for applications
@@ -299,6 +300,7 @@ int main (int argc, char *argv[])
   cmd.AddValue ("start", "Starting second", sec);
   cmd.AddValue ("trace", "Enable trace files", traceFiles);
   cmd.AddValue ("mobility", "Enable mobility support", useMobility);
+  cmd.AddValue ("producer", "Makes the scenario with the Producer moving. By default it is the Consumer", producer);
   cmd.AddValue ("mbps", "Data transmission rate for App in MBps", MBps);
   cmd.AddValue ("retx", "How frequent Interest retransmission timeouts should be checked in seconds", retxtime);
   cmd.AddValue ("3n", "Uses 3N scenario", use3N);
@@ -518,6 +520,8 @@ int main (int argc, char *argv[])
     }
 
   char routeType[250];
+  char moving[250];
+  char mob[250];
 
   // Now install content stores and the rest on the middle node. Leave
   // out clients and the mobile node
@@ -529,6 +533,7 @@ int main (int argc, char *argv[])
       // Decide what Forwarding strategy to use depending on user command line input
 
       sprintf(routeType, "%s", "smart");
+      sprintf(mob, "%s", "no");
       NS_LOG_INFO ("NDN Utilizing SmartFlooding");
       ndnHelperRouters.SetForwardingStrategy ("ns3::ndn::fw::SmartFlooding::PerOutFaceLimits", "Limit", "ns3::ndn::Limits::Window");
       ndnHelperRouters.SetContentStore ("ns3::ndn::cs::Freshness::Lru", "MaxSize", "1000000");
@@ -557,7 +562,17 @@ int main (int argc, char *argv[])
       producerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
       // Payload size is in bytes
       producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
-      producerHelper.Install (ServerContainer);
+
+      // Install producer
+      if (producer)
+	{
+	  sprintf(moving, "%s", "prod");
+	  producerHelper.Install (MNContainer);
+	}
+      else
+	{
+	  producerHelper.Install (ServerContainer);
+	}
 
       NS_LOG_INFO ("------Installing NDN Consumer Application------");
 
@@ -571,7 +586,16 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
 
-      consumerHelper.Install (MNContainer);
+      // Install consumer
+      if (producer)
+	{
+	  consumerHelper.Install (ServerContainer);
+	}
+      else
+	{
+	  sprintf(moving, "%s", "con");
+	  consumerHelper.Install (MNContainer);
+	}
     }
 
   if (use3N)
@@ -655,8 +679,26 @@ int main (int argc, char *argv[])
       producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
       producerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
       producerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime -1)));
-      // Install producer on AP
-      producerHelper.Install (ServerContainer);
+
+      // Install producer
+      if (producer)
+	{
+	  sprintf(moving, "%s", "prod");
+	  if (useMobility)
+	    {
+	      sprintf(mob, "%s", "yes");
+	      NS_LOG_INFO ("Provider is using mobility 3N DU support");
+	      producerHelper.SetAttribute("UseDU", BooleanValue(true));
+	    }
+	  else
+	    sprintf(mob, "%s", "no");
+
+	  producerHelper.Install (MNContainer);
+	}
+      else
+	{
+	  producerHelper.Install (ServerContainer);
+	}
 
       NS_LOG_INFO ("------ Installing Consumer Application------ ");
       // Create the consumer node on the mobile node - same as in NDN
@@ -666,12 +708,27 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(2)));
       consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
-      if (useMobility)
+
+
+      // Install consumer
+      if (producer)
 	{
-	  NS_LOG_INFO ("Consumer is using mobility 3N SO support");
-	  consumerHelper.SetAttribute("UseSO", BooleanValue(true));
+	  consumerHelper.Install (ServerContainer);
 	}
-      consumerHelper.Install (MNContainer);
+      else
+	{
+	  sprintf(moving, "%s", "con");
+	  if (useMobility)
+	    {
+	      sprintf(mob, "%s", "yes");
+	      NS_LOG_INFO ("Consumer is using mobility 3N SO support");
+	      consumerHelper.SetAttribute("UseSO", BooleanValue(true));
+	    }
+	  else
+	    sprintf(mob, "%s", "no");
+
+	  consumerHelper.Install (MNContainer);
+	}
     }
 
   NS_LOG_INFO ("------ Creating the AP Association Callbacks ------");
@@ -710,7 +767,7 @@ int main (int argc, char *argv[])
       char fileId[250];
 
       // Create the file identifier
-      sprintf(fileId, "%s-%02d-%03d-%03d.txt", routeType, mobile, servers, aps);
+      sprintf(fileId, "%s-%s-%s-%02d-%03d-%03d.txt", routeType, moving, mob, mobile, servers, aps);
 
       sprintf(filename, "%s/%s-clients-%s", results, scenario, fileId);
 
