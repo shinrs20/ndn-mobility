@@ -1,6 +1,6 @@
 #!/usr/bin/Rscript
 
-# app-data-j.R
+# app-data-compare.R
 # Simple R script to make graphs from ndnSIM tracers - App delay
 #
 # Copyright (c) 2015 Waseda University, Sato Laboratory
