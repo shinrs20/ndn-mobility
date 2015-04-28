@@ -688,7 +688,7 @@ int main (int argc, char *argv[])
 	    {
 	      sprintf(mob, "%s", "yes");
 	      NS_LOG_INFO ("Provider is using mobility 3N DU support");
-	      producerHelper.SetAttribute("UseDU", BooleanValue(true));
+	      producerHelper.SetAttribute("IsMobile", BooleanValue(true));
 	    }
 	  else
 	    sprintf(mob, "%s", "no");
@@ -709,7 +709,6 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
 
-
       // Install consumer
       if (producer)
 	{
@@ -722,7 +721,7 @@ int main (int argc, char *argv[])
 	    {
 	      sprintf(mob, "%s", "yes");
 	      NS_LOG_INFO ("Consumer is using mobility 3N SO support");
-	      consumerHelper.SetAttribute("UseSO", BooleanValue(true));
+	      consumerHelper.SetAttribute("IsMobile", BooleanValue(true));
 	    }
 	  else
 	    sprintf(mob, "%s", "no");

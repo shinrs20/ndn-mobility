@@ -176,7 +176,9 @@ namespace ns3
       Ptr<App>, Ptr<Face> > m_transmittedDUs; ///< @brief App-level trace of transmitted DU
 
       bool m_has3Nname; ///< @brief Flag to indicate that the underlying layer has a 3N name
-      Ptr<const NNNAddress> current3Nname; ///< Keeps the current 3N name able to be used by the App
+      Ptr<const NNNAddress> m_current3Nname; ///< Keeps the current 3N name able to be used by the App
+      bool m_isMobile; ///< @brief Flag to indicate that the App is of mobile type
+      Ptr<const NNNAddress> m_possibleDestination; ///< @brief Keeps the possible destination 3N name
     };
   } // namespace nnn
 } // namespace ns3

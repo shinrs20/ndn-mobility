@@ -156,7 +156,6 @@ namespace ns3
       Time                   m_offTime;             ///< \brief Time interval between packets
       ndn::Name              m_interestName;        ///< \brief NDN Name of the Interest (use Name)
       Time                   m_interestLifeTime;    ///< \brief LifeTime for interest packet
-      bool                   m_useSO;    ///< \brief If Interests should be sent in SOs, if true and NULLps if false
       Ptr<const NNNAddress>  m_possibleDestination; ///< \brief Possible destination obtained from a PDU
       /// @cond include_hidden
       /**

@@ -22,6 +22,7 @@
 
 #include "nnn-app.h"
 
+#include <ns3-dev/ns3/boolean.h>
 #include <ns3-dev/ns3/assert.h>
 #include <ns3-dev/ns3/log.h>
 #include <ns3-dev/ns3/packet.h>
@@ -56,6 +57,10 @@ namespace ns3
 		       StringValue ("3s"),
 		       MakeTimeAccessor (&App::m_3n_lifetime),
 		       MakeTimeChecker ())
+	.AddAttribute ("IsMobile", "Flags that the App is mobile",
+			 BooleanValue (false),
+			 MakeBooleanAccessor(&App::m_isMobile),
+			 MakeBooleanChecker ())
 
 	.AddTraceSource ("ReceivedInterests", "ReceivedInterests",
 	                 MakeTraceSourceAccessor (&App::m_receivedInterests))
@@ -100,10 +105,12 @@ namespace ns3
     }
 
     App::App ()
-    : m_face           (0)
-    , m_active         (false)
-    , m_has3Nname      (false)
-    , current3Nname    (Create<NNNAddress> ())
+    : m_face                (0)
+    , m_active              (false)
+    , m_has3Nname           (false)
+    , m_current3Nname       (Create<NNNAddress> ())
+    , m_possibleDestination (Create<NNNAddress> ())
+    , m_isMobile            (false)
     {
     }
 
@@ -190,9 +197,9 @@ namespace ns3
       m_has3Nname = true;
 
       // Update the 3N name used by the application to create PDUs
-      current3Nname = GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NNamePtr();
+      m_current3Nname = GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NNamePtr();
 
-      NS_LOG_INFO ("App will now use 3N name " << *current3Nname << ")");
+      NS_LOG_INFO ("App will now use 3N name " << *m_current3Nname << ")");
     }
 
     void

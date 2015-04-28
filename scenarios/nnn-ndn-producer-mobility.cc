@@ -817,7 +817,7 @@ int main (int argc, char *argv[])
       producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
       producerHelper.SetAttribute("StartTime", TimeValue (Seconds(travelTime /2)));
       producerHelper.SetAttribute("StopTime", TimeValue (Seconds(sec-1)));
-      producerHelper.SetAttribute("UseDU", BooleanValue(true));
+      producerHelper.SetAttribute("isMobile", BooleanValue(true));
       // Install producer on AP
       producerHelper.Install (mobileTerminalContainer);
 

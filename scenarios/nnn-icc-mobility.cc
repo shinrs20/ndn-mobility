@@ -731,7 +731,7 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(initialWait)));
       consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
-      consumerHelper.SetAttribute("UseSO", BooleanValue(true));
+      consumerHelper.SetAttribute("IsMobile", BooleanValue(true));
       consumerHelper.Install (mobileTerminalContainer);
     }
 

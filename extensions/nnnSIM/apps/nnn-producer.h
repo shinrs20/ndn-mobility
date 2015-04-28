@@ -55,11 +55,14 @@ namespace ns3
       // inherited from NnnApp
       void OnInterest (Ptr<const ndn::Interest> interest);
 
-      // Essentially to de-encapsulate DU
+      // Essentially to de-encapsulate NULLp
       void OnNULLp (Ptr<const NULLp> nullpObject);
 
       // Essentially to de-encapsulate SO
       void OnSO (Ptr<const SO> soObject);
+
+      // Essentially to de-encapsulate DO
+      void OnDO (Ptr<const DO> doObject);
 
       // Essentially to de-encapsulate DU
       void OnDU (Ptr<const DU> duObject);
@@ -80,7 +83,6 @@ namespace ns3
 
       uint32_t m_signature;
       ndn::Name m_keyLocator;
-      bool m_useDU;
     };
 
   } // namespace nnn

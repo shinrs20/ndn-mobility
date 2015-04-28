@@ -19,7 +19,6 @@
  *  You should have received a copy of the GNU Affero Public License
  *  along with nnn-consumer.cc.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <ns3-dev/ns3/boolean.h>
 #include <ns3-dev/ns3/callback.h>
 #include <ns3-dev/ns3/double.h>
 #include <ns3-dev/ns3/integer.h>
@@ -77,10 +76,6 @@ namespace ns3
 			 StringValue ("50ms"),
 			 MakeTimeAccessor (&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
 			 MakeTimeChecker ())
-	  .AddAttribute ("UseSO", "Node using 3N SO PDUs",
-			 BooleanValue (false),
-			 MakeBooleanAccessor(&Consumer::m_useSO),
-			 MakeBooleanChecker ())
 	  .AddTraceSource ("LastRetransmittedInterestDataDelay", "Delay between last retransmitted Interest and received Data",
 			 MakeTraceSourceAccessor (&Consumer::m_lastRetransmittedInterestDataDelay))
 	  .AddTraceSource ("FirstInterestDataDelay", "Delay between first transmitted Interest and received Data",
@@ -93,7 +88,6 @@ namespace ns3
     : m_rand (0, std::numeric_limits<uint32_t>::max ())
     , m_seq (0)
     , m_seqMax (0) // don't request anything
-    , m_useSO (false)
     , m_possibleDestination (Create<NNNAddress> ())
     {
       NS_LOG_FUNCTION_NOARGS ();
@@ -225,13 +219,13 @@ namespace ns3
       Ptr<Packet> retPkt = ndn::Wire::FromInterest(interest, ndn::Wire::WIRE_FORMAT_NDNSIM);
 
       // If not mobile, then we can send NULLp packets
-      if (m_useSO && m_has3Nname)
+      if (m_isMobile && m_has3Nname)
 	{
 	  NS_LOG_INFO ("> Interest for " << std::dec << seq << " using SO PDU");
 	  Ptr<SO> so_o = Create<SO> ();
 	  so_o->SetPDUPayloadType(NDN_NNN);
 	  so_o->SetPayload(retPkt);
-	  so_o->SetName(*current3Nname);
+	  so_o->SetName(*m_current3Nname);
 	  so_o->SetLifetime(m_3n_lifetime);
 
 	  m_face->ReceiveSO(so_o);

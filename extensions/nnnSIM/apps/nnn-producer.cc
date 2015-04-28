@@ -81,10 +81,6 @@ namespace ns3
 		       ndn::NameValue (),
 		       MakeNameAccessor (&Producer::m_keyLocator),
 		       ndn::MakeNameChecker ())
-	.AddAttribute ("UseDU", "Node using 3N DU PDUs",
-		       BooleanValue (false),
-		       MakeBooleanAccessor(&Producer::m_useDU),
-		       MakeBooleanChecker ())
 	;
       return tid;
     }
@@ -181,7 +177,7 @@ namespace ns3
 	  data->SetKeyLocator (Create<ndn::Name> (m_keyLocator));
 	}
 
-      NS_LOG_INFO ("node("<< GetNode()->GetId() <<") responding with Data: " << data->GetName ());
+      NS_LOG_INFO ("node("<< GetNode()->GetId() <<") responding with Data: " << data->GetName () << " seq: " << data->GetName ().get (-1).toSeqNum ());
 
       // Echo back FwHopCountTag if exists
       ndn::FwHopCountTag hopCountTag;
@@ -230,14 +226,15 @@ namespace ns3
 
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 
-		  if (m_useDU && m_has3Nname)
+		  if (m_isMobile && m_has3Nname)
 		    {
 		      NS_LOG_INFO ("Responding NULLp with SO");
 		      // We don't have all the information for a DU, so send a SO
 		      Ptr<SO> so_o = Create<SO> ();
 		      so_o->SetPDUPayloadType (pdutype);
-		      so_o->SetName (*current3Nname);
 		      so_o->SetLifetime (m_3n_lifetime);
+		      so_o->SetName (*m_current3Nname);
+		      so_o->SetPayload (retPkt);
 
 		      m_face->ReceiveSO (so_o);
 		      m_transmittedSOs (so_o, this, m_face);
@@ -246,10 +243,9 @@ namespace ns3
 		    {
 		      NS_LOG_INFO ("Responding NULLp with NULLp");
 		      Ptr<NULLp> nullp_o = Create<NULLp> ();
-
 		      nullp_o->SetPDUPayloadType (pdutype);
-		      nullp_o->SetPayload (retPkt);
 		      nullp_o->SetLifetime (m_3n_lifetime);
+		      nullp_o->SetPayload (retPkt);
 
 		      m_face->ReceiveNULLp (nullp_o);
 		      m_transmittedNULLps (nullp_o, this, m_face);
@@ -301,13 +297,13 @@ namespace ns3
 
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 
-		  if (m_useDU && m_has3Nname)
+		  if (m_isMobile && m_has3Nname)
 		    {
 		      NS_LOG_INFO ("Responding SO with DU");
 		      // We can use DU packets now
 		      Ptr<DU> du_o = Create<DU> ();
 		      du_o->SetPDUPayloadType(pdutype);
-		      du_o->SetSrcName(*current3Nname);
+		      du_o->SetSrcName(*m_current3Nname);
 		      du_o->SetDstName(soObject->GetName ());
 		      du_o->SetLifetime(m_3n_lifetime);
 
@@ -329,6 +325,65 @@ namespace ns3
 		    }
 		}
 
+	      // exception will be thrown if packet is not recognized
+	  }
+	  catch (ndn::UnknownHeaderException)
+	  {
+	      NS_FATAL_ERROR ("Unknown NDN header. Should not happen");
+	  }
+	}
+    }
+
+    void
+    Producer::OnDO (Ptr<const DO> doObject)
+    {
+      if (!m_active) return;
+      App::OnDO (doObject);
+      NS_LOG_FUNCTION (this << doObject);
+      Ptr<Packet> packet = doObject->GetPayload ()->Copy ();
+      uint16_t pdutype = doObject->GetPDUPayloadType ();
+      NS_LOG_INFO (this << " obtained pdu type " << pdutype);
+      if (pdutype == NDN_NNN)
+	{
+	  try
+	  {
+	      ndn::HeaderHelper::Type type = ndn::HeaderHelper::GetNdnHeaderType (packet);
+	      Ptr<ndn::Interest> interest = 0;
+	      switch (type)
+	      {
+		case ndn::HeaderHelper::INTEREST_NDNSIM:
+		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_NDNSIM);
+		  break;
+		case ndn::HeaderHelper::INTEREST_CCNB:
+		  interest = ndn::Wire::ToInterest (packet, ndn::Wire::WIRE_FORMAT_CCNB);
+		  break;
+	      }
+	      if (interest != 0)
+		{
+		  App::OnInterest (interest);
+		  Ptr<Packet> retPkt = CreateReturnData(interest);
+		  if (m_isMobile && m_has3Nname)
+		    {
+		      NS_LOG_INFO ("Responding DO with SO");
+		      Ptr<SO> so_o = Create<SO> ();
+		      so_o->SetLifetime (m_3n_lifetime);
+		      so_o->SetPDUPayloadType (pdutype);
+		      so_o->SetName (*m_current3Nname);
+		      so_o->SetPayload (retPkt);
+		      m_face->ReceiveSO (so_o);
+		      m_transmittedSOs (so_o, this, m_face);
+		    }
+		  else
+		    {
+		      NS_LOG_INFO ("Responding DO with NULLp");
+		      Ptr<NULLp> nullp_o = Create<NULLp> ();
+		      nullp_o->SetLifetime (m_3n_lifetime);
+		      nullp_o->SetPDUPayloadType (pdutype);
+		      nullp_o->SetPayload (retPkt);
+		      m_face->ReceiveNULLp (nullp_o);
+		      m_transmittedNULLps (nullp_o, this, m_face);
+		    }
+		}
 	      // exception will be thrown if packet is not recognized
 	  }
 	  catch (ndn::UnknownHeaderException)
@@ -377,7 +432,7 @@ namespace ns3
 		  NS_LOG_INFO ("Responding DU with DU");
 		  Ptr<DU> du_o = Create<DU> ();
 		  if (m_has3Nname)
-		    du_o->SetSrcName(*current3Nname);
+		    du_o->SetSrcName(*m_current3Nname);
 		  else
 		    du_o->SetSrcName (duObject->GetDstName ());
 
