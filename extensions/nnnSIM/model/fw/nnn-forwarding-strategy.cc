@@ -1123,12 +1123,6 @@ namespace ns3
       uint32_t pduid = pdu->GetPacketId ();
       switch(pduid)
       {
-	case NULL_NNN:
-	  // Add the Face
-	  pitEntry->AddIncoming (face);
-	  // Show that you received a NULL PDU
-	  pitEntry->SetReceivedNULLPDU (true);
-	  break;
 	case SO_NNN:
 	  // Convert pointer to SO
 	  so_i = DynamicCast<SO> (pdu);
@@ -1792,7 +1786,7 @@ namespace ns3
 	    NS_LOG_INFO ("On (" << myAddr << ") Our PIT has no 3N names aggregated");
 	    // If we had received a NULL PDU with this Interest at some point, and have no 3N names
 	    // saved, return a NULL PDU with the information
-	    if (pitEntry->GetReceivedNULLPDU() && !sentSomething)
+	    if (!sentSomething)
 	      {
 		NS_LOG_INFO ("On (" << myAddr << ") Satisfying previous sent NULL PDU");
 		Ptr<NULLp> null_p_o = Create<NULLp> ();
@@ -2035,7 +2029,7 @@ namespace ns3
 
 		// If we had received a NULL PDU with this Interest at some point, and still
 		// haven't pushed anything in previous sections, we should do it now
-		if (pitEntry->GetReceivedNULLPDU() && !sentSomething)
+		if (!sentSomething)
 		  {
 		    NS_LOG_INFO ("On (" << myAddr << ") Satisfying using NULLp");
 		    Ptr<NULLp> null_p_o = Create<NULLp> ();
@@ -2305,10 +2299,6 @@ namespace ns3
       uint32_t pduid = pdu->GetPacketId();
       switch(pduid)
       {
-	case NULL_NNN:
-	  // Flag the PIT to know that we had a NULLp
-	  pitEntry->SetReceivedNULLPDU(true);
-	  break;
 	case SO_NNN:
 	  // Convert pointer to SO PDU
 	  so_i = DynamicCast<SO> (pdu);
@@ -2379,6 +2369,7 @@ namespace ns3
       bool wasDO = false;
       Ptr<DU> du_i;
       bool wasDU = false;
+      bool wasSO = false;
 
       // Since we are using a combination of ICN/3N, we copy the pointer and
       // see if 3N gives us a different Face to use. This will be used
@@ -2389,6 +2380,9 @@ namespace ns3
       uint32_t pduid = pdu->GetPacketId();
       switch(pduid)
       {
+	case SO_NNN:
+	  wasSO = true;
+	  break;
 	case DO_NNN:
 	  // Convert pointer to DO PDU
 	  do_i = DynamicCast<DO> (pdu);
@@ -2419,13 +2413,13 @@ namespace ns3
 	  // First obtain the name
 	  if (wasDO)
 	    {
-	      NS_LOG_INFO ("DoPropagateInterest : was DO");
+	      NS_LOG_INFO ("Propagating DO");
 	      newdst = do_i->GetName ();
 	      constdstPtr = do_i->GetNamePtr();
 	    }
 	  else if (wasDU)
 	    {
-	      NS_LOG_INFO ("DoPropagateInterest : was DU");
+	      NS_LOG_INFO ("Propagating DU");
 	      newdst = du_i->GetDstName ();
 	      constdstPtr = du_i->GetDstNamePtr();
 	    }
@@ -2523,7 +2517,10 @@ namespace ns3
       // For everything else, propagate like always
       else
 	{
-	  NS_LOG_INFO ("DoPropagateInterest : Propagating SO or NULLp");
+	  if (wasSO)
+	    NS_LOG_INFO ("Propagating SO");
+	  else
+	    NS_LOG_INFO ("Propagating NULLp");
 
 	  // Here we pick the next place to forward to using the ICN strategy
 	  BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())

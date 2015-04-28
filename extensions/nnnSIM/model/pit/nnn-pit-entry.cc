@@ -52,7 +52,6 @@ namespace ns3
       , m_interest (header)
       , m_fibEntry (fibEntry)
       , m_maxRetxCount (0)
-      , m_receivedNULLp (false)
       {
 	NS_LOG_FUNCTION (this);
 
@@ -294,18 +293,6 @@ namespace ns3
       Entry::GetOutgoingCount () const
       {
 	return m_outgoing.size ();
-      }
-
-      void
-      Entry::SetReceivedNULLPDU (bool received)
-      {
-	m_receivedNULLp = received;
-      }
-
-      bool
-      Entry::GetReceivedNULLPDU ()
-      {
-	return m_receivedNULLp;
       }
 
       uint32_t

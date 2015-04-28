@@ -290,7 +290,6 @@ namespace ns3
 
 	Time m_lastRetransmission; ///< @brief Last time when number of retransmissions were increased
 	uint32_t m_maxRetxCount;   ///< @brief Maximum allowed number of retransmissions via outgoing faces
-	bool m_receivedNULLp;   ///< @brief Flag if we received 3N NULL PDUs
 
 	std::list< boost::shared_ptr<fw::Tag> > m_fwTags; ///< @brief Forwarding strategy tags
       };
