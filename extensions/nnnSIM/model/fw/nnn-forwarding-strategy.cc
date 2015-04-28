@@ -1258,6 +1258,8 @@ namespace ns3
 	  m_contentStore->Add (data);
 	  // Log that this node is proactively caching this data
 	  DidReceiveUnsolicitedData (face, data, true);
+
+	  NS_LOG_INFO ("On (" << myAddr << ") there is no PIT Entry for this DATA " << std::dec << data->GetName ().get (-1).toSeqNum ());
 	}
 
       while (pitEntry != 0)
@@ -1784,34 +1786,60 @@ namespace ns3
 	if (distinct.empty())
 	  {
 	    NS_LOG_INFO ("On (" << myAddr << ") Our PIT has no 3N names aggregated");
-	    // If we had received a NULL PDU with this Interest at some point, and have no 3N names
-	    // saved, return a NULL PDU with the information
+	    // The PIT Entry has been created but has no 3N names. We satisfy with whatever we were given
 	    if (!sentSomething)
 	      {
-		NS_LOG_INFO ("On (" << myAddr << ") Satisfying previous sent NULL PDU");
-		Ptr<NULLp> null_p_o = Create<NULLp> ();
-		// Set the lifetime of the 3N PDU
-		null_p_o->SetLifetime (m_3n_lifetime);
-		// Configure payload for PDU
-		null_p_o->SetPayload (icn_pdu);
-		// Signal that the PDU had an ICN PDU as payload
-		null_p_o->SetPDUPayloadType (NDN_NNN);
+		if (wasNULL)
+		  ok = incoming.m_face->SendNULLp (nullp_i);
+		else if (wasSO)
+		  ok = incoming.m_face->SendSO (so_i);
+		else if (wasDO)
+		  ok = incoming.m_face->SendDO (do_i);
+		else if (wasDU)
+		  ok = incoming.m_face->SendDU (du_i);
 
-		// Send out the NULL PDU
-		ok = incoming.m_face->SendNULLp (null_p_o);
-
-		// Log that a Data PDU was sent
-		DidSendOutData (inFace, incoming.m_face, data, pitEntry);
-		// Log that a DO PDU was sent
-		m_outNULLps (null_p_o, incoming.m_face);
-
-		NS_LOG_DEBUG ("Satisfy " << *incoming.m_face);
-
+		// Something caused an error
 		if (!ok)
 		  {
+		    // Log Data drops
 		    m_dropData (data, incoming.m_face);
-		    m_dropNULLps (null_p_o, incoming.m_face);
-		    NS_LOG_DEBUG ("Cannot satisfy data to " << *incoming.m_face);
+		    // Log the type of 3N Data transfer PDU that was dropped
+		    if (wasNULL)
+		      m_dropNULLps (nullp_i, incoming.m_face);
+		    else if (wasSO)
+		      m_dropSOs (so_i, incoming.m_face);
+		    else if (wasDO)
+		      m_dropDOs (do_i, incoming.m_face);
+		    else if (wasDU)
+		      m_dropDUs (du_i, incoming.m_face);
+
+		    NS_LOG_DEBUG ("Cannot satisfy data to via "<< *incoming.m_face);
+		  }
+		else
+		  {
+		    // Log that a Data PDU was sent
+		    DidSendOutData (inFace, incoming.m_face, data, pitEntry);
+
+		    if (wasNULL)
+		      {
+			NS_LOG_INFO ("Satisfying with NULLp");
+			m_outNULLps (nullp_i, incoming.m_face);
+		      }
+		    else if (wasSO)
+		      {
+			NS_LOG_INFO ("Satisfying with SO");
+			m_outSOs (so_i, incoming.m_face);
+		      }
+		    else if (wasDO)
+		      {
+			NS_LOG_INFO ("Satisfying with DO");
+			m_outDOs (do_i, incoming.m_face);
+		      }
+		    else if (wasDU)
+		      {
+			NS_LOG_INFO ("Satisfying with DU");
+			m_outDUs (du_i, incoming.m_face);
+		      }
 		  }
 	      }
 	  }
@@ -1833,7 +1861,7 @@ namespace ns3
 		// everything aggregated is probably connected to it
 		if (subSector)
 		  {
-		    NS_LOG_INFO ("We are satisfying Interests to nodes that are directly connected to us (" << *i << ", continue");
+		    NS_LOG_INFO ("We are satisfying Interests to nodes that are directly connected to us (" << *i << "), continue");
 		  }
 		// We are pushing to a different sector
 		else
@@ -1854,32 +1882,13 @@ namespace ns3
 		    // This also happens to mean that we satisfying an Application - do not know if
 		    // this holds in future references
 		    if (wasNULL)
-		      {
-			ok = incoming.m_face->SendNULLp (nullp_i);
-			// Log that a DO PDU was sent
-			m_outNULLps (nullp_i, incoming.m_face);
-		      }
+		      ok = incoming.m_face->SendNULLp (nullp_i);
 		    else if (wasSO)
-		      {
-			ok = incoming.m_face->SendSO (so_i);
-			// Log that a DO PDU was sent
-			m_outSOs (so_i, incoming.m_face);
-		      }
+		      ok = incoming.m_face->SendSO (so_i);
 		    else if (wasDO)
-		      {
-			ok = incoming.m_face->SendDO (do_i);
-			// Log that a DO PDU was sent
-			m_outDOs (do_i, incoming.m_face);
-		      }
+		      ok = incoming.m_face->SendDO (do_i);
 		    else if (wasDU)
-		      {
-			ok = incoming.m_face->SendDU (du_i);
-			// Log that a DO PDU was sent
-			m_outDUs (du_i, incoming.m_face);
-		      }
-
-		    // Log that a Data PDU was sent
-		    DidSendOutData (inFace, incoming.m_face, data, pitEntry);
+		      ok = incoming.m_face->SendDU (du_i);
 
 		    // Something caused an error
 		    if (!ok)
@@ -1897,6 +1906,32 @@ namespace ns3
 			  m_dropDUs (du_i, incoming.m_face);
 
 			NS_LOG_DEBUG ("Cannot satisfy data to " << *i << " via "<< *incoming.m_face);
+		      }
+		    else
+		      {
+			// Log that a Data PDU was sent
+			DidSendOutData (inFace, incoming.m_face, data, pitEntry);
+
+			if (wasNULL)
+			  {
+			    NS_LOG_INFO ("Satisfying with NULLp");
+			    m_outNULLps (nullp_i, incoming.m_face);
+			  }
+			else if (wasSO)
+			  {
+			    NS_LOG_INFO ("Satisfying with SO");
+			    m_outSOs (so_i, incoming.m_face);
+			  }
+			else if (wasDO)
+			  {
+			    NS_LOG_INFO ("Satisfying with DO");
+			    m_outDOs (do_i, incoming.m_face);
+			  }
+			else if (wasDU)
+			  {
+			    NS_LOG_INFO ("Satisfying with DU");
+			    m_outDUs (du_i, incoming.m_face);
+			  }
 		      }
 
 		    sentSomething = true;
@@ -1958,11 +1993,6 @@ namespace ns3
 		    // Send the DO PDU out the selected Face
 		    ok = outFace->SendDO (do_o_spec, destAddr);
 
-		    // Log that a Data PDU was sent
-		    DidSendOutData (inFace, outFace, data, pitEntry);
-		    // Log that a DO PDU was sent
-		    m_outDOs (do_o_spec, outFace);
-
 		    // Something caused an error
 		    if (!ok)
 		      {
@@ -1974,6 +2004,11 @@ namespace ns3
 		      }
 		    else
 		      {
+			// Log that a Data PDU was sent
+			DidSendOutData (inFace, outFace, data, pitEntry);
+			// Log that a DO PDU was sent
+			m_outDOs (do_o_spec, outFace);
+
 			if (incoming.m_face == outFace)
 			  {
 			    // Actually sent something using this Face
@@ -2002,11 +2037,6 @@ namespace ns3
 		    // Send the DU PDU out the selected Face
 		    ok = outFace->SendDU (du_o_spec, destAddr);
 
-		    // Log that a Data PDU was sent
-		    DidSendOutData (inFace, outFace, data, pitEntry);
-		    // Log that a DO PDU was sent
-		    m_outDUs (du_o_spec, outFace);
-
 		    // Something caused an error
 		    if (!ok)
 		      {
@@ -2018,6 +2048,11 @@ namespace ns3
 		      }
 		    else
 		      {
+			// Log that a Data PDU was sent
+			DidSendOutData (inFace, outFace, data, pitEntry);
+			// Log that a DO PDU was sent
+			m_outDUs (du_o_spec, outFace);
+
 			if (incoming.m_face == outFace)
 			  {
 			    // Actually sent something using this Face
@@ -2043,11 +2078,6 @@ namespace ns3
 		    // Send out the NULL PDU
 		    ok = incoming.m_face->SendNULLp (null_p_o);
 
-		    // Log that a Data PDU was sent
-		    DidSendOutData (inFace, incoming.m_face, data, pitEntry);
-		    // Log that a DO PDU was sent
-		    m_outNULLps (null_p_o, incoming.m_face);
-
 		    NS_LOG_DEBUG ("Satisfy " << *incoming.m_face);
 
 		    if (!ok)
@@ -2055,6 +2085,13 @@ namespace ns3
 			m_dropData (data, incoming.m_face);
 			m_dropNULLps (null_p_o, incoming.m_face);
 			NS_LOG_DEBUG ("Cannot satisfy data to " << *incoming.m_face);
+		      }
+		    else
+		      {
+			// Log that a Data PDU was sent
+			DidSendOutData (inFace, incoming.m_face, data, pitEntry);
+			// Log that a DO PDU was sent
+			m_outNULLps (null_p_o, incoming.m_face);
 		      }
 		  }
 	      }
@@ -2233,9 +2270,21 @@ namespace ns3
       else if (wasSO)
 	successSend = outFace->SendSO (so_i);
       else if (wasDO)
-	successSend = outFace->SendDO (do_i, addr);
+	{
+	  // Application Faces have no names
+	  if (outFace->isAppFace ())
+	    successSend = outFace->SendDO (do_i);
+	  else
+	    successSend = outFace->SendDO (do_i, addr);
+	}
       else if (wasDU)
-	successSend = outFace->SendDU (du_i, addr);
+	{
+	  // Application Faces have no names
+	  if (outFace->isAppFace ())
+	    successSend = outFace->SendDU (du_i);
+	  else
+	    successSend = outFace->SendDU (du_i, addr);
+	}
 
       // Check if our sending was successful
       if (!successSend)
@@ -2252,18 +2301,20 @@ namespace ns3
 	  else if (wasDU)
 	    m_dropDUs (du_i, outFace);
 	}
-
-      // Log that an Interest PDU was forwarded
-      DidSendOutInterest (inFace, outFace, interest, pitEntry);
-      // Log the type of 3N Data transfer PDU that was forwarded
-      if (wasNULL)
-	m_outNULLps (nullp_i, outFace);
-      else if (wasSO)
-	m_outSOs (so_i, outFace);
-      else if (wasDO)
-	m_outDOs (do_i, outFace);
-      else if (wasDU)
-	m_outDUs (du_i, outFace);
+      else
+	{
+	  // Log that an Interest PDU was forwarded
+	  DidSendOutInterest (inFace, outFace, interest, pitEntry);
+	  // Log the type of 3N Data transfer PDU that was forwarded
+	  if (wasNULL)
+	    m_outNULLps (nullp_i, outFace);
+	  else if (wasSO)
+	    m_outSOs (so_i, outFace);
+	  else if (wasDO)
+	    m_outDOs (do_i, outFace);
+	  else if (wasDU)
+	    m_outDUs (du_i, outFace);
+	}
 
       return true;
     }
@@ -2427,8 +2478,22 @@ namespace ns3
 	  // Check if we are already at the destination (search through all the node names acquired)
 	  if (m_node_names->foundName(constdstPtr))
 	    {
-	      // We have reached the destination return
-	      return true;
+	      NS_LOG_INFO ("We have reached desired destination, looking for Apps");
+	      Ptr<Face> tmpFace;
+	      // We have reached the destination, look for Apps
+	      for (int i = 0; i < m_faces->GetN (); i++)
+		{
+		  tmpFace = m_faces->Get (i);
+		  // Check that the Face is of type APPLICATION
+		  if (tmpFace->isAppFace ())
+		    {
+		      if (TrySendOutInterest(pdu, inFace, tmpFace, destAddr, interest, pitEntry))
+			{
+			  propagatedCount++;
+			}
+		    }
+		}
+	      return propagatedCount > 0;
 	    }
 
 	  // We may have obtained a DEN so we need to check

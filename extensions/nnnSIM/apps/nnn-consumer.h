@@ -156,7 +156,6 @@ namespace ns3
       Time                   m_offTime;             ///< \brief Time interval between packets
       ndn::Name              m_interestName;        ///< \brief NDN Name of the Interest (use Name)
       Time                   m_interestLifeTime;    ///< \brief LifeTime for interest packet
-      Ptr<const NNNAddress>  m_possibleDestination; ///< \brief Possible destination obtained from a PDU
       /// @cond include_hidden
       /**
        * \struct This struct contains sequence numbers of packets to be retransmitted

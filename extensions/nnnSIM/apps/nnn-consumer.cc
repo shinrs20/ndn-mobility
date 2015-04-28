@@ -217,30 +217,96 @@ namespace ns3
       // Encode the packet
       Ptr<Packet> retPkt = ndn::Wire::FromInterest(interest, ndn::Wire::WIRE_FORMAT_NDNSIM);
 
-      // If not mobile, then we can send NULLp packets
-      if (m_isMobile && m_has3Nname)
+      // First check whether the node we are on has a 3N name
+      if (m_has3Nname)
 	{
-	  NS_LOG_INFO ("> Interest for " << std::dec << seq << " using SO PDU");
-	  Ptr<SO> so_o = Create<SO> ();
-	  so_o->SetPDUPayloadType(NDN_NNN);
-	  so_o->SetPayload(retPkt);
-	  so_o->SetName(*m_current3Nname);
-	  so_o->SetLifetime(m_3n_lifetime);
-
-	  m_face->ReceiveSO(so_o);
-	  m_transmittedSOs (so_o, this, m_face);
+	  NS_LOG_INFO ("We have a 3N name");
+	  // We know we have a name, check if we have a destination
+	  if (m_possibleDestination->isEmpty ())
+	    {
+	      NS_LOG_INFO ("We no 3N name destination");
+	      // We don't know where to go check if SO use is flagged
+	      if (m_isMobile)
+		{
+		  // It is flagged. Use the 3N name
+		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using SO PDU");
+		  Ptr<SO> so_o = Create<SO> ();
+		  so_o->SetPDUPayloadType(NDN_NNN);
+		  so_o->SetLifetime(m_3n_lifetime);
+		  so_o->SetName(*m_current3Nname);
+		  so_o->SetPayload(retPkt);
+		  m_face->ReceiveSO(so_o);
+		  m_transmittedSOs (so_o, this, m_face);
+		}
+	      else
+		{
+		  // No flag, use NULLp PDUs
+		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using NULLp PDU");
+		  Ptr<NULLp> nullp_o = Create<NULLp> ();
+		  nullp_o->SetPDUPayloadType (NDN_NNN);
+		  nullp_o->SetLifetime(m_3n_lifetime);
+		  nullp_o->SetPayload (retPkt);
+		  m_face->ReceiveNULLp(nullp_o);
+		  m_transmittedNULLps (nullp_o, this, m_face);
+		}
+	    }
+	  else
+	    {
+	      // We have a destination
+	      NS_LOG_INFO ("We have a 3N name destination");
+	      if (m_isMobile)
+		{
+		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DU PDU");
+		  Ptr<DU> du_o = Create<DU> ();
+		  du_o->SetPDUPayloadType (NDN_NNN);
+		  du_o ->SetLifetime(m_3n_lifetime);
+		  du_o->SetSrcName (*m_current3Nname);
+		  du_o->SetDstName (*m_possibleDestination);
+		  du_o->SetPayload (retPkt);
+		  m_face->ReceiveDU (du_o);
+		  m_transmittedDUs (du_o, this, m_face);
+		}
+	      else
+		{
+		  // We have a possible destination, create a DO PDU
+		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DO PDU");
+		  Ptr<DO> do_o = Create<DO> ();
+		  do_o->SetPDUPayloadType (NDN_NNN);
+		  do_o->SetLifetime(m_3n_lifetime);
+		  do_o->SetName(*m_possibleDestination);
+		  do_o->SetPayload (retPkt);
+		  m_face->ReceiveDO(do_o);
+		  m_transmittedDOs (do_o, this, m_face);
+		}
+	    }
 	}
       else
 	{
-	  NS_LOG_INFO ("> Interest for " << std::dec << seq << " using NULLp PDU");
-	  Ptr<NULLp> nullp_o = Create<NULLp> ();
-
-	  nullp_o->SetPDUPayloadType (NDN_NNN);
-	  nullp_o->SetPayload (retPkt);
-	  nullp_o->SetLifetime(m_3n_lifetime);
-
-	  m_face->ReceiveNULLp(nullp_o);
-	  m_transmittedNULLps (nullp_o, this, m_face);
+	  NS_LOG_INFO ("No 3N name");
+	  // We don't have a name, do we have a destination?
+	  if (m_possibleDestination->isEmpty ())
+	    {
+	      // We have absolutely no 3N knowledge, use NULLp PDUs
+	      NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using NULLp PDU");
+	      Ptr<NULLp> nullp_o = Create<NULLp> ();
+	      nullp_o->SetPDUPayloadType (NDN_NNN);
+	      nullp_o->SetLifetime(m_3n_lifetime);
+	      nullp_o->SetPayload (retPkt);
+	      m_face->ReceiveNULLp(nullp_o);
+	      m_transmittedNULLps (nullp_o, this, m_face);
+	    }
+	  else
+	    {
+	      // We have a possible destination, create a DO PDU
+	      NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DO PDU");
+	      Ptr<DO> do_o = Create<DO> ();
+	      do_o->SetPDUPayloadType (NDN_NNN);
+	      do_o->SetLifetime(m_3n_lifetime);
+	      do_o->SetName(*m_possibleDestination);
+	      do_o->SetPayload (retPkt);
+	      m_face->ReceiveDO(do_o);
+	      m_transmittedDOs (do_o, this, m_face);
+	    }
 	}
 
       ScheduleNextPacket ();
@@ -372,6 +438,7 @@ namespace ns3
       if (pdutype == NDN_NNN)
 	{
 	  m_possibleDestination = soObject->GetNamePtr();
+	  NS_LOG_INFO ("Possible destination is now (" << *m_possibleDestination << ")");
 	  Deencapsulate3N(packet);
 	}
     }
@@ -413,6 +480,7 @@ namespace ns3
       if (pdutype == NDN_NNN)
 	{
 	  m_possibleDestination = duObject->GetSrcNamePtr();
+	  NS_LOG_INFO ("Possible destination is now (" << *m_possibleDestination << ")");
 	  Deencapsulate3N(packet);
 	}
     }
