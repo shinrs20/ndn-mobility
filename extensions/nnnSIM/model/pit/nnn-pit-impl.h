@@ -281,7 +281,7 @@ namespace ns3
 	    typename time_index::iterator entry = i_time.begin ();
 	    if (entry->GetExpireTime () <= now) // is the record stale?
 	      {
-		//m_forwardingStrategy->WillEraseTimedOutPendingInterest (entry->to_iterator ()->payload ());
+		m_forwardingStrategy->WillEraseTimedOutPendingInterest (entry->to_iterator ()->payload ());
 		super::erase (entry->to_iterator ());
 		// count ++;
 	      }
