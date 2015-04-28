@@ -88,7 +88,6 @@ namespace ns3
     : m_rand (0, std::numeric_limits<uint32_t>::max ())
     , m_seq (0)
     , m_seqMax (0) // don't request anything
-    , m_possibleDestination (Create<NNNAddress> ())
     {
       NS_LOG_FUNCTION_NOARGS ();
 
