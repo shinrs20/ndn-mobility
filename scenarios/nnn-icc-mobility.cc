@@ -763,7 +763,6 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
       consumerHelper.SetAttribute ("IsMobile", BooleanValue(true));
-      consumerHelper.Install (mobileTerminalContainer);
 
       if (producer)
 	{
