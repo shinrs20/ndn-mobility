@@ -114,7 +114,7 @@ tbreak = seq (0, round (nrow (data.combined), -1), opt$seq)
 
 if (opt$delay) {
   cat ("Creating Average Network Delay graph\n")
-  name = sprintf("%s Average Network Delay", opt$title)
+  name = sprintf("%s Averaged 1 second Network Delay", opt$title)
   
   if (nchar(opt$compare) > 0)
   {
@@ -155,7 +155,7 @@ if (opt$delay) {
 
 if (opt$hop) {
   cat ("Creating Average Hopcount graph\n")
-  name = sprintf("%s Average Packet Hop Count", opt$title)
+  name = sprintf("%s Averaged 1 second Packet Hop Count", opt$title)
   
   if (nchar(opt$compare) > 0)
   {
@@ -196,7 +196,7 @@ if (opt$hop) {
 
 if (opt$retx) {
   cat ("Creating Average Transmission count graph\n")
-  name = sprintf("%s Average Transmission Count", opt$title)
+  name = sprintf("%s Averaged 1 second Transmission Count", opt$title)
   
   if (nchar(opt$compare) > 0)
   {
