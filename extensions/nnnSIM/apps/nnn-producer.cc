@@ -306,6 +306,7 @@ namespace ns3
 		      du_o->SetSrcName(*m_current3Nname);
 		      du_o->SetDstName(soObject->GetName ());
 		      du_o->SetLifetime(m_3n_lifetime);
+		      du_o->SetPayload(retPkt);
 
 		      m_face->ReceiveDU(du_o);
 		      m_transmittedDUs (du_o, this, m_face);
@@ -317,8 +318,8 @@ namespace ns3
 
 		      do_o->SetName (soObject->GetName ());
 		      do_o->SetPDUPayloadType (pdutype);
-		      do_o->SetPayload (retPkt);
 		      do_o->SetLifetime(m_3n_lifetime);
+		      do_o->SetPayload (retPkt);
 
 		      m_face->ReceiveDO(do_o);
 		      m_transmittedDOs (do_o, this, m_face);
