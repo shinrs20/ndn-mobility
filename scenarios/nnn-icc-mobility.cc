@@ -289,9 +289,8 @@ int main (int argc, char *argv[])
   int csSize = 10000000;                        // How big the Content Store should be
   bool use3N = false;                           // Flags use of 3N based scenario
   bool useNDN = false;                          // Flags use of NDN based scenario
+  bool producer = false;                        // Tells to run the simulation with the Provider moving
   double initialWait = 10;                      // How much time we should wait to start the simulation (Mostly to deal with 3N naming)
-  double initialPos = -speed*initialWait;       // Where to put the initial node
-  double endTime = 1 + initialWait + (400 / speed);                         // Number of seconds to run the simulation
 
   // Variable for buffer
   char buffer[250];
@@ -305,8 +304,10 @@ int main (int argc, char *argv[])
   cmd.AddValue ("mbps", "Data transmission rate for App in MBps", MBps);
   cmd.AddValue ("size", "Content size in MB (-1 is for no limit)", contentSize);
   cmd.AddValue ("retx", "How frequent Interest retransmission timeouts should be checked in seconds", retxtime);
+  cmd.AddValue ("speed", "How fast in m/s the mobile node should go in X axis", speed);
   cmd.AddValue ("3n", "Uses 3N scenario", use3N);
   cmd.AddValue ("ndn", "Uses NDN scenario", useNDN);
+  cmd.AddValue ("producer", "Makes the scenario with the Producer moving. By default it is the Consumer", producer);
   cmd.Parse (argc,argv);
 
   if (! (use3N || useNDN))
@@ -320,6 +321,9 @@ int main (int argc, char *argv[])
       cerr << "ERROR: Cannot run 3N and NDN scenarios at the same time! Pick one!" << endl;
       return 1;
     }
+
+  double initialPos = -speed*initialWait;       // Where to put the initial node
+  double endTime = 1 + initialWait + (400 / speed);                         // Number of seconds to run the simulation
 
   // What the NDN Data packet payload size is fixed to 1024 bytes
   uint32_t payLoadsize = 1024;
@@ -552,6 +556,7 @@ int main (int argc, char *argv[])
   NetDeviceContainer wifiMTNetDevices = wifi.Install (wifiPhyHelper, wifiMacHelper, mobileTerminalContainer);
 
   char routeType[250];
+  char moving[250];
 
   sprintf(buffer, "%d", csSize);
 
@@ -607,7 +612,15 @@ int main (int argc, char *argv[])
       producerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
       // Payload size is in bytes
       producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
-      producerHelper.Install (serverNodes);
+
+      if (producer)
+	{
+	  producerHelper.Install (mobileTerminalContainer);
+	}
+      else
+	{
+	  producerHelper.Install (serverNodes);
+	}
 
       NS_LOG_INFO ("------Installing NDN Consumer Application------");
 
@@ -623,7 +636,16 @@ int main (int argc, char *argv[])
       if (maxSeq > 0)
 	consumerHelper.SetAttribute ("MaxSeq", IntegerValue(maxSeq));
 
-      consumerHelper.Install (mobileTerminalContainer);
+      if (producer)
+	{
+	  sprintf (moving, "%s", "prod");
+	  consumerHelper.Install (serverNodes);
+	}
+      else
+	{
+	  sprintf (moving, "%s", "con");
+	  consumerHelper.Install (mobileTerminalContainer);
+	}
     }
 
   if (use3N)
@@ -716,10 +738,19 @@ int main (int argc, char *argv[])
       producerHelper.SetPrefix ("/waseda/sato");
       // Payload size is in bytes
       producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
-      producerHelper.SetAttribute("StartTime", TimeValue (Seconds(initialWait)));
-      producerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime -1)));
+      producerHelper.SetAttribute ("StartTime", TimeValue (Seconds(initialWait)));
+      producerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime -1)));
+
       // Install producer on AP
-      producerHelper.Install (serverNodes);
+      if (producer)
+	{
+	  producerHelper.SetAttribute ("IsMobile", BooleanValue (true));
+	  producerHelper.Install (mobileTerminalContainer);
+	}
+      else
+	{
+	  producerHelper.Install (serverNodes);
+	}
 
       NS_LOG_INFO ("------ Installing 3N Consumer Application------ ");
       NS_LOG_INFO ("Consumer Interests/Second frequency: " << intFreq);
@@ -728,11 +759,23 @@ int main (int argc, char *argv[])
       nnn::AppHelper consumerHelper ("ns3::nnn::ConsumerCbr");
       consumerHelper.SetPrefix ("/waseda/sato");
       consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
-      consumerHelper.SetAttribute("StartTime", TimeValue (Seconds(initialWait)));
-      consumerHelper.SetAttribute("StopTime", TimeValue (Seconds(endTime-1)));
+      consumerHelper.SetAttribute ("StartTime", TimeValue (Seconds(initialWait)));
+      consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
-      consumerHelper.SetAttribute("IsMobile", BooleanValue(true));
+      consumerHelper.SetAttribute ("IsMobile", BooleanValue(true));
       consumerHelper.Install (mobileTerminalContainer);
+
+      if (producer)
+	{
+	  sprintf (moving, "%s", "prod");
+	  consumerHelper.Install (serverNodes);
+	}
+      else
+	{
+	  sprintf (moving, "%s", "con");
+	  consumerHelper.SetAttribute ("IsMobile", BooleanValue (true));
+	  consumerHelper.Install (mobileTerminalContainer);
+	}
     }
 
   NS_LOG_INFO("Ending time! " <<  endTime);
@@ -746,7 +789,7 @@ int main (int argc, char *argv[])
       char fileId[250];
 
       // Create the file identifier
-      sprintf(fileId, "%s-%02d-%03d-%03d.txt", routeType, mobile, servers, wnodes);
+      sprintf(fileId, "%s-%s-%02d-%03d-%03d.txt", routeType, moving, mobile, servers, wnodes);
 
       sprintf(filename, "%s/%s-clients-%s", results, scenario, fileId);
 
