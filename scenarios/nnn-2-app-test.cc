@@ -56,6 +56,7 @@
 #include "nnnSIM/nnnSIM-module.h"
 
 // 3N Tracer
+#include "nnnSIM/utils/tracers/nnn-l3-rate-tracer.h"
 #include "nnnSIM/utils/tracers/nnn-l3-aggregate-tracer.h"
 #include "nnnSIM/utils/tracers/nnn-app-delay-tracer.h"
 
@@ -415,7 +416,7 @@ int main (int argc, char *argv[])
   if (useMobility)
     {
       NS_LOG_INFO ("Consumer is using mobility 3N SO support");
-      consumerHelper.SetAttribute("UseSO", BooleanValue(true));
+      consumerHelper.SetAttribute("IsMobile", BooleanValue(true));
     }
   consumerHelper.Install (MNContainer);
 
@@ -461,6 +462,10 @@ int main (int argc, char *argv[])
       // 3N App Tracer
       sprintf (filename, "%s/%s-app-delays-%s", results, scenario, fileId);
       nnn::AppDelayTracer::InstallAll (filename);
+
+      // 3N L3 tracer
+      sprintf (filename, "%s/%s-rate-trace-%s", results, scenario, fileId);
+      nnn::L3RateTracer::InstallAll (filename, Seconds (1.0));
 
       NS_LOG_INFO ("Installing Aggregate tracers");
       // 3N Aggregate tracer
