@@ -59,7 +59,9 @@
 
 // nnnSIM modules
 #include "nnnSIM/nnnSIM-module.h"
+
 // 3N Tracer
+#include "nnnSIM/utils/tracers/nnn-l3-rate-tracer.h"
 #include "nnnSIM/utils/tracers/nnn-l3-aggregate-tracer.h"
 #include "nnnSIM/utils/tracers/nnn-app-delay-tracer.h"
 
@@ -900,6 +902,10 @@ int main (int argc, char *argv[])
 	  // 3N Aggregate tracer
 	  sprintf (filename, "%s/%s-aggregate-trace-%s", results, scenario, fileId);
 	  nnn::L3AggregateTracer::InstallAll(filename, Seconds (1.0));
+
+	  // 3N L3 tracer
+	  sprintf (filename, "%s/%s-rate-trace-%s", results, scenario, fileId);
+	  nnn::L3RateTracer::InstallAll (filename, Seconds (1.0));
 
 	  // Content Store tracer
 	  sprintf (filename, "%s/%s-cs-trace-%s", results, scenario, fileId);
