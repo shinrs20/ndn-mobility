@@ -48,7 +48,7 @@ option_list <- list (
 )
 
 # Load the parser
-opt = parse_args(OptionParser(option_list=option_list, description="Creates graphs from ndnSIM L3 Data Aggregate Tracer data"))
+opt = parse_args(OptionParser(option_list=option_list, description="Creates graphs from L3 Data Aggregate Tracer data"))
 
 data = read.table (opt$file, header=T)
 data$Node = factor (data$Node)

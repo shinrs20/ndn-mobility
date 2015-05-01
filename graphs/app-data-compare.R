@@ -53,7 +53,7 @@ option_list <- list (
 )
 
 # Load the parser
-opt = parse_args(OptionParser(option_list=option_list, description="Creates graphs from ndnSIM App Delay Tracer data"))
+opt = parse_args(OptionParser(option_list=option_list, description="Creates graphs from App Delay Tracer data"))
 
 data = read.table (opt$file, header=T)
 data$Node = factor (data$Node)
