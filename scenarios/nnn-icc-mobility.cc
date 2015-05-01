@@ -558,8 +558,15 @@ int main (int argc, char *argv[])
 
   char routeType[250];
   char moving[250];
+  char speedchar[250];
 
   sprintf(buffer, "%d", csSize);
+
+  sprintf (speedchar, "%.2f", speed);
+
+  std::string speedstr (speedchar);
+
+  std::replace(speedstr.begin (), speedstr.end (), '.', '-');
 
   std::string cs (buffer);
 
@@ -789,7 +796,7 @@ int main (int argc, char *argv[])
       char fileId[250];
 
       // Create the file identifier
-      sprintf(fileId, "%s-%s-%02d-%03d-%03d.txt", routeType, moving, mobile, servers, wnodes);
+      sprintf(fileId, "%s-%s-%s-%02d-%03d-%03d.txt", routeType, moving, speedstr.c_str(), mobile, servers, wnodes);
 
       sprintf(filename, "%s/%s-clients-%s", results, scenario, fileId);
 
