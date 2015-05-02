@@ -323,8 +323,9 @@ int main (int argc, char *argv[])
       return 1;
     }
 
-  double initialPos = -speed*initialWait;       // Where to put the initial node
-  double endTime = 1 + initialWait + (400 / speed);                         // Number of seconds to run the simulation
+  double initialPos = -speed*initialWait;                            // Where to put the initial node
+  double appEndTime = initialWait + (400 / speed);               // At what moment to end the applications
+  double endTime = initialWait + (400 / speed) + initialWait;    // Number of seconds to run the simulation
 
   // What the NDN Data packet payload size is fixed to 1024 bytes
   uint32_t payLoadsize = 1024;
@@ -617,7 +618,7 @@ int main (int argc, char *argv[])
       // Create the producer on the mobile node
       ndn::AppHelper producerHelper ("ns3::ndn::Producer");
       producerHelper.SetPrefix ("/waseda/sato");
-      producerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
+      producerHelper.SetAttribute ("StopTime", TimeValue (Seconds(appEndTime)));
       // Payload size is in bytes
       producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
 
@@ -639,7 +640,7 @@ int main (int argc, char *argv[])
       consumerHelper.SetPrefix ("/waseda/sato");
       consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
       consumerHelper.SetAttribute ("StartTime", TimeValue (Seconds(initialWait)));
-      consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
+      consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(appEndTime)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
       if (maxSeq > 0)
 	consumerHelper.SetAttribute ("MaxSeq", IntegerValue(maxSeq));
@@ -746,8 +747,7 @@ int main (int argc, char *argv[])
       producerHelper.SetPrefix ("/waseda/sato");
       // Payload size is in bytes
       producerHelper.SetAttribute ("PayloadSize", UintegerValue(payLoadsize));
-      producerHelper.SetAttribute ("StartTime", TimeValue (Seconds(initialWait)));
-      producerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime -1)));
+      producerHelper.SetAttribute ("StopTime", TimeValue (Seconds(appEndTime)));
 
       // Install producer on AP
       if (producer)
@@ -768,7 +768,7 @@ int main (int argc, char *argv[])
       consumerHelper.SetPrefix ("/waseda/sato");
       consumerHelper.SetAttribute ("Frequency", DoubleValue (intFreq));
       consumerHelper.SetAttribute ("StartTime", TimeValue (Seconds(initialWait)));
-      consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(endTime-1)));
+      consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(appEndTime)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
       consumerHelper.SetAttribute ("IsMobile", BooleanValue(true));
 
