@@ -130,7 +130,7 @@ if (opt$delay) {
       scale_x_continuous (breaks=tbreak)
       
     
-    outpng = sprintf("%s/%s-compare-app-delay.png", opt$output, noext)
+    outpng = sprintf("%s/%s-comp-delay.png", opt$output, noext)
     
     png (outpng, width=1024, height=768)
     print (g.all)
@@ -145,7 +145,7 @@ if (opt$delay) {
       xlab ("Time") +
       scale_x_continuous (breaks=tbreak)
     
-    outpng = sprintf("%s/%s-app-delay.png", opt$output, noext)
+    outpng = sprintf("%s/%s-delay.png", opt$output, noext)
     
     png (outpng, width=1024, height=768)
     print (g.all)
@@ -171,7 +171,7 @@ if (opt$hop) {
       scale_x_continuous (breaks=tbreak)
     
     
-    outpng = sprintf("%s/%s-compare-app-hop.png", opt$output, noext)
+    outpng = sprintf("%s/%s-comp-hop.png", opt$output, noext)
     
     png (outpng, width=1024, height=768)
     print (g.all)
@@ -186,7 +186,7 @@ if (opt$hop) {
       xlab ("Time") +
       scale_x_continuous (breaks=tbreak)
     
-    outpng = sprintf("%s/%s-app-hop.png", opt$output, noext)
+    outpng = sprintf("%s/%s-hop.png", opt$output, noext)
     
     png (outpng, width=1024, height=768)
     print (g.all)
@@ -212,7 +212,7 @@ if (opt$retx) {
       scale_x_continuous (breaks=tbreak)
     
     
-    outpng = sprintf("%s/%s-compare-app-retx.png", opt$output, noext)
+    outpng = sprintf("%s/%s-comp-retx.png", opt$output, noext)
     
     png (outpng, width=1024, height=768)
     print (g.all)
@@ -227,7 +227,7 @@ if (opt$retx) {
       xlab ("Time") +
       scale_x_continuous (breaks=tbreak)
     
-    outpng = sprintf("%s/%s-app-retx.png", opt$output, noext)
+    outpng = sprintf("%s/%s-retx.png", opt$output, noext)
     
     png (outpng, width=1024, height=768)
     print (g.all)
