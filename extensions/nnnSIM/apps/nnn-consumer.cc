@@ -437,8 +437,11 @@ namespace ns3
 
       if (pdutype == NDN_NNN)
 	{
-	  m_possibleDestination = soObject->GetNamePtr();
-	  NS_LOG_INFO ("Possible destination is now (" << *m_possibleDestination << ")");
+	  if (*m_possibleDestination != *soObject->GetNamePtr ())
+	    {
+	      m_possibleDestination = soObject->GetNamePtr ();
+	      NS_LOG_INFO ("Possible destination is now (" << *m_possibleDestination << ")");
+	    }
 	  Deencapsulate3N(packet);
 	}
     }
@@ -479,8 +482,12 @@ namespace ns3
 
       if (pdutype == NDN_NNN)
 	{
-	  m_possibleDestination = duObject->GetSrcNamePtr();
-	  NS_LOG_INFO ("Possible destination is now (" << *m_possibleDestination << ")");
+	  if (*m_possibleDestination != *duObject->GetSrcNamePtr ())
+	    {
+	      m_possibleDestination = duObject->GetSrcNamePtr ();
+	      NS_LOG_INFO ("Possible destination is now (" << *m_possibleDestination << ")");
+	    }
+
 	  Deencapsulate3N(packet);
 	}
     }
