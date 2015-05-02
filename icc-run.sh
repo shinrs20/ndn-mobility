@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SPEED="1.40 2.80 4.20 5.60"
+SPEED="1.40 2.80 5.60 11.20"
 
 for i in $SPEED
 do
