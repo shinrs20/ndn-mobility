@@ -284,10 +284,8 @@ namespace ns3
     ForwardingStrategy::SetNode3NName (Ptr<const NNNAddress> name, Time lease, bool fixed)
     {
       NS_LOG_FUNCTION (this);
-      // Modification to know which node if being called
-      Ptr<Node> node = this->GetObject<Node> ();
 
-      NS_LOG_INFO("Adding 3N name (" << *name << ") to node " << node->GetId());
+      NS_LOG_INFO("Adding 3N name (" << *name << ") to node ");
       m_node_names->addEntry(name, lease, fixed);
       // TracedCallback to let Apps know we have a name
       m_got3Nname ();
@@ -801,11 +799,12 @@ namespace ns3
 
 	      ok = outFace->SendDEN (den_p, destAddr);
 
-	      // Log that the DEN PDU was sent
-	      m_outDENs (den_p, outFace);
-
 	      if (ok)
-		propagated = true;
+		{
+		  propagated = true;
+		  // Log that the DEN PDU was sent
+		  m_outDENs (den_p, outFace);
+		}
 	    }
 
 	  if (propagated)
@@ -948,29 +947,81 @@ namespace ns3
 
       m_inINFs (inf_p, face);
 
+      bool ok = false;
+      bool routed = false;
+      bool propagated = false;
+
       NNNAddress myAddr = GetNode3NName ();
 
       Ptr<NNNAddress> oldName = Create<NNNAddress> (inf_p->GetOldName ());
       Ptr<NNNAddress> newName = Create<NNNAddress> (inf_p->GetNewName ());
 
-      NS_LOG_INFO ("On (" << myAddr << ") creating NNPT Entry for Old: (" << *oldName << ") -> New: (" << *newName << ")");
-
       NNNAddress endSector = inf_p->GetOldNamePtr ()->getSectorName ();
 
       if (myAddr != endSector)
 	{
-	  NS_LOG_INFO("On (" << myAddr << ") receiving an INF. Have not yet reached delegated Sector. Forwarding to (" << endSector << ")");
+	  NS_LOG_INFO("On (" << myAddr << ") have not yet reached sector. Attempting to forward to (" << endSector << ")");
 
 	  // Roughly pick the next hop that would bring us closer to the endSector
 	  std::pair<Ptr<Face>, Address> tmp = m_nnst->ClosestSectorFaceInfo (endSector, 0);
 
-	  Ptr<Face> outFace = tmp.first;
+	  // Just like with DEN, we need to inform our higher ups that things have changed in this sector
+	  std::vector<std::pair<Ptr<Face>, Address> > hierarchicalFaces = m_nnst->OneHopParentSectorFaceInfo (myAddr, 0);
+	  std::vector<std::pair<Ptr<Face>, Address> >::iterator it;
+
+	  Ptr<Face> outFace;
+	  // First send out the routed Face
+	  Ptr<Face> routedFace = tmp.first;
 	  Address destAddr = tmp.second;
 
-	  outFace->SendINF (inf_p, destAddr);
+	  if (routedFace != face)
+	    ok = routedFace->SendINF (inf_p, destAddr);
 
-	  // Log that the INF PDU was sent
-	  m_outINFs (inf_p, outFace);
+	  if (ok)
+	    {
+	      // Log that the INF PDU was sent
+	      m_outINFs (inf_p, routedFace);
+	      routed = true;
+	    }
+
+	  if (routed)
+	    NS_LOG_INFO ("On (" << myAddr << ") forwarded one hop closer to (" << endSector << ")");
+
+	  // Check how far we are from old Name
+	  if (oldName->distance (myAddr) <= 2)
+	    {
+	      for (it = hierarchicalFaces.begin (); it != hierarchicalFaces.end (); ++it)
+		{
+		  // Check the information for the hierarchical Faces
+		  outFace = it->first;
+		  destAddr = it->second;
+
+		  // Should we stumble on a face that is how we got here, skip
+		  if (outFace == face)
+		    continue;
+
+		  // If we routed the INF already, skip this face
+		  if (routed && routedFace == face)
+		    continue;
+
+		  // After all checks, start sending
+		  ok = outFace->SendINF (inf_p, destAddr);
+
+		  if (ok)
+		    {
+		      // Log that the INF PDU was sent
+		      m_outINFs (inf_p, outFace);
+		      propagated = true;
+		    }
+		}
+
+	      if (propagated)
+		NS_LOG_INFO ("On (" << myAddr << ") found parent sector to propagate to");
+	    }
+	  else
+	    {
+	      NS_LOG_INFO ("On (" << myAddr << ") we are too far from (" << endSector << "), no forwarding to parent sectors");
+	    }
 	}
       else
 	{
@@ -979,6 +1030,8 @@ namespace ns3
 
       // We have inserted the INF information. Now flush the relevant buffer
       flushBuffer (face, oldName, newName);
+
+      NS_LOG_INFO ("On (" << myAddr << ") creating NNPT Entry for Old: (" << *oldName << ") -> New: (" << *newName << ")");
 
       // Update our NNPT with the information in the INF PDU
       m_nnpt->addEntry (inf_p->GetOldNamePtr (), inf_p->GetNewNamePtr (), inf_p->GetRemainLease ());
@@ -1126,16 +1179,18 @@ namespace ns3
 	case SO_NNN:
 	  // Convert pointer to SO
 	  so_i = DynamicCast<SO> (pdu);
-	  // Add the Face
+	  // Add the Face and 3N name
 	  pitEntry->AddIncoming (face, so_i->GetNamePtr ());
 	  break;
 	case DU_NNN:
 	  // Convert pointer to DU
 	  du_i = DynamicCast<DU> (pdu);
-	  // Add the Face
+	  // Add the Face and 3N name
 	  pitEntry->AddIncoming (face, du_i->GetSrcNamePtr ());
 	  break;
 	default:
+	  // For NULL or DO, just add the Face
+	  pitEntry->AddIncoming(face);
 	  break;
       }
       // Update PIT entry lifetime
@@ -1196,6 +1251,7 @@ namespace ns3
       Ptr<ndn::Data> contentObject = m_contentStore->Lookup (interest);
       if (contentObject != 0)
 	{
+	  NS_LOG_INFO ("CS has Interest, attempting to satisfy");
 	  // Update the PIT
 	  UpdatePITEntry(pitEntry, pdu, face, Seconds(1));
 
@@ -1260,6 +1316,8 @@ namespace ns3
 	  DidReceiveUnsolicitedData (face, data, true);
 
 	  NS_LOG_INFO ("On (" << myAddr << ") there is no PIT Entry for this DATA " << std::dec << data->GetName ().get (-1).toSeqNum ());
+
+	  // We got Data without having solicited it, but it
 	}
 
       while (pitEntry != 0)
@@ -1279,7 +1337,7 @@ namespace ns3
     ForwardingStrategy::WillEraseTimedOutPendingInterest (Ptr<pit::Entry> pitEntry)
     {
       NS_LOG_FUNCTION (this);
-      NS_LOG_DEBUG ("WillEraseTimedOutPendingInterest for " << pitEntry->GetPrefix ());
+      NS_LOG_DEBUG ("Will erase Timed Out Interest: " << pitEntry->GetPrefix () << " seq: " << std::dec << pitEntry->GetPrefix ().get (-1).toSeqNum ());
 
       for (pit::Entry::out_container::iterator face = pitEntry->GetOutgoing ().begin ();
 	  face != pitEntry->GetOutgoing ().end ();
@@ -1721,11 +1779,14 @@ namespace ns3
                                                 Ptr<pit::Entry> pitEntry)
     {
       NS_LOG_FUNCTION (this);
+      NNNAddress myAddr = GetNode3NName ();
+
+      NS_LOG_INFO ("On (" << myAddr << ") Satisfying pending Interests for " << data->GetName());
+
       if (inFace != 0)
 	pitEntry->RemoveIncoming (inFace);
-
-      NNNAddress myAddr = GetNode3NName ();
-      NS_LOG_INFO ("On (" << myAddr << ") Satisfying pending Interests for " << data->GetName());
+      else
+	NS_LOG_INFO ("On (" << myAddr << ") satisfying from local CS");
 
       // Convert the Data PDU into a NS-3 Packet
       Ptr<Packet> icn_pdu = ndn::Wire::FromData (data);
@@ -1785,10 +1846,173 @@ namespace ns3
 	// It is possible for the face to have no destinations
 	if (distinct.empty())
 	  {
-	    NS_LOG_INFO ("On (" << myAddr << ") Our PIT has no 3N names aggregated");
 	    // The PIT Entry has been created but has no 3N names. We satisfy with whatever we were given
-	    if (!sentSomething)
+	    NS_LOG_INFO ("On (" << myAddr << ") Our PIT has no 3N names aggregated");
+
+	    if (inFace == 0)
 	      {
+		NS_LOG_INFO ("On (" << myAddr << ") we are satisfying directly from our CS");
+
+		// If an application Face, forward PDU as it arrive
+		if (incoming.m_face->isAppFace())
+		  {
+		    NS_LOG_INFO ("On (" << myAddr << ") we are sending to an Application Face");
+		    if (wasNULL)
+		      ok = incoming.m_face->SendNULLp (nullp_i);
+		    else if (wasSO)
+		      ok = incoming.m_face->SendSO (so_i);
+		    else if (wasDO)
+		      ok = incoming.m_face->SendDO (do_i);
+		    else if (wasDU)
+		      ok = incoming.m_face->SendDU (du_i);
+
+		    // Something caused an error
+		    if (!ok)
+		      {
+			// Log Data drops
+			m_dropData (data, incoming.m_face);
+			// Log the type of 3N Data transfer PDU that was dropped
+			if (wasNULL)
+			  m_dropNULLps (nullp_i, incoming.m_face);
+			else if (wasSO)
+			  m_dropSOs (so_i, incoming.m_face);
+			else if (wasDO)
+			  m_dropDOs (do_i, incoming.m_face);
+			else if (wasDU)
+			  m_dropDUs (du_i, incoming.m_face);
+
+			NS_LOG_DEBUG ("Cannot satisfy data to via "<< *incoming.m_face);
+		      }
+		    else
+		      {
+			// Log that a Data PDU was sent
+			DidSendOutData (inFace, incoming.m_face, data, pitEntry);
+
+			if (wasNULL)
+			  {
+			    NS_LOG_INFO ("Satisfying with NULLp");
+			    m_outNULLps (nullp_i, incoming.m_face);
+			  }
+			else if (wasSO)
+			  {
+			    NS_LOG_INFO ("Satisfying with SO");
+			    m_outSOs (so_i, incoming.m_face);
+			  }
+			else if (wasDO)
+			  {
+			    NS_LOG_INFO ("Satisfying with DO");
+			    m_outDOs (do_i, incoming.m_face);
+			  }
+			else if (wasDU)
+			  {
+			    NS_LOG_INFO ("Satisfying with DU");
+			    m_outDUs (du_i, incoming.m_face);
+			  }
+		      }
+		  }
+		else
+		  {
+		    Ptr<NULLp> null_p_spec;
+		    Ptr<DO> do_o_spec;
+
+		    // We can do a little PDU modification particularly for SO and DU
+		    if (wasNULL || wasDO)
+		      {
+			// DO has destination only, so we need to return with NULL PDU
+			// Create a NULL to return the information
+			null_p_spec = Create<NULLp> ();
+			// Set the lifetime of the 3N PDU
+			null_p_spec->SetLifetime (m_3n_lifetime);
+			// Configure payload for PDU
+			null_p_spec->SetPayload (icn_pdu);
+			// Signal that the PDU had an ICN PDU as payload
+			null_p_spec->SetPDUPayloadType (NDN_NNN);
+
+			ok = incoming.m_face->SendNULLp (null_p_spec);
+		      }
+		    else if (wasSO || wasDU)
+		      {
+			// Get the Src 3N name
+			Ptr<const NNNAddress> olddest;
+			if (wasSO)
+			  {
+			    olddest = so_i->GetNamePtr();
+			  }
+			else
+			  {
+			    olddest = du_i->GetSrcNamePtr();
+			  }
+
+			bool redirect = m_nnpt->foundOldName(olddest);
+
+			NNNAddress endDest;
+			endDest = m_nnpt->findPairedNamePtr (olddest)->getName ();
+
+			if (redirect)
+			  NS_LOG_INFO ("We are on (" << myAddr << ") we are redirecting (" << *olddest << ") to (" << endDest << ")");
+
+			// Although we have a 3N Src Name, via SO or DU, since we didn't create this Data object, we can only respond with a DO
+			do_o_spec = Create<DO> ();
+			// Set the new 3N name
+			do_o_spec->SetName (endDest);
+			// Set the lifetime of the 3N PDU
+			do_o_spec->SetLifetime (m_3n_lifetime);
+			// Signal that the PDU had an ICN PDU as payload
+			do_o_spec->SetPDUPayloadType (NDN_NNN);
+			// Configure payload for PDU
+			do_o_spec->SetPayload (icn_pdu);
+
+			// We may have obtained a DEN so we need to check
+			if (m_node_pdu_buffer->DestinationExists (endDest) && !redirect)
+			  {
+			    NS_LOG_INFO ("We are on (" << myAddr << ") we have been told to buffer this PDU to (" << endDest << ")");
+
+			    NS_LOG_INFO ("Buffering DO");
+			    m_node_pdu_buffer->PushDO (endDest, do_o_spec);
+			  }
+
+			ok = incoming.m_face->SendDO (do_o_spec);
+		      }
+
+		    // Something caused an error
+		    if (!ok)
+		      {
+			// Log Data drops
+			m_dropData (data, incoming.m_face);
+			// Log the type of 3N Data transfer PDU that was dropped
+			if (wasNULL || wasDO)
+			  m_dropNULLps (null_p_spec, incoming.m_face);
+			else if (wasSO || wasDU)
+			  m_dropDOs (do_o_spec, incoming.m_face);
+
+			NS_LOG_DEBUG ("Cannot satisfy data to via "<< *incoming.m_face);
+		      }
+		    else
+		      {
+			// Log that a Data PDU was sent
+			DidSendOutData (inFace, incoming.m_face, data, pitEntry);
+
+			if (wasNULL || wasDO)
+			  {
+			    NS_LOG_INFO ("Satisfying with NULLp");
+			    m_outNULLps (null_p_spec, incoming.m_face);
+			  }
+			else if (wasSO || wasDU)
+			  {
+			    NS_LOG_INFO ("Satisfying with DO");
+			    m_outDOs (do_o_spec, incoming.m_face);
+			  }
+		      }
+		  }
+	      }
+	    else
+	      {
+		if (incoming.m_face->isAppFace ())
+		  NS_LOG_INFO ("On (" << myAddr << ") we are sending to an Application Face");
+		else
+		  NS_LOG_INFO ("On (" << myAddr << ") we are sending to a normal Face");
+
+		// If the Face is an application Face, then just forward it as is
 		if (wasNULL)
 		  ok = incoming.m_face->SendNULLp (nullp_i);
 		else if (wasSO)
@@ -1944,8 +2168,10 @@ namespace ns3
 		// Retrieve the new 3N name destination
 		bool redirect = m_nnpt->foundOldName(i);
 
+		newdst = m_nnpt->findPairedNamePtr (i)->getName ();
+
 		if (redirect)
-		  NS_LOG_INFO ("We are on (" << myAddr << ") we are directing (" << i << ")");
+		  NS_LOG_INFO ("We are on (" << myAddr << ") we are redirecting (" << *i << ") to (" << newdst << ")");
 
 		// We may have obtained a DEN so we need to check
 		if (m_node_pdu_buffer->DestinationExists (i) && !redirect)
@@ -1963,8 +2189,6 @@ namespace ns3
 			m_node_pdu_buffer->PushDU (i, du_i);
 		      }
 		  }
-
-		newdst = m_nnpt->findPairedNamePtr (i)->getName ();
 
 		NS_LOG_INFO ("On (" << myAddr << ") Going to look at NNST size: " << m_nnst->GetSize() << " to send to (" << newdst << ")");
 		NS_LOG_INFO (*m_nnst);
@@ -2100,6 +2324,8 @@ namespace ns3
 	    }
 	  }
       }
+
+      NS_LOG_INFO ("Finished satisfying, clearing PIT Entry");
 
       // All incoming interests are satisfied. Remove them
       pitEntry->ClearIncoming ();
@@ -2420,6 +2646,7 @@ namespace ns3
       bool wasDO = false;
       Ptr<DU> du_i;
       bool wasDU = false;
+      Ptr<SO> so_i;
       bool wasSO = false;
 
       // Since we are using a combination of ICN/3N, we copy the pointer and
@@ -2432,6 +2659,7 @@ namespace ns3
       switch(pduid)
       {
 	case SO_NNN:
+	  so_i = DynamicCast<SO> (pdu);
 	  wasSO = true;
 	  break;
 	case DO_NNN:
@@ -2464,15 +2692,15 @@ namespace ns3
 	  // First obtain the name
 	  if (wasDO)
 	    {
-	      NS_LOG_INFO ("Propagating DO");
 	      newdst = do_i->GetName ();
 	      constdstPtr = do_i->GetNamePtr();
+	      NS_LOG_INFO ("Propagating DO heading to (" << newdst << ")");
 	    }
 	  else if (wasDU)
 	    {
-	      NS_LOG_INFO ("Propagating DU");
 	      newdst = du_i->GetDstName ();
 	      constdstPtr = du_i->GetDstNamePtr();
+	      NS_LOG_INFO ("Propagating DU from (" << du_i->GetSrcName() << " ) heading to (" << newdst << ")");
 	    }
 
 	  // Check if we are already at the destination (search through all the node names acquired)
@@ -2524,6 +2752,7 @@ namespace ns3
 
 	  if (nnptRedirect)
 	    {
+	      NS_LOG_INFO ("On (" << GetNode3NName () << ") we are create redirect from (" << *constdstPtr << ") to (" << newdst << ")");
 	      if (wasDO)
 		{
 		  // Create a new DO PDU to send the data
@@ -2583,7 +2812,7 @@ namespace ns3
       else
 	{
 	  if (wasSO)
-	    NS_LOG_INFO ("Propagating SO");
+	    NS_LOG_INFO ("Propagating SO from (" << so_i->GetName() << ")");
 	  else
 	    NS_LOG_INFO ("Propagating NULLp");
 
