@@ -224,12 +224,11 @@ namespace ns3
 	  // We know we have a name, check if we have a destination
 	  if (m_possibleDestination->isEmpty ())
 	    {
-	      NS_LOG_INFO ("We no 3N name destination");
-	      // We don't know where to go check if SO use is flagged
+	      NS_LOG_INFO ("We have no 3N name destination");
 	      if (m_isMobile)
 		{
 		  // It is flagged. Use the 3N name
-		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using SO PDU");
+		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using SO PDU src: (" << *m_current3Nname << ")");
 		  Ptr<SO> so_o = Create<SO> ();
 		  so_o->SetPDUPayloadType(NDN_NNN);
 		  so_o->SetLifetime(m_3n_lifetime);
@@ -256,7 +255,7 @@ namespace ns3
 	      NS_LOG_INFO ("We have a 3N name destination");
 	      if (m_isMobile)
 		{
-		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DU PDU");
+		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DU PDU src: (" << *m_current3Nname << ") dst: (" << *m_possibleDestination << ")");
 		  Ptr<DU> du_o = Create<DU> ();
 		  du_o->SetPDUPayloadType (NDN_NNN);
 		  du_o ->SetLifetime(m_3n_lifetime);
@@ -269,7 +268,7 @@ namespace ns3
 	      else
 		{
 		  // We have a possible destination, create a DO PDU
-		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DO PDU");
+		  NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DO PDU dst: (" << *m_possibleDestination << ")");
 		  Ptr<DO> do_o = Create<DO> ();
 		  do_o->SetPDUPayloadType (NDN_NNN);
 		  do_o->SetLifetime(m_3n_lifetime);
@@ -298,7 +297,7 @@ namespace ns3
 	  else
 	    {
 	      // We have a possible destination, create a DO PDU
-	      NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DO PDU");
+	      NS_LOG_INFO ("> Interest Seq " << std::dec << seq << " using DO PDU dst: (" << *m_possibleDestination << ")");
 	      Ptr<DO> do_o = Create<DO> ();
 	      do_o->SetPDUPayloadType (NDN_NNN);
 	      do_o->SetLifetime(m_3n_lifetime);
@@ -522,7 +521,7 @@ namespace ns3
     void
     Consumer::OnTimeout (uint32_t sequenceNumber)
     {
-      NS_LOG_FUNCTION (sequenceNumber);
+      NS_LOG_FUNCTION (std::dec << sequenceNumber);
       // std::cout << Simulator::Now () << ", TO: " << sequenceNumber << ", current RTO: " << m_rtt->RetransmitTimeout ().ToDouble (Time::S) << "s\n";
 
       m_rtt->IncreaseMultiplier ();             // Double the next RTO

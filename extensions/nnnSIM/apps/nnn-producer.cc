@@ -177,7 +177,7 @@ namespace ns3
 	  data->SetKeyLocator (Create<ndn::Name> (m_keyLocator));
 	}
 
-      NS_LOG_INFO ("node("<< GetNode()->GetId() <<") responding with Data: " << data->GetName () << " seq: " << data->GetName ().get (-1).toSeqNum ());
+      NS_LOG_INFO ("Responding with Data: " << data->GetName () << " seq: " << std::dec << data->GetName ().get (-1).toSeqNum ());
 
       // Echo back FwHopCountTag if exists
       ndn::FwHopCountTag hopCountTag;
@@ -228,7 +228,7 @@ namespace ns3
 
 		  if (m_isMobile && m_has3Nname)
 		    {
-		      NS_LOG_INFO ("Responding NULLp with SO");
+		      NS_LOG_INFO ("Responding NULLp with SO from (" << *m_current3Nname << ")");
 		      // We don't have all the information for a DU, so send a SO
 		      Ptr<SO> so_o = Create<SO> ();
 		      so_o->SetPDUPayloadType (pdutype);
@@ -299,7 +299,7 @@ namespace ns3
 
 		  if (m_isMobile && m_has3Nname)
 		    {
-		      NS_LOG_INFO ("Responding SO with DU");
+		      NS_LOG_INFO ("Responding SO with DU from (" << *m_current3Nname << ") to (" << soObject->GetName () << ")");
 		      // We can use DU packets now
 		      Ptr<DU> du_o = Create<DU> ();
 		      du_o->SetPDUPayloadType(pdutype);
@@ -313,7 +313,7 @@ namespace ns3
 		    }
 		  else
 		    {
-		      NS_LOG_INFO ("Responding SO with DO");
+		      NS_LOG_INFO ("Responding SO with DO to (" << soObject->GetName () << ")");
 		      Ptr<DO> do_o = Create<DO> ();
 
 		      do_o->SetName (soObject->GetName ());
@@ -365,7 +365,7 @@ namespace ns3
 		  Ptr<Packet> retPkt = CreateReturnData(interest);
 		  if (m_isMobile && m_has3Nname)
 		    {
-		      NS_LOG_INFO ("Responding DO with SO");
+		      NS_LOG_INFO ("Responding DO with SO from (" << *m_current3Nname << ")");
 		      Ptr<SO> so_o = Create<SO> ();
 		      so_o->SetLifetime (m_3n_lifetime);
 		      so_o->SetPDUPayloadType (pdutype);
@@ -432,6 +432,7 @@ namespace ns3
 
 		  NS_LOG_INFO ("Responding DU with DU");
 		  Ptr<DU> du_o = Create<DU> ();
+		  du_o->SetLifetime (m_3n_lifetime);
 		  if (m_has3Nname)
 		    du_o->SetSrcName(*m_current3Nname);
 		  else
@@ -440,7 +441,7 @@ namespace ns3
 		  du_o->SetDstName (duObject->GetSrcName ());
 		  du_o->SetPDUPayloadType (pdutype);
 		  du_o->SetPayload (retPkt);
-		  du_o->SetLifetime (m_3n_lifetime);
+
 
 		  m_face->ReceiveDU(du_o);
 		  m_transmittedDUs (du_o, this, m_face);
