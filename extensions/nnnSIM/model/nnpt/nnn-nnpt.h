@@ -73,7 +73,8 @@ namespace ns3
 
           ordered_unique<
             tag<oldname>,
-            member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_oldName>
+            member<nnpt::Entry,Ptr<const NNNAddress>,&nnpt::Entry::m_oldName>,
+            PtrNNNComp
           >,
 
           ordered_unique<
