@@ -274,6 +274,9 @@ namespace ns3
 	  MakeCallback (&ForwardingStrategy::Reenroll, this),
 	  MakeCallback (&ForwardingStrategy::Enroll, this)
       );
+
+      // This forces the seconds to be printed in non-scientific notation
+      NS_LOG_INFO (std::fixed);
     }
 
     ForwardingStrategy::~ForwardingStrategy ()
@@ -2764,7 +2767,7 @@ namespace ns3
 		  // Configure payload for PDU
 		  do_o_spec->SetPayload (icn_pdu);
 		  // Signal that the PDU had an ICN PDU as payload
-		  do_o_spec->SetPDUPayloadType (NNN_NNN);
+		  do_o_spec->SetPDUPayloadType (NDN_NNN);
 
 		  pdu_i = DynamicCast<NNNPDU> (do_o_spec);
 		}
@@ -2781,7 +2784,7 @@ namespace ns3
 		  // Configure payload for PDU
 		  du_o_spec->SetPayload (icn_pdu);
 		  // Signal that the PDU had an ICN PDU as payload
-		  du_o_spec->SetPDUPayloadType (NNN_NNN);
+		  du_o_spec->SetPDUPayloadType (NDN_NNN);
 
 		  pdu_i = DynamicCast<NNNPDU> (du_o_spec);
 		}
