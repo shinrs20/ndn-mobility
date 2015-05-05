@@ -46,7 +46,7 @@ option_list <- list (
 )
 
 # Load the parser
-opt = parse_args(OptionParser(option_list=option_list, description="Creates Data rate comparison graphs for NDN vs 3N"))
+opt = parse_args(OptionParser(option_list=option_list, description="Creates Data rate comparison graphs"))
 
 data = read.table (opt$file, header=T)
 data$Node = factor (data$Node)
