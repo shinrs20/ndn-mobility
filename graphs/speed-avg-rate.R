@@ -50,51 +50,83 @@ prodnodes = c (7)
 
 # Read the 3N Consumer mobility data
 # Start with 1.4 m/s data
-data3n140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-1-40-01-001-004.txt", connodes)
+con3n140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-1-40-01-001-004.txt", connodes)
 # 2.8 m/s data
-data3n280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-2-80-01-001-004.txt", connodes)
+con3n280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-2-80-01-001-004.txt", connodes)
+# 4.2 m/s data
+con3n420 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-4-20-01-001-004.txt", connodes)
 # 5.6 m/s data
-data3n560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-5-60-01-001-004.txt", connodes)
+con3n560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-5-60-01-001-004.txt", connodes)
+# 7 m/s data
+con3n700 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-7-00-01-001-004.txt", connodes)
+# 8.4 m/s data
+con3n840 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-8-40-01-001-004.txt", connodes)
+# 9.8 m/s data
+con3n980 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-9-80-01-001-004.txt", connodes)
 # 11.2 m/s data
-data3n1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-11-20-01-001-004.txt", connodes)
+con3n1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-11-20-01-001-004.txt", connodes)
 
 # Read the NDN Consumer mobility data
 # Start with 1.4 m/s data
-datandn140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-1-40-01-001-004.txt", connodes)
+conNdn140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-1-40-01-001-004.txt", connodes)
 # 2.8 m/s data
-datandn280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-2-80-01-001-004.txt", connodes)
+conNdn280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-2-80-01-001-004.txt", connodes)
+# 4.2 m/s data
+conNdn420 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-4-20-01-001-004.txt", connodes)
 # 5.6 m/s data
-datandn560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-5-60-01-001-004.txt", connodes)
+conNdn560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-5-60-01-001-004.txt", connodes)
+# 7 m/s data
+conNdn700 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-7-00-01-001-004.txt", connodes)
+# 8.4 m/s data
+conNdn840 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-8-40-01-001-004.txt", connodes)
+# 9.8 m/s data
+conNdn980 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-9-80-01-001-004.txt", connodes)
 # 11.2 m/s data
-datandn1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-11-20-01-001-004.txt", connodes)
+conNdn1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-11-20-01-001-004.txt", connodes)
 
 # Read the 3N Producer mobility data
 # Start with 1.4 m/s data
 prod3n140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-1-40-01-001-004.txt", prodnodes)
 # 2.8 m/s data
 prod3n280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-2-80-01-001-004.txt", prodnodes)
+# 4.2 m/s data
+prod3n420 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-4-20-01-001-004.txt", prodnodes)
 # 5.6 m/s data
 prod3n560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-5-60-01-001-004.txt", prodnodes)
+# 7 m/s data
+prod3n700 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-7-00-01-001-004.txt", prodnodes)
+# 8.4 m/s data
+prod3n840 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-8-40-01-001-004.txt", prodnodes)
+# 9.8 m/s data
+prod3n980 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-9-80-01-001-004.txt", prodnodes)
 # 11.2 m/s data
 prod3n1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-11-20-01-001-004.txt", prodnodes)
 
 # Read the NDN Producer mobility data
 # Start with 1.4 m/s data
-prodndn140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-1-40-01-001-004.txt", prodnodes)
+prodNdn140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-1-40-01-001-004.txt", prodnodes)
 # 2.8 m/s data
-prodndn280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-2-80-01-001-004.txt", prodnodes)
+prodNdn280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-2-80-01-001-004.txt", prodnodes)
+# 4.2 m/s data
+prodNdn420 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-4-20-01-001-004.txt", prodnodes)
 # 5.6 m/s data
-prodndn560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-5-60-01-001-004.txt", prodnodes)
+prodNdn560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-5-60-01-001-004.txt", prodnodes)
+# 7 m/s data
+prodNdn700 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-7-00-01-001-004.txt", prodnodes)
+# 8.4 m/s data
+prodNdn840 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-8-40-01-001-004.txt", prodnodes)
+# 9.8 m/s data
+prodNdn980 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-9-80-01-001-004.txt", prodnodes)
 # 11.2 m/s data
-prodndn1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-11-20-01-001-004.txt", prodnodes)
+prodNdn1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-11-20-01-001-004.txt", prodnodes)
 
-tbreak <- c(1.4, 2.8, 5.6, 11.2)
+tbreak <- c(1.4, 2.8, 4.2, 5.6, 7, 8.4, 9.8, 11.2)
 
 speeds <- c( rep (tbreak, 2))
-variable <- c (rep ("1", 4), rep ("2", 4))
+variable <- c (rep ("1", length(tbreak)), rep ("2", length(tbreak)))
 
-conrates <- c(datandn140, datandn280, datandn560, datandn1120, data3n140, data3n280, data3n560, data3n1120)
-prodrates <- c(prodndn140, prodndn280, prodndn560, prodndn1120, prod3n140, prod3n280, prod3n560, prod3n1120)
+conrates <- c(conNdn140, conNdn280, conNdn420, conNdn560, conNdn700, conNdn840, conNdn980, conNdn1120, con3n140, con3n280, con3n420, con3n560, con3n700, con3n840, con3n980, con3n1120)
+prodrates <- c(prodNdn140, prodNdn280, prodNdn420, prodNdn560, prodNdn700, prodNdn840, prodNdn980, prodNdn1120, prod3n140, prod3n280, prod3n420, prod3n560, prod3n700, prod3n840, prod3n980, prod3n1120)
 
 avgconrate = data.frame (speeds, variable, conrates)
 
