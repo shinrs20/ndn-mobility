@@ -1,23 +1,23 @@
 #!/usr/bin/Rscript
 
-# speed-avg-delay.R
+# speed-avg-rate.R
 # Script to create average comparison graphs for Delay and Data rate
 #
-# Copyright (c) 2014 Waseda University, Sato Laboratory
+# Copyright (c) 2015 Waseda University, Sato Laboratory
 # Author: Jairo Eduardo Lopez <jairo@ruri.waseda.jp>
 #
-# speed-avg-delay.R is free software: you can redistribute it and/or modify
+# speed-avg-rate.R is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# speed-avg-delay.R is distributed in the hope that it will be useful,
+# speed-avg-rate.R is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of              
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               
 # GNU Affero Public License for more details.                                 
 #                                                                             
 # You should have received a copy of the GNU Affero Public License            
-# along with speed-avg-delay.R.  If not, see <http://www.gnu.org/licenses/>.
+# along with speed-avg-rate.R.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 suppressPackageStartupMessages(library (ggplot2))
@@ -99,6 +99,9 @@ prodrates <- c(prodndn140, prodndn280, prodndn560, prodndn1120, prod3n140, prod3
 avgconrate = data.frame (speeds, variable, conrates)
 
 avgprodrate = data.frame (speeds, variable, prodrates)
+
+theme_set(theme_grey(base_size = 24) + 
+            theme(axis.text = element_text(colour = "black")))
 
 grate <- ggplot (avgconrate, aes(colour=variable)) +
   geom_line(aes (x=speeds, y=conrates), size=1) +  
