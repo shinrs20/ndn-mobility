@@ -1320,7 +1320,9 @@ namespace ns3
 
 	  NS_LOG_INFO ("On (" << myAddr << ") there is no PIT Entry for this DATA " << std::dec << data->GetName ().get (-1).toSeqNum ());
 
-	  // We got Data without having solicited it, but it
+	  // We got Data without having solicited it. If it is of type NULL or SO PDU, we can't do anything about it
+	  // If the data is of DU or DO, then we can actually forward it!
+	  DoPropagateData (pdu, face, data);
 	}
 
       while (pitEntry != 0)
@@ -2857,6 +2859,232 @@ namespace ns3
 	}
 
       return propagatedCount > 0;
+    }
+
+    bool
+    ForwardingStrategy::DoPropagateData(Ptr<NNNPDU> pdu, Ptr<Face> inFace, Ptr<const ndn::Data> data)
+    {
+      NS_LOG_FUNCTION (this);
+
+      // Convert the Interest PDU into a NS-3 Packet
+      Ptr<Packet> icn_pdu = ndn::Wire::FromData (data);
+
+      // Pointers and flags for PDU types
+      Ptr<NNNPDU> pdu_i;
+
+      Ptr<DO> do_i;
+      bool wasDO = false;
+      Ptr<DU> du_i;
+      bool wasDU = false;
+      bool ok = false;
+
+      uint32_t pduid = pdu->GetPacketId();
+      switch(pduid)
+      {
+	case DO_NNN:
+	  // Convert pointer to DO PDU
+	  do_i = DynamicCast<DO> (pdu);
+	  wasDO = true;
+	  break;
+	case DU_NNN:
+	  // Convert pointer to DU PDU
+	  du_i = DynamicCast<DU> (pdu);
+	  wasDU = true;
+	  break;
+	default:
+	  break;
+      }
+
+      Ptr<DO> tosend_do = do_i;
+      Ptr<DU> tosend_du = du_i;
+      Ptr<Face> foutFace;
+
+      // Pointers to use when we have DO or DU PDUs
+      std::pair<Ptr<Face>, Address> tmp;
+      Address destAddr;
+      NNNAddress newdst;
+      Ptr<NNNAddress> newdstPtr;
+      Ptr<const NNNAddress> constdstPtr;
+      Ptr<DO> do_o_spec;
+      Ptr<DU> du_o_spec;
+      bool nnptRedirect = false;
+
+      if (wasDO || wasDU)
+	{
+	  // First obtain the name
+	  if (wasDO)
+	    {
+	      newdst = do_i->GetName ();
+	      constdstPtr = do_i->GetNamePtr();
+	      NS_LOG_INFO ("Propagating Data DO heading to (" << newdst << ")");
+	    }
+	  else if (wasDU)
+	    {
+	      newdst = du_i->GetDstName ();
+	      constdstPtr = du_i->GetDstNamePtr();
+	      NS_LOG_INFO ("Propagating Data DU from (" << du_i->GetSrcName() << " ) heading to (" << newdst << ")");
+	    }
+
+	  // Check if we are already at the destination (search through all the node names acquired)
+	  if (m_node_names->foundName(constdstPtr))
+	    {
+	      NS_LOG_INFO ("We have reached desired destination, looking for Apps");
+	      Ptr<Face> tmpFace;
+	      // We have reached the destination, look for Apps
+	      for (int i = 0; i < m_faces->GetN (); i++)
+		{
+		  tmpFace = m_faces->Get (i);
+		  // Check that the Face is of type APPLICATION
+		  if (tmpFace->isAppFace ())
+		    {
+		      if (wasDO)
+			ok = tmpFace->SendDO (do_i);
+		      else if (wasDU)
+			ok = tmpFace->SendDU (du_i);
+
+		      if (!ok)
+			{
+			  // Log Data drops
+			  m_dropData (data, tmpFace);
+			  if (wasDO)
+			    m_dropDOs (do_i, tmpFace);
+			  else if (wasDU)
+			    m_dropDUs (du_i, tmpFace);
+
+			  NS_LOG_DEBUG ("Cannot satisfy data to " << *tmpFace);
+			}
+		      else
+			{
+			  // Log that a Data PDU was sent
+			  m_outData (data, false, tmpFace);
+
+			  if (wasDO)
+			    {
+			      NS_LOG_INFO ("Satisfying with DO");
+			      m_outDOs (do_i, tmpFace);
+			    }
+			  else if (wasDU)
+			    {
+			      NS_LOG_INFO ("Satisfying with DU");
+			      m_outDUs (du_i, tmpFace);
+			    }
+			}
+		    }
+		}
+	      return ok;
+	    }
+
+	  // We may have obtained a DEN so we need to check
+	  if (m_node_pdu_buffer->DestinationExists (newdst) && !m_nnpt->foundOldName(constdstPtr))
+	    {
+	      NS_LOG_INFO ("We are on (" << GetNode3NName () << ") we have been told to buffer this PDU to (" << newdst << ")");
+
+	      if (wasDO)
+		{
+		  NS_LOG_INFO ("Buffering DO");
+		  m_node_pdu_buffer->PushDO (newdst, do_i);
+		}
+	      else if (wasDU)
+		{
+		  NS_LOG_INFO ("Buffering DU");
+		  m_node_pdu_buffer->PushDU (newdst, du_i);
+		}
+	    }
+
+	  // Check if the NNPT has any information for this particular 3N name
+	  if (m_nnpt->foundOldName(constdstPtr))
+	    {
+	      // Retrieve the new 3N name destination and update variable
+	      newdst = m_nnpt->findPairedNamePtr (constdstPtr)->getName ();
+	      // Flag that the NNPT made a change
+	      nnptRedirect = true;
+	    }
+
+	  if (nnptRedirect)
+	    {
+	      NS_LOG_INFO ("On (" << GetNode3NName () << ") we are create redirect from (" << *constdstPtr << ") to (" << newdst << ")");
+	      if (wasDO)
+		{
+		  // Create a new DO PDU to send the data
+		  do_o_spec = Create<DO> ();
+		  // Set the new 3N name
+		  do_o_spec->SetName (newdst);
+		  // Set the lifetime of the 3N PDU
+		  do_o_spec->SetLifetime (m_3n_lifetime);
+		  // Configure payload for PDU
+		  do_o_spec->SetPayload (icn_pdu);
+		  // Signal that the PDU had an ICN PDU as payload
+		  do_o_spec->SetPDUPayloadType (NDN_NNN);
+
+		  tosend_do = do_o_spec;
+		}
+	      else if (wasDU)
+		{
+		  // Create a new DU PDU to send the data
+		  du_o_spec = Create<DU> ();
+		  // Use the original DU's Src 3N name
+		  du_o_spec->SetSrcName (du_i->GetSrcName ());
+		  // Set the new 3N name destination
+		  du_o_spec->SetDstName (newdst);
+		  // Set the lifetime of the 3N PDU
+		  du_o_spec->SetLifetime (m_3n_lifetime);
+		  // Configure payload for PDU
+		  du_o_spec->SetPayload (icn_pdu);
+		  // Signal that the PDU had an ICN PDU as payload
+		  du_o_spec->SetPDUPayloadType (NDN_NNN);
+
+		  tosend_du = du_o_spec;
+		}
+	    }
+
+	  // Roughly find the next hop
+	  tmp = m_nnst->ClosestSectorFaceInfo (newdst, 0);
+
+	  // Update the variables for Face and PoA name
+	  foutFace = tmp.first;
+	  destAddr = tmp.second;
+
+
+	  if (wasDO)
+	    ok = foutFace->SendDO (tosend_do, destAddr);
+	  else if (wasDU)
+	    ok = foutFace->SendDU (tosend_du, destAddr);
+
+	  if (!ok)
+	    {
+	      // Log Data drops
+	      m_dropData (data, foutFace);
+	      if (wasDO)
+		m_dropDOs (tosend_do, foutFace);
+	      else if (wasDU)
+		m_dropDUs (tosend_du, foutFace);
+
+	      NS_LOG_DEBUG ("Cannot satisfy data to " << *foutFace);
+	    }
+	  else
+	    {
+	      // Log that a Data PDU was sent
+	      m_outData (data, false, foutFace);
+
+	      if (wasDO)
+		{
+		  NS_LOG_INFO ("Satisfying with DO");
+		  m_outDOs (tosend_do, foutFace);
+		}
+	      else if (wasDU)
+		{
+		  NS_LOG_INFO ("Satisfying with DU");
+		  m_outDUs (tosend_du, foutFace);
+		}
+	    }
+	}
+
+      else
+	{
+	  NS_LOG_INFO ("Received either NULL or SO, for which without a PIT entry can do nothing with");
+	}
+
+      return ok;
     }
 
     void

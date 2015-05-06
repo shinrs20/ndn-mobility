@@ -660,6 +660,25 @@ namespace ns3
                            Ptr<Face> inFace,
                            Ptr<const ndn::Interest> interest,
                            Ptr<pit::Entry> pitEntry);
+
+      /**
+       * @brief Virtual method to perform Data propagation according to the NNST routing logic when no PIT Entry is available
+       *
+       * In most cases, this is the call that needs to be implemented/re-implemented in order
+       * to perform forwarding of Data without PIT involvement.
+       *
+       * @param pdu The 3N PDU that created this information
+       * @param inFace     incoming face
+       * @param data       Data packet
+       *
+       * @return true if Data was successfully send, false if all options have failed
+       *
+       * @see PropagateInterest
+       */
+      virtual bool
+      DoPropagateData (Ptr<NNNPDU> pdu,
+                       Ptr<Face> inFace,
+                       Ptr<const ndn::Data> data);
     protected:
       // inherited from Object class
       virtual void NotifyNewAggregate (); ///< @brief Even when object is aggregated to another Object
