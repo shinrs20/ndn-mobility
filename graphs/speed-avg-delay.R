@@ -26,6 +26,36 @@ suppressPackageStartupMessages(library (optparse))
 suppressPackageStartupMessages(library (doBy))
 suppressPackageStartupMessages(library (plyr))
 
+# set some reasonable defaults for the options that are needed
+option_list <- list (
+  make_option(c("-d", "--directory"), type="character", default="~/git/ndn-mobility/results",
+              help="Directory which holds the raw data.\n\t\t[Default \"%default\"]"),
+  make_option(c("-o", "--output"), type="character", default=".",
+              help="Output directory for graphs.\n\t\t[Default \"%default\"]"),
+  make_option(c("--e1"), type="character", default="",
+              help="Consumer node data to graph. Can be a comma separated list.\n\t\tDefault graphs data for all nodes."),
+  make_option(c("--e2"), type="character", default="",
+              help="Producer node data to graph. Can be a comma separated list.\n\t\tDefault graphs data for all nodes."),
+  make_option(c("-m", "--speeds"), type="character", default="1.4,2.8,4.2,5.6,7,8.4,9.8,11.2",
+              help="Mobile speeds to compare.\n\t\t[Default \"%default\"]"),
+  make_option(c("--str1"), type="character", default="NDN Smart Flooding",
+              help="Legend title for -f file data\n\t\t[Default \"%default\"]"),
+  make_option(c("--str2"), type="character", default="3N + Smart Flooding",
+              help="Legend title for -c file data\n\t\t[Default \"%default\"]"),
+  make_option(c("-c", "--consumer"), action="store_true", default=FALSE,
+              help="Tell the script to graph Consumer mobility data"),
+  make_option(c("-p", "--producer"), action="store_true", default=FALSE,
+              help="Tell the script to graph Producer mobility data"),
+  make_option(c("--delay"), action="store_true", default=FALSE,
+              help="Tell the script to graph Delay data"),
+  make_option(c("--maxSeq"), action="store_true", default=FALSE,
+              help="Tell the script to graph Max sequence seen data"),
+  make_option(c("-s", "--scenario"), type="character", default="MobilityICC",
+              help="Name of the scenario to produce graphs for.\n\t\t[Default \"%default\"]"),
+  make_option(c("-x", "--extension"), type="character", default="01-001-004.txt",
+              help="The subfix of the extension files to use.\n\t\t[Default \"%default\"]")
+)
+
 allFilter <- function (file, nodes=c())
 {
   dt = read.table (file, header=T)
@@ -58,217 +88,161 @@ seqSummary <- function (file, nodes=c())
   return (max (dt$SeqNo))
 }
 
-# Read the 3N Consumer mobility data
-# Start with 1.4 m/s data
-con3n140 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-1-40-01-001-004.txt")
-# 2.8 m/s data
-con3n280 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-2-80-01-001-004.txt")
-# 4.2 m/s data
-con3n420 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-4-20-01-001-004.txt")
-# 5.6 m/s data
-con3n560 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-5-60-01-001-004.txt")
-# 7 m/s data
-con3n700 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-7-00-01-001-004.txt")
-# 8.4 m/s data
-con3n840 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-8-40-01-001-004.txt")
-# 9.8 m/s data
-con3n980 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-9-80-01-001-004.txt")
-# 11.2 m/s data
-con3n1120 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-11-20-01-001-004.txt")
+# Load the parser
+opt = parse_args(OptionParser(option_list=option_list, description="Creates summary App graphs for 3N vs NDN"))
 
-# Read the NDN Consumer mobility data
-# Start with 1.4 m/s data
-conNdn140 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-1-40-01-001-004.txt")
-# 2.8 m/s data
-conNdn280 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-2-80-01-001-004.txt")
-# 4.2 m/s data
-conNdn420 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-4-20-01-001-004.txt")
-# 5.6 m/s data
-conNdn560 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-5-60-01-001-004.txt")
-# 7 m/s data
-conNdn700 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-7-00-01-001-004.txt")
-# 8.4 m/s data
-conNdn840 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-8-40-01-001-004.txt")
-# 9.8 m/s data
-conNdn980 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-9-80-01-001-004.txt")
-# 11.2 m/s data
-conNdn1120 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-11-20-01-001-004.txt")
+cat (sprintf ("Creating comparison graphs for speeds: %s\n", opt$speeds))
 
-# Read the 3N Producer mobility data
-# Start with 1.4 m/s data
-prod3n140 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-1-40-01-001-004.txt")
-# 2.8 m/s data
-prod3n280 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-2-80-01-001-004.txt")
-# 4.2 m/s data
-prod3n420 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-4-20-01-001-004.txt")
-# 5.6 m/s data
-prod3n560 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-5-60-01-001-004.txt")
-# 7 m/s data
-prod3n700 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-7-00-01-001-004.txt")
-# 8.4 m/s data
-prod3n840 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-8-40-01-001-004.txt")
-# 9.8 m/s data
-prod3n980 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-9-80-01-001-004.txt")
-# 11.2 m/s data
-prod3n1120 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-11-20-01-001-004.txt")
+# Read the speeds
+filspeeds = unlist(strsplit(opt$speeds, ","))
 
-# Read the NDN Producer mobility data
-# Start with 1.4 m/s data
-prodNdn140 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-1-40-01-001-004.txt")
-# 2.8 m/s data
-prodNdn280 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-2-80-01-001-004.txt")
-# 4.2 m/s data
-prodNdn420 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-4-20-01-001-004.txt")
-# 5.6 m/s data
-prodNdn560 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-5-60-01-001-004.txt")
-# 7 m/s data
-prodNdn700 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-7-00-01-001-004.txt")
-# 8.4 m/s data
-prodNdn840 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-8-40-01-001-004.txt")
-# 9.8 m/s data
-prodNdn980 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-9-80-01-001-004.txt")
-# 11.2 m/s data
-prodNdn1120 = speedSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-11-20-01-001-004.txt")
+# Read the speeds as doubles
+tbreak = as.double (filspeeds)
+
+strSpeeds = character (length(tbreak))
+
+for (i in 1:length(tbreak))
+{
+  strSpeeds[i] = gsub ("\\.", "-", sprintf("%.2f", tbreak[i]))
+}
+
+connodes = unlist(strsplit(opt$e1, ","))
+prodnodes = unlist(strsplit(opt$e2, ","))
+
+# Create the resulting speed vectors
+speeds <- c( rep (tbreak, 2))
+
+variable <- c (rep ("1", length(tbreak)), rep ("2", length(tbreak)))
+
+# Create the complete vector for rates
+conDelaySpeeds = double (length(speeds))
+prodDelaySpeeds = double(length(speeds))
+
+conSeqSpeeds = double (length(speeds))
+prodSeqSpeeds = double(length(speeds))
 
 theme_set(theme_grey(base_size = 24) + 
             theme(axis.text = element_text(colour = "black")))
 
-tbreak <- c(1.4, 2.8, 4.2, 5.6, 7, 8.4, 9.8, 11.2)
+if (opt$consumer)
+{
+  if (opt$delay)
+  {
+    cat(sprintf ("Creating Average Delay vs Speed for %s Consumer %s mobility graph\n", opt$scenario, opt$e1))
+    for (i in 1:length(strSpeeds))
+    {
+      file3n = sprintf("%s/%s-app-delays-3n-con-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      fileNdn = sprintf("%s/%s-app-delays-smart-con-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      
+      conDelaySpeeds[i] = speedSummary (fileNdn, connodes)
+      conDelaySpeeds[i+length(strSpeeds)] = speedSummary (file3n, connodes)
+    }
+    
+    avgcondelay = data.frame (speeds, variable, conDelaySpeeds)
+    
+    gcondelay <- ggplot (avgcondelay, aes(colour=variable)) +
+      geom_line(aes (x=speeds, y=conDelaySpeeds), size=1) +  
+      ggtitle ("Consumer Mobility Avg Network Delay vs Speed") +
+      ylab ("Delay [Seconds]") +
+      xlab ("Speed (m/s)") +
+      scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
+      scale_x_continuous (breaks=tbreak)
+    
+    outpng = sprintf("%s/%s-con-delay-vs-speed.png", opt$output, opt$scenario)
+    
+    png (outpng, width=1024, height=768)
+    print (gcondelay)
+    x = dev.off ()
+  }
+  
+  if (opt$maxSeq)
+  {
+    for (i in 1:length(strSpeeds))
+    {
+      file3n = sprintf("%s/%s-app-delays-3n-con-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      fileNdn = sprintf("%s/%s-app-delays-smart-con-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      
+      conSeqSpeeds[i] = seqSummary (fileNdn, connodes)
+      conSeqSpeeds[i+length(strSpeeds)] = seqSummary (file3n, connodes)
+    }
+    
+    cat(sprintf ("Creating Average Max Sequence vs Speed for %s Consumer %s mobility graph\n", opt$scenario, opt$e1))
+    
+    avgconSeq = data.frame (speeds, variable, conSeqSpeeds)
+    
+    gconSeq <- ggplot (avgconSeq, aes(x=speeds, y=conSeqSpeeds)) +
+      geom_line(aes (colour=variable), size=1) +
+      ggtitle ("Consumer Mobility Received Sequence vs Speed") +
+      ylab ("Sequence Number Received") +
+      xlab ("Speed (m/s)") +
+      scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
+      scale_x_continuous (breaks=tbreak)
+    
+    outpng = sprintf("%s/%s-con-seq-vs-speed.png", opt$output, opt$scenario)
+    
+    png (outpng, width=1024, height=768)
+    print (gconSeq)
+    x = dev.off ()
+  }
+}
 
-speeds <- c( rep (tbreak, 2))
-variable <- c (rep ("1", length(tbreak)), rep ("2", length(tbreak)))
-
-condelays <- c(conNdn140, conNdn280, conNdn420, conNdn560, conNdn700, conNdn840, conNdn980, conNdn1120, con3n140, con3n280, con3n420, con3n560, con3n700, con3n840, con3n980, con3n1120)
-proddelays <- c(prodNdn140, prodNdn280, prodNdn420, prodNdn560, prodNdn700, prodNdn840, prodNdn980, prodNdn1120, prod3n140, prod3n280, prod3n420, prod3n560, prod3n700, prod3n840, prod3n980, prod3n1120)
-
-avgcondelay = data.frame (speeds, variable, condelays)
-avgproddelay = data.frame (speeds, variable, proddelays)
-
-grate <- ggplot (avgcondelay, aes(colour=variable)) +
-  geom_line(aes (x=speeds, y=condelays), size=1) +  
-  ggtitle ("Consumer Mobility Avg Network Delay vs Speed") +
-  ylab ("Delay [Seconds]") +
-  xlab ("Speed (m/s)") +
-  scale_colour_discrete(name = "Strategies", labels = c("NDN Smart Flooding", "3N + Smart Flooding")) +
-  scale_x_continuous (breaks=tbreak)
-
-print (grate)
-
-grate <- ggplot (avgproddelay, aes(colour=variable)) +
-  geom_line(aes (x=speeds, y=proddelays), size=1) +  
-  ggtitle ("Consumer with Producer Mobility Avg Network Delay vs Speed") +
-  ylab ("Delay [Seconds]") +
-  xlab ("Speed (m/s)") +
-  scale_colour_discrete(name = "Strategies", labels = c("NDN Smart Flooding", "3N + Smart Flooding")) +
-  scale_x_continuous (breaks=tbreak)
-
-print (grate)
-
-avg3nproddelay = subset (avgproddelay, variable %in% c("2"))
-
-grate <- ggplot (avg3nproddelay) +
-  geom_line(aes (x=speeds, y=proddelays), size=1) +  
-  ggtitle ("Consumer with Producer Mobility Avg Network Delay vs Speed") +
-  ylab ("Delay [Seconds]") +
-  xlab ("Speed (m/s)") +
-  scale_x_continuous (breaks=tbreak)
-
-print (grate)
-
-# Read the 3N Consumer mobility data
-# Start with 1.4 m/s data
-conSeq3n140 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-1-40-01-001-004.txt")
-# 2.8 m/s data
-conSeq3n280 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-2-80-01-001-004.txt")
-# 4.2 m/s data
-conSeq3n420 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-4-20-01-001-004.txt")
-# 5.6 m/s data
-conSeq3n560 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-5-60-01-001-004.txt")
-# 7 m/s data
-conSeq3n700 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-7-00-01-001-004.txt")
-# 8.4 m/s data
-conSeq3n840 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-8-40-01-001-004.txt")
-# 9.8 m/s data
-conSeq3n980 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-9-80-01-001-004.txt")
-# 11.2 m/s data
-conSeq3n1120 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-con-11-20-01-001-004.txt")
-
-# Read the NDN Consumer mobility data
-# Start with 1.4 m/s data
-conSeqNdn140 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-1-40-01-001-004.txt")
-# 2.8 m/s data
-conSeqNdn280 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-2-80-01-001-004.txt")
-# 4.2 m/s data
-conSeqNdn420 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-4-20-01-001-004.txt")
-# 5.6 m/s data
-conSeqNdn560 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-5-60-01-001-004.txt")
-# 7 m/s data
-conSeqNdn700 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-7-00-01-001-004.txt")
-# 8.4 m/s data
-conSeqNdn840 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-8-40-01-001-004.txt")
-# 9.8 m/s data
-conSeqNdn980 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-9-80-01-001-004.txt")
-# 11.2 m/s data
-conSeqNdn1120 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-con-11-20-01-001-004.txt")
-
-# Read the 3N Producer mobility data
-# Start with 1.4 m/s data
-prodSeq3n140 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-1-40-01-001-004.txt")
-# 2.8 m/s data
-prodSeq3n280 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-2-80-01-001-004.txt")
-# 4.2 m/s data
-prodSeq3n420 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-4-20-01-001-004.txt")
-# 5.6 m/s data
-prodSeq3n560 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-5-60-01-001-004.txt")
-# 7 m/s data
-prodSeq3n700 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-7-00-01-001-004.txt")
-# 8.4 m/s data
-prodSeq3n840 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-8-40-01-001-004.txt")
-# 9.8 m/s data
-prodSeq3n980 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-9-80-01-001-004.txt")
-# 11.2 m/s data
-prodSeq3n1120 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-3n-prod-11-20-01-001-004.txt")
-
-# Read the NDN Producer mobility data
-# Start with 1.4 m/s data
-prodSeqNdn140 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-1-40-01-001-004.txt")
-# 2.8 m/s data
-prodSeqNdn280 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-2-80-01-001-004.txt")
-# 4.2 m/s data
-prodSeqNdn420 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-4-20-01-001-004.txt")
-# 5.6 m/s data
-prodSeqNdn560 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-5-60-01-001-004.txt")
-# 7 m/s data
-prodSeqNdn700 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-7-00-01-001-004.txt")
-# 8.4 m/s data
-prodSeqNdn840 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-8-40-01-001-004.txt")
-# 9.8 m/s data
-prodSeqNdn980 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-9-80-01-001-004.txt")
-# 11.2 m/s data
-prodSeqNdn1120 = seqSummary("~/git/ndn-mobility/results/MobilityICC-app-delays-smart-prod-11-20-01-001-004.txt")
-
-conSeq <- c(conSeqNdn140, conSeqNdn280, conSeqNdn420, conSeqNdn560, conSeqNdn700, conSeqNdn840, conSeqNdn980, conSeqNdn1120, conSeq3n140, conSeq3n280, conSeq3n420, conSeq3n560, conSeq3n700, conSeq3n840, conSeq3n980, conSeq3n1120)
-prodSeq <- c(prodSeqNdn140, prodSeqNdn280, prodSeqNdn420, prodSeqNdn560, prodSeqNdn700, prodSeqNdn840, prodSeqNdn980, prodSeqNdn1120, prodSeq3n140, prodSeq3n280, prodSeq3n420, prodSeq3n560, prodSeq3n700, prodSeq3n840, prodSeq3n980, prodSeq3n1120)
-
-avgconSeq = data.frame (speeds, variable, conSeq)
-avgprodSeq = data.frame (speeds, variable, prodSeq)
-
-grate <- ggplot (avgconSeq, aes(x=speeds, y=conSeq)) +
-  geom_line(aes (colour=variable), size=1) +
-  ggtitle ("Consumer Mobility Received Sequence vs Speed") +
-  ylab ("Sequence Number Received") +
-  xlab ("Speed (m/s)") +
-  scale_colour_discrete(name = "Strategies", labels = c("NDN Smart Flooding", "3N + Smart Flooding")) +
-  scale_x_continuous (breaks=tbreak)
-
-print (grate)
-
-grate <- ggplot (avgprodSeq, aes(x=speeds, y=prodSeq)) +
-  geom_line(aes (colour=variable), size=1) +  
-  ggtitle ("Consumer with Producer Mobility Received Sequence vs Speed") +
-  ylab ("Sequence Number Received") +
-  xlab ("Speed (m/s)") +
-  scale_colour_discrete(name = "Strategies", labels = c("NDN Smart Flooding", "3N + Smart Flooding")) +
-  scale_x_continuous (breaks=tbreak)
-
-print (grate)
+if (opt$producer)
+{
+  if (opt$delay)
+  {
+    cat(sprintf ("Creating Average Delay vs Speed for %s Producer %s mobility graph\n", opt$scenario, opt$e2))
+    for (i in 1:length(strSpeeds))
+    {
+      file3n = sprintf("%s/%s-app-delays-3n-prod-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      fileNdn = sprintf("%s/%s-app-delays-smart-prod-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      
+      prodDelaySpeeds[i] = speedSummary(fileNdn, prodnodes)
+      prodDelaySpeeds[i+length(strSpeeds)] = speedSummary (file3n, prodnodes)
+    }
+    
+    avgproddelay = data.frame (speeds, variable, prodDelaySpeeds)
+    
+    gproddelay <- ggplot (avgproddelay, aes(colour=variable)) +
+      geom_line(aes (x=speeds, y=prodDelaySpeeds), size=1) +  
+      ggtitle ("Consumer with Producer Mobility Avg Network Delay vs Speed") +
+      ylab ("Delay [Seconds]") +
+      xlab ("Speed (m/s)") +
+      scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
+      scale_x_continuous (breaks=tbreak)
+    
+    outpng = sprintf("%s/%s-prod-delay-vs-speed.png", opt$output, opt$scenario)
+    
+    png (outpng, width=1024, height=768)
+    print (gproddelay)
+    x = dev.off ()
+  }
+  
+  if (opt$maxSeq)
+  {
+    cat(sprintf ("Creating Average Max Sequence vs Speed for %s Producer %s mobility graph\n", opt$scenario, opt$e1))
+    for (i in 1:length(strSpeeds))
+    {
+      file3n = sprintf("%s/%s-app-delays-3n-prod-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      fileNdn = sprintf("%s/%s-app-delays-smart-prod-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      
+      prodSeqSpeeds[i] = seqSummary (fileNdn, connodes)
+      prodSeqSpeeds[i+length(strSpeeds)] = seqSummary (file3n, connodes)
+    }
+    
+    avgprodSeq = data.frame (speeds, variable, prodSeqSpeeds)
+    
+    gprodseq <- ggplot (avgprodSeq, aes(x=speeds, y=prodSeqSpeeds)) +
+      geom_line(aes (colour=variable), size=1) +  
+      ggtitle ("Consumer with Producer Mobility Received Sequence vs Speed") +
+      ylab ("Sequence Number Received") +
+      xlab ("Speed (m/s)") +
+      scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
+      scale_x_continuous (breaks=tbreak)
+    
+    outpng = sprintf("%s/%s-prod-seq-vs-speed.png", opt$output, opt$scenario)
+    
+    png (outpng, width=1024, height=768)
+    print (gprodseq)
+    x = dev.off ()
+  }
+}
