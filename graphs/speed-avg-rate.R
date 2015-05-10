@@ -35,10 +35,10 @@ option_list <- list (
   make_option(c("--e1"), type="character", default="0",
               help="Consumer node data to graph. Can be a comma separated list.\n\t\tDefault graphs data for all nodes."),
   make_option(c("--e2"), type="character", default="7",
-              help="Consumer node data to graph. Can be a comma separated list.\n\t\tDefault graphs data for all nodes."),
+              help="Producer node data to graph. Can be a comma separated list.\n\t\tDefault graphs data for all nodes."),
   make_option(c("-m", "--speeds"), type="character", default="1.4,2.8,4.2,5.6,7,8.4,9.8,11.2",
               help="Mobile speeds to compare.\n\t\t[Default \"%default\"]"),
-  make_option(c("-t", "--title"), type="character", default="NDN vs 3N App",
+  make_option(c("-t", "--title"), type="character", default="Avg Data Rate vs Speed",
               help="Title for the graph"),
   make_option(c("--str1"), type="character", default="NDN Smart Flooding",
               help="Legend title for -f file data\n\t\t[Default \"%default\"]"),
@@ -122,7 +122,7 @@ if (opt$consumer)
   
   grate <- ggplot (avgconrate, aes(colour=variable)) +
     geom_line(aes (x=speeds, y=conRateSpeeds), size=1) +  
-    ggtitle ("Consumer Mobility Avg Data Rate vs Speed") +
+    ggtitle (sprintf("Consumer Mobility %s", opt$title)) +
     ylab ("Data Rate (Kbits/s)") +
     xlab ("Speed (m/s)") +
     scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
@@ -151,7 +151,7 @@ if (opt$producer)
   
   gprod <- ggplot (avgprodrate, aes(colour=variable)) +
     geom_line(aes (x=speeds, y=prodRateSpeeds), size=1) +  
-    ggtitle ("Consumer with Producer Mobility Avg Data Rate vs Speed") +
+    ggtitle (sprintf("Consumer with Producer Mobility %s", opt$title)) +
     ylab ("Data Rate (Kbits/s)") +
     xlab ("Speed (m/s)") +
     scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
