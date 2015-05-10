@@ -26,6 +26,34 @@ suppressPackageStartupMessages(library (optparse))
 suppressPackageStartupMessages(library (doBy))
 suppressPackageStartupMessages(library (plyr))
 
+# set some reasonable defaults for the options that are needed
+option_list <- list (
+  make_option(c("-d", "--directory"), type="character", default="~/git/ndn-mobility/results",
+              help="Directory which holds the raw data.\n\t\t[Default \"%default\"]"),
+  make_option(c("-o", "--output"), type="character", default=".",
+              help="Output directory for graphs.\n\t\t[Default \"%default\"]"),
+  make_option(c("--e1"), type="character", default="0",
+              help="Consumer node data to graph. Can be a comma separated list.\n\t\tDefault graphs data for all nodes."),
+  make_option(c("--e2"), type="character", default="7",
+              help="Consumer node data to graph. Can be a comma separated list.\n\t\tDefault graphs data for all nodes."),
+  make_option(c("-m", "--speeds"), type="character", default="1.4,2.8,4.2,5.6,7,8.4,9.8,11.2",
+              help="Mobile speeds to compare.\n\t\t[Default \"%default\"]"),
+  make_option(c("-t", "--title"), type="character", default="NDN vs 3N App",
+              help="Title for the graph"),
+  make_option(c("--str1"), type="character", default="NDN Smart Flooding",
+              help="Legend title for -f file data\n\t\t[Default \"%default\"]"),
+  make_option(c("--str2"), type="character", default="3N + Smart Flooding",
+              help="Legend title for -c file data\n\t\t[Default \"%default\"]"),
+  make_option(c("-c", "--consumer"), action="store_true", default=FALSE,
+              help="Tell the script to graph Consumer mobility data"),
+  make_option(c("-p", "--producer"), action="store_true", default=FALSE,
+              help="Tell the script to graph Producer mobility data"),
+  make_option(c("-s", "--scenario"), type="character", default="MobilityICC",
+              help="Name of the scenario to produce graphs for.\n\t\t[Default \"%default\"]"),
+  make_option(c("-x", "--extension"), type="character", default="01-001-004.txt",
+              help="The subfix of the extension files to use.\n\t\t[Default \"%default\"]")
+)
+
 types = c("OutInterests", "InData")
 
 rateSummary <- function (file, nodes) {
@@ -45,112 +73,93 @@ rateSummary <- function (file, nodes) {
   return(dt.combined[1,9])
 }
 
-connodes = c(0)
-prodnodes = c (7)
+# Load the parser
+opt = parse_args(OptionParser(option_list=option_list, description="Creates summary Rate graphs for 3N vs NDN"))
 
-# Read the 3N Consumer mobility data
-# Start with 1.4 m/s data
-con3n140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-1-40-01-001-004.txt", connodes)
-# 2.8 m/s data
-con3n280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-2-80-01-001-004.txt", connodes)
-# 4.2 m/s data
-con3n420 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-4-20-01-001-004.txt", connodes)
-# 5.6 m/s data
-con3n560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-5-60-01-001-004.txt", connodes)
-# 7 m/s data
-con3n700 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-7-00-01-001-004.txt", connodes)
-# 8.4 m/s data
-con3n840 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-8-40-01-001-004.txt", connodes)
-# 9.8 m/s data
-con3n980 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-9-80-01-001-004.txt", connodes)
-# 11.2 m/s data
-con3n1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-con-11-20-01-001-004.txt", connodes)
+cat (sprintf ("Creating comparison graphs for speeds: %s\n", opt$speeds))
 
-# Read the NDN Consumer mobility data
-# Start with 1.4 m/s data
-conNdn140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-1-40-01-001-004.txt", connodes)
-# 2.8 m/s data
-conNdn280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-2-80-01-001-004.txt", connodes)
-# 4.2 m/s data
-conNdn420 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-4-20-01-001-004.txt", connodes)
-# 5.6 m/s data
-conNdn560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-5-60-01-001-004.txt", connodes)
-# 7 m/s data
-conNdn700 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-7-00-01-001-004.txt", connodes)
-# 8.4 m/s data
-conNdn840 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-8-40-01-001-004.txt", connodes)
-# 9.8 m/s data
-conNdn980 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-9-80-01-001-004.txt", connodes)
-# 11.2 m/s data
-conNdn1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-con-11-20-01-001-004.txt", connodes)
+# Read the speeds
+filspeeds = unlist(strsplit(opt$speeds, ","))
 
-# Read the 3N Producer mobility data
-# Start with 1.4 m/s data
-prod3n140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-1-40-01-001-004.txt", prodnodes)
-# 2.8 m/s data
-prod3n280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-2-80-01-001-004.txt", prodnodes)
-# 4.2 m/s data
-prod3n420 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-4-20-01-001-004.txt", prodnodes)
-# 5.6 m/s data
-prod3n560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-5-60-01-001-004.txt", prodnodes)
-# 7 m/s data
-prod3n700 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-7-00-01-001-004.txt", prodnodes)
-# 8.4 m/s data
-prod3n840 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-8-40-01-001-004.txt", prodnodes)
-# 9.8 m/s data
-prod3n980 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-9-80-01-001-004.txt", prodnodes)
-# 11.2 m/s data
-prod3n1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-3n-prod-11-20-01-001-004.txt", prodnodes)
+# Read the speeds as doubles
+tbreak = as.double (filspeeds)
 
-# Read the NDN Producer mobility data
-# Start with 1.4 m/s data
-prodNdn140 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-1-40-01-001-004.txt", prodnodes)
-# 2.8 m/s data
-prodNdn280 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-2-80-01-001-004.txt", prodnodes)
-# 4.2 m/s data
-prodNdn420 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-4-20-01-001-004.txt", prodnodes)
-# 5.6 m/s data
-prodNdn560 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-5-60-01-001-004.txt", prodnodes)
-# 7 m/s data
-prodNdn700 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-7-00-01-001-004.txt", prodnodes)
-# 8.4 m/s data
-prodNdn840 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-8-40-01-001-004.txt", prodnodes)
-# 9.8 m/s data
-prodNdn980 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-9-80-01-001-004.txt", prodnodes)
-# 11.2 m/s data
-prodNdn1120 = rateSummary("~/git/ndn-mobility/results/MobilityICC-rate-trace-smart-prod-11-20-01-001-004.txt", prodnodes)
+strSpeeds = character (length(tbreak))
 
-tbreak <- c(1.4, 2.8, 4.2, 5.6, 7, 8.4, 9.8, 11.2)
+for (i in 1:length(tbreak))
+{
+  strSpeeds[i] = gsub ("\\.", "-", sprintf("%.2f", tbreak[i]))
+}
 
+connodes = unlist(strsplit(opt$e1, ","))
+prodnodes = unlist(strsplit(opt$e2, ","))
+
+# Create the resulting speed vectors
 speeds <- c( rep (tbreak, 2))
+
 variable <- c (rep ("1", length(tbreak)), rep ("2", length(tbreak)))
 
-conrates <- c(conNdn140, conNdn280, conNdn420, conNdn560, conNdn700, conNdn840, conNdn980, conNdn1120, con3n140, con3n280, con3n420, con3n560, con3n700, con3n840, con3n980, con3n1120)
-prodrates <- c(prodNdn140, prodNdn280, prodNdn420, prodNdn560, prodNdn700, prodNdn840, prodNdn980, prodNdn1120, prod3n140, prod3n280, prod3n420, prod3n560, prod3n700, prod3n840, prod3n980, prod3n1120)
-
-avgconrate = data.frame (speeds, variable, conrates)
-
-avgprodrate = data.frame (speeds, variable, prodrates)
+# Create the complete vector for rates
+conRateSpeeds = double (length(speeds))
+prodRateSpeeds = double(length(speeds))
 
 theme_set(theme_grey(base_size = 24) + 
             theme(axis.text = element_text(colour = "black")))
 
-grate <- ggplot (avgconrate, aes(colour=variable)) +
-  geom_line(aes (x=speeds, y=conrates), size=1) +  
-  ggtitle ("Consumer Mobility Avg Data Rate vs Speed") +
-  ylab ("Data Rate (Kbits/s)") +
-  xlab ("Speed (m/s)") +
-  scale_colour_discrete(name = "Strategies", labels = c("NDN Smart Flooding", "3N + Smart Flooding")) +
-  scale_x_continuous (breaks=tbreak)
+if (opt$consumer)
+{
+  cat(sprintf ("Creating Average Data rate vs Speed for %s Consumer %s mobility graph\n", opt$scenario, opt$e1))
+  for (i in 1:length(strSpeeds))
+  {
+    file3n = sprintf("%s/%s-rate-trace-3n-con-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+    fileNdn = sprintf("%s/%s-rate-trace-smart-con-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+    
+    conRateSpeeds[i] = rateSummary(fileNdn, connodes)
+    conRateSpeeds[i+length(strSpeeds)] = rateSummary (file3n, connodes)
+  }
+  
+  avgconrate = data.frame (speeds, variable, conRateSpeeds)
+  
+  grate <- ggplot (avgconrate, aes(colour=variable)) +
+    geom_line(aes (x=speeds, y=conRateSpeeds), size=1) +  
+    ggtitle ("Consumer Mobility Avg Data Rate vs Speed") +
+    ylab ("Data Rate (Kbits/s)") +
+    xlab ("Speed (m/s)") +
+    scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
+    scale_x_continuous (breaks=tbreak)
+  
+  outpng = sprintf("%s/%s-con-rate-vs-speed.png", opt$output, opt$scenario)
+  
+  png (outpng, width=1024, height=768)
+  print (grate)
+  x = dev.off ()
+}
 
-print (grate)
-
-gprod <- ggplot (avgprodrate, aes(colour=variable)) +
-  geom_line(aes (x=speeds, y=prodrates), size=1) +  
-  ggtitle ("Consumer with Producer Mobility Avg Data Rate vs Speed") +
-  ylab ("Data Rate (Kbits/s)") +
-  xlab ("Speed (m/s)") +
-  scale_colour_discrete(name = "Strategies", labels = c("NDN Smart Flooding", "3N + Smart Flooding")) +
-  scale_x_continuous (breaks=tbreak)
-
-print (gprod)
+if (opt$producer)
+{
+  cat(sprintf ("Creating Average Data rate vs Speed for %s Producer %s mobility graph\n", opt$scenario, opt$e2))
+  for (i in 1:length(strSpeeds))
+  {
+    file3n = sprintf("%s/%s-rate-trace-3n-prod-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+    fileNdn = sprintf("%s/%s-rate-trace-smart-prod-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+    
+    prodRateSpeeds[i] = rateSummary(fileNdn, prodnodes)
+    prodRateSpeeds[i+length(strSpeeds)] = rateSummary (file3n, prodnodes)
+  }
+  
+  avgprodrate = data.frame (speeds, variable, prodRateSpeeds)
+  
+  gprod <- ggplot (avgprodrate, aes(colour=variable)) +
+    geom_line(aes (x=speeds, y=prodRateSpeeds), size=1) +  
+    ggtitle ("Consumer with Producer Mobility Avg Data Rate vs Speed") +
+    ylab ("Data Rate (Kbits/s)") +
+    xlab ("Speed (m/s)") +
+    scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
+    scale_x_continuous (breaks=tbreak)
+  
+  outpng = sprintf("%s/%s-prod-rate-vs-speed.png", opt$output, opt$scenario)
+  
+  png (outpng, width=1024, height=768)
+  print (gprod)
+  x = dev.off ()
+}
