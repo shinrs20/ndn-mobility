@@ -199,7 +199,7 @@ namespace ns3
       // Update the 3N name used by the application to create PDUs
       m_current3Nname = GetNode ()->GetObject<ForwardingStrategy> ()->GetNode3NNamePtr();
 
-      NS_LOG_INFO ("App will now use 3N name " << *m_current3Nname << ")");
+      NS_LOG_INFO ("App will now use 3N name (" << *m_current3Nname << ")");
     }
 
     void
@@ -236,6 +236,10 @@ namespace ns3
 
       fw->TraceConnectWithoutContext("Got3NName", MakeCallback (&App::GotName, this));
       fw->TraceConnectWithoutContext("No3NName", MakeCallback (&App::NoName, this));
+
+      // Step 5. Check if we happen to already have a name!
+      if (fw->Has3NName())
+	GotName ();
     }
 
     void

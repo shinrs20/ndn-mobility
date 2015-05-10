@@ -223,7 +223,7 @@ namespace ns3
 	                 MakeTimeChecker ())
 
 	  .AddAttribute ("3NLeaseACK", "Timeout for leasing a 3N name (Only in use if Produce3Nnames is used)",
-	                 StringValue ("5s"),
+	                 StringValue ("1s"),
 	                 MakeTimeAccessor (&ForwardingStrategy::m_3n_lease_ack_timeout),
 	                 MakeTimeChecker ())
 
@@ -233,7 +233,7 @@ namespace ns3
 	                 MakeTimeChecker ())
 
 	  .AddAttribute ("AckTimeout", "Timeout for ACK based PDUs",
-	                 StringValue ("5s"),
+	                 StringValue ("1s"),
 	                 MakeTimeAccessor (&ForwardingStrategy::m_ack_timeout),
 	                 MakeTimeChecker ())
 

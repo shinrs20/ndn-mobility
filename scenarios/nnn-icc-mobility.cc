@@ -774,7 +774,6 @@ int main (int argc, char *argv[])
       consumerHelper.SetAttribute ("StartTime", TimeValue (Seconds(initialWait)));
       consumerHelper.SetAttribute ("StopTime", TimeValue (Seconds(appEndTime)));
       consumerHelper.SetAttribute ("RetxTimer", TimeValue (Seconds(retxtime)));
-      consumerHelper.SetAttribute ("IsMobile", BooleanValue(true));
 
       if (producer)
 	{
