@@ -14,6 +14,7 @@ T2="smart"
 STR1="NDN Smart Flooding"
 STR2="3N + Smart Flooding"
 DIR=results
+LOSS=0.5
 
 ###############################################################################
 speedstr=""
@@ -75,5 +76,5 @@ speedstr=${SPEEDS// /,}
 echo "Data rate vs Speed graphs"
 ./graphs/speed-avg-rate.R -s $NSLOG --str1="$STR1" --str2="$STR2" -m "$speedstr" --e1="$CONSUMER" --e2="$PRODUCER" -x $SCDE -d $DIR -p -c
 
-echo "Max Seq and Delay vs Speed graphs"
-./graphs/speed-avg-delay.R -s $NSLOG --str1="$STR1" --str2="$STR2" -m "$speedstr" -c -p --delay --maxSeq -x $SCDE -d $DIR
+echo "Max Seq, loss and Delay vs Speed graphs"
+./graphs/speed-avg-delay.R -s $NSLOG --str1="$STR1" --str2="$STR2" -m "$speedstr" -c -p --delay --loss="$LOSS" --maxSeq -x $SCDE -d $DIR

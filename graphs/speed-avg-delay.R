@@ -48,6 +48,8 @@ option_list <- list (
               help="Tell the script to graph Producer mobility data"),
   make_option(c("--delay"), action="store_true", default=FALSE,
               help="Tell the script to graph Delay data"),
+  make_option(c("--loss"), type="double", default="0.5",
+              help="Counts the number of PDUs considered lost after Xms. Default doesn't graph."),
   make_option(c("--maxSeq"), action="store_true", default=FALSE,
               help="Tell the script to graph Max sequence seen data"),
   make_option(c("-s", "--scenario"), type="character", default="MobilityICC",
@@ -88,6 +90,15 @@ seqSummary <- function (file, nodes=c())
   return (max (dt$SeqNo))
 }
 
+delayLossSummary <- function (file, nodes=c(), delay)
+{
+  dt = allFilter (file, nodes)
+  
+  ndt = subset (dt, DelayS > delay)
+  
+  return ((nrow (ndt) / nrow (dt))*100)
+}
+
 # Load the parser
 opt = parse_args(OptionParser(option_list=option_list, description="Creates summary App graphs for 3N vs NDN"))
 
@@ -116,10 +127,13 @@ variable <- c (rep ("1", length(tbreak)), rep ("2", length(tbreak)))
 
 # Create the complete vector for rates
 conDelaySpeeds = double (length(speeds))
-prodDelaySpeeds = double(length(speeds))
+prodDelaySpeeds = double (length(speeds))
 
 conSeqSpeeds = double (length(speeds))
-prodSeqSpeeds = double(length(speeds))
+prodSeqSpeeds = double (length(speeds))
+
+conLossSpeeds = double (length(speeds))
+prodLossSpeeds = double (length(speeds))
 
 theme_set(theme_grey(base_size = 24) + 
             theme(axis.text = element_text(colour = "black")))
@@ -184,6 +198,35 @@ if (opt$consumer)
     print (gconSeq)
     x = dev.off ()
   }
+  
+  if (opt$loss > 0)
+  {
+    cat(sprintf ("Creating PDU loss vs Speed for %s Consumer %s mobility graph\n", opt$scenario, opt$e1))
+    for (i in 1:length(strSpeeds))
+    {
+      file3n = sprintf("%s/%s-app-delays-3n-con-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      fileNdn = sprintf("%s/%s-app-delays-smart-con-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      
+      conLossSpeeds[i] = delayLossSummary (fileNdn, connodes, opt$loss)
+      conLossSpeeds[i+length(strSpeeds)] = delayLossSummary (file3n, connodes, opt$loss)
+    }
+    
+    avgconlossdelay = data.frame (speeds, variable, conLossSpeeds)
+    
+    gconlossdelay <- ggplot (avgconlossdelay, aes(colour=variable)) +
+      geom_line(aes (x=speeds, y=conLossSpeeds), size=1) +  
+      ggtitle ("Consumer Mobility PDU loss (%) vs Speed") +
+      ylab ("PDU loss (%)") +
+      xlab ("Speed (m/s)") +
+      scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
+      scale_x_continuous (breaks=tbreak)
+    
+    outpng = sprintf("%s/%s-con-loss-vs-speed.png", opt$output, opt$scenario)
+    
+    png (outpng, width=1024, height=768)
+    print (gconlossdelay)
+    x = dev.off ()
+  }
 }
 
 if (opt$producer)
@@ -245,4 +288,34 @@ if (opt$producer)
     print (gprodseq)
     x = dev.off ()
   }
+  
+  if (opt$loss > 0)
+  {
+    cat(sprintf ("Creating PDU loss vs Speed for %s Producer %s mobility graph\n", opt$scenario, opt$e1))
+    for (i in 1:length(strSpeeds))
+    {
+      file3n = sprintf("%s/%s-app-delays-3n-prod-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      fileNdn = sprintf("%s/%s-app-delays-smart-prod-%s-%s", opt$directory, opt$scenario, strSpeeds[i], opt$extension)
+      
+      prodLossSpeeds[i] = delayLossSummary (fileNdn, connodes, opt$loss)
+      prodLossSpeeds[i+length(strSpeeds)] = delayLossSummary (file3n, connodes, opt$loss)
+    }
+    
+    avgprodlossdelay = data.frame (speeds, variable, prodLossSpeeds)
+    
+    gprodlossdelay <- ggplot (avgprodlossdelay, aes(colour=variable)) +
+      geom_line(aes (x=speeds, y=prodLossSpeeds), size=1) +  
+      ggtitle ("Consumer with Producer Mobility PDU loss (%) vs Speed") +
+      ylab ("PDU loss (%)") +
+      xlab ("Speed (m/s)") +
+      scale_colour_discrete(name = "Strategies", labels = c(opt$str1, opt$str2)) +
+      scale_x_continuous (breaks=tbreak)
+    
+    outpng = sprintf("%s/%s-prod-loss-vs-speed.png", opt$output, opt$scenario)
+    
+    png (outpng, width=1024, height=768)
+    print (gprodlossdelay)
+    x = dev.off ()
+  }
 }
+
